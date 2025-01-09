@@ -49,9 +49,9 @@ Data Quality (DQ) - это характеристика данных, опред
 - [Great Expectatitons](https://greatexpectations.io/?banner=false)
 - [Soda SQL](https://www.soda.io/resources/introducing-soda-sql)
 
-> Оба интструмента имеют интеграцию с DTB
+> Оба инструмента имеют интеграцию с DTB
 
-- [Elementary](https://www.elementary-data.com/) - доролняет возможности DBT в части тестов и визуализации.
+- [Elementary](https://www.elementary-data.com/) - дополняет возможности DBT в части тестов и визуализации.
 
 ## Книги
 Из книг можно выделить следующие
