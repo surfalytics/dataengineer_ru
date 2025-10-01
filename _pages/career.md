@@ -29,6 +29,7 @@ cover: ../../assets/surf2.svg
 
 ## Телеграм-каналы и группы
 
+- [Data Engineer Jobs](https://t.me/data_engineer_jobs) - вакансии по СНГ и по всему миру.
 - [Data jobs](https://t.me/datajob)
 - [Data Science Jobs](https://t.me/datasciencejobs)
 - [Data Вакансии](https://t.me/data_vacancy)
