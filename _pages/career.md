@@ -1,10 +1,11 @@
 ---
 title: Поиск работы
 author: Дмитрий Аношин
-date: 2024-11-03
+date: 2022-03-01
 category: Jekyll
 layout: post
 cover: ../../assets/surf2.svg
+section: Карьера
 ---
 
 Здесь будут материалы по поиску работы и подготовки к собеседованиям.

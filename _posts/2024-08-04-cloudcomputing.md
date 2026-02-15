@@ -1,9 +1,10 @@
 ---
 title: Облачные вычисления
 author: Дата Инженеръ
-date: 2024-11-22
+date: 2024-08-04
 category: hard-skills
 layout: post
+section: Инструменты
 cover: ../assets/surf2.svg
 ---
 

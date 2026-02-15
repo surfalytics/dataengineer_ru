@@ -1,9 +1,10 @@
 ---
 title: Книги
 author: Дмитрий Аношин
-date: 2024-11-10
+date: 2022-01-01
 category: Jekyll
 layout: post
+section: Книги и Материалы
 ---
 
 Здесь будут различные книги и статьи.

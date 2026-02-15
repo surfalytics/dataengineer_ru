@@ -1,10 +1,11 @@
 ---
-title: White Papers 
+title: White Papers
 author: Дата Инженеръ
-date: 2024-11-03
+date: 2022-01-02
 category: whitepapers
 layout: post
 cover: ../../assets/surf2.svg
+section: Книги и Материалы
 ---
 
 > 🇷🇺 / 🇬🇧 - язык материалов       

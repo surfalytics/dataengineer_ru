@@ -1,9 +1,10 @@
 ---
 title: Дата Сообщества
 author: Дата Инженеръ
-date: 2022-02-05
+date: 2022-02-01
 category: Jekyll
 layout: post
+section: Сообщество и Управление
 ---
 
 Инжиниринг Данных:

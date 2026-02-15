@@ -59,7 +59,13 @@
                             {% assign reversed_posts = site[collection.label] %}
                         {% endif %}
 
+                        {% assign currentSection = "" %}
                         {% for post in reversed_posts %}
+                            {% if post.section and post.section != currentSection %}
+                                {% assign currentSection = post.section %}
+                                <li class="header">{{ currentSection }}</li>
+                            {% endif %}
+
                             {% if page.url == post.url %}
                             <li class="chapter active" data-level="1.2" data-path="{{site.baseurl}}{{post.url}}">
                             {% else %}
@@ -91,7 +97,13 @@
                             {% assign reversed_posts = site[collection.label] %}
                         {% endif %}
 
+                        {% assign currentSection = "" %}
                         {% for post in reversed_posts %}
+                            {% if post.section and post.section != currentSection %}
+                                {% assign currentSection = post.section %}
+                                <li class="header">{{ currentSection }}</li>
+                            {% endif %}
+
                             {% if page.url == post.url %}
                             <li class="chapter active" data-level="1.2" data-path="{{site.baseurl}}{{post.url}}">
                             {% else %}
