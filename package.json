@@ -1,0 +1,18 @@
+{
+  "name": "dataengineer-ru",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Русскоязычный портал об аналитике и инжиниринге данных (dataengineer.ru)",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.40.0",
+    "astro": "^6.4.8",
+    "sharp": "^0.35.2"
+  }
+}

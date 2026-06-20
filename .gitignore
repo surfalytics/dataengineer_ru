@@ -1,3 +1,10 @@
+# Astro / Node
+dist/
+node_modules/
+.astro/
+*.log
+
+# Jekyll (legacy)
 _site
 _draft/
 .jekyll-cache/

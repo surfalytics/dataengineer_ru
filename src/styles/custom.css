@@ -1,0 +1,10 @@
+/* Брендовые акценты для dataengineer.ru */
+:root {
+  --sl-content-width: 50rem;
+}
+
+/* Чуть просторнее списки ресурсов (основной формат контента сайта). */
+.sl-markdown-content ul li + li,
+.sl-markdown-content ol li + li {
+  margin-top: 0.4rem;
+}
