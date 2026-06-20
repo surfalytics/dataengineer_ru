@@ -9,7 +9,7 @@ Russian-language educational portal about data engineering (**dataengineer.ru**)
 ## Development Commands
 
 ```bash
-npm install        # Install dependencies (Node 20+)
+npm install        # Install dependencies (Node 22+)
 npm run dev        # Local dev server (http://localhost:4321)
 npm run build      # Build static site to dist/
 npm run preview    # Preview the built site

@@ -10,7 +10,7 @@
 ## Локальная разработка
 
 ```bash
-npm install        # установить зависимости (нужен Node 20+)
+npm install        # установить зависимости (нужен Node 22+)
 npm run dev        # локальный сервер: http://localhost:4321
 npm run build      # сборка статического сайта в dist/
 npm run preview    # предпросмотр собранного сайта
