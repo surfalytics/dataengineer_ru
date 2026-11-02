@@ -21,3 +21,4 @@ Makefile
 SETUP.md
 entrypoint.sh
 .dockerignore
+.playwright-mcp/

@@ -1,0 +1,74 @@
+---
+// Минималистичная шапка в одну строку: название · разделы · поиск · тема.
+// На мобильных разделы скрыты — там их показывает меню (плагин sidebar-topics).
+import Search from '@astrojs/starlight/components/Search.astro';
+import SiteTitle from '@astrojs/starlight/components/SiteTitle.astro';
+import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+import { topics } from '../nav.mjs';
+
+const path = Astro.url.pathname;
+const isCurrent = (t: (typeof topics)[number]) => t.match.some((p) => path.startsWith(p));
+---
+
+<div class="mh">
+  <div class="mh-title"><SiteTitle /></div>
+  <nav class="mh-nav" aria-label="Разделы портала">
+    {
+      topics.map((t) => (
+        <a href={t.link} class:list={{ current: isCurrent(t) }} aria-current={isCurrent(t) ? 'page' : undefined}>
+          {t.label}
+        </a>
+      ))
+    }
+  </nav>
+  <div class="mh-search"><Search /></div>
+  <div class="mh-right">
+    <SocialIcons />
+    <ThemeSelect />
+  </div>
+</div>
+
+<style>
+  .mh {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    height: 100%;
+  }
+  .mh-title {
+    min-width: 0;
+    overflow: clip;
+  }
+  .mh-nav,
+  .mh-right {
+    display: none;
+  }
+  .mh-search {
+    margin-inline-start: auto;
+  }
+  @media (min-width: 50rem) {
+    .mh-nav {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .mh-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+  }
+  .mh-nav a {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .mh-nav a:hover,
+  .mh-nav a.current {
+    color: var(--sl-color-white);
+  }
+  .mh-nav a.current {
+    font-weight: 600;
+  }
+</style>

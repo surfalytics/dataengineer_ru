@@ -1,10 +1,240 @@
-/* Брендовые акценты для dataengineer.ru */
+/* Минималистичная тема dataengineer.ru.
+   Чёрно-белая палитра + один акцентный цвет. Структура — через отступы и шрифт, а не рамки.
+   Starlight: :root — тёмная тема, [data-theme='light'] — светлая. */
+
+/* ---------- Тёмная тема ---------- */
 :root {
-  --sl-content-width: 50rem;
+  --sl-font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
+  --sl-font-mono: ui-monospace, SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, monospace;
+  --sl-sidebar-width: 16rem;
+
+  --sl-color-white: #f5f5f5;
+  --sl-color-gray-1: #e5e5e5;
+  --sl-color-gray-2: #cfcfcf;
+  --sl-color-gray-3: #8f8f8f;
+  --sl-color-gray-4: #5c5c5c;
+  --sl-color-gray-5: #262626;
+  --sl-color-gray-6: #161616;
+  --sl-color-black: #0e0e0e;
+
+  --sl-color-accent-low: #1b2a4d;
+  --sl-color-accent: #7ea6ff;
+  --sl-color-accent-high: #a9c3ff;
+
+  --sl-color-text: var(--sl-color-gray-1);
+  --sl-color-bg-nav: var(--sl-color-black);
+  --sl-color-bg-sidebar: var(--sl-color-black);
+  --sl-color-hairline: #1f1f1f;
+  --sl-color-hairline-light: #262626;
+  --sl-color-hairline-shade: #1f1f1f;
+
+  --line: #222;
+  --muted: #8f8f8f;
 }
 
-/* Чуть просторнее списки ресурсов (основной формат контента сайта). */
+/* ---------- Светлая тема ---------- */
+:root[data-theme='light'] {
+  --sl-color-white: #111111;
+  --sl-color-gray-1: #1a1a1a;
+  --sl-color-gray-2: #333333;
+  --sl-color-gray-3: #6b6b6b;
+  --sl-color-gray-4: #9a9a9a;
+  --sl-color-gray-5: #e6e6e6;
+  --sl-color-gray-6: #f5f5f5;
+  --sl-color-gray-7: #fafafa;
+  --sl-color-black: #ffffff;
+
+  --sl-color-accent-low: #e8eeff;
+  --sl-color-accent: #2f5bea;
+  --sl-color-accent-high: #1f3fb0;
+
+  --sl-color-bg-nav: #ffffff;
+  --sl-color-bg-sidebar: #ffffff;
+  --sl-color-hairline: #efefef;
+  --sl-color-hairline-light: #efefef;
+  --sl-color-hairline-shade: #efefef;
+
+  --line: #ececec;
+  --muted: #6b6b6b;
+}
+
+/* ---------- Шапка и логотип ---------- */
+header.header {
+  border-bottom: 1px solid var(--line);
+}
+/* Логотип "Дата Инженеръ" */
+.site-title img {
+  height: 1.6rem;
+  width: auto;
+}
+/* Список разделов от плагина дублирует меню в шапке — прячем на десктопе */
+@media (min-width: 50rem) {
+  .starlight-sidebar-topics {
+    display: none !important;
+  }
+}
+
+/* ---------- Сайдбар: простой список без фона ---------- */
+.sidebar-content {
+  font-size: var(--sl-text-sm);
+}
+.sidebar-content .group-label .large {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+.sidebar-content ul ul {
+  border-inline-start: 0;
+}
+.sidebar-content a {
+  padding: 0.25rem 0.5rem;
+  color: var(--muted);
+  background: none;
+}
+.sidebar-content a:hover {
+  color: var(--sl-color-white);
+}
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover {
+  background: none;
+  color: var(--sl-color-accent);
+  font-weight: 600;
+}
+
+/* ---------- Правая колонка "На этой странице" ---------- */
+.right-sidebar {
+  border-inline-start-color: transparent !important;
+}
+
+/* ---------- Контент ---------- */
+.content-panel + .content-panel {
+  border-top: 0;
+}
+.sl-markdown-content {
+  line-height: 1.7;
+}
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3 {
+  letter-spacing: -0.02em;
+}
+.sl-markdown-content h2 {
+  font-size: 1.6rem;
+}
+[data-has-hero] .sl-markdown-content .sl-heading-wrapper.level-h2 {
+  margin-top: 3.5rem;
+}
 .sl-markdown-content ul li + li,
 .sl-markdown-content ol li + li {
-  margin-top: 0.4rem;
+  margin-top: 0.35rem;
+}
+.sl-markdown-content :not(pre) > code {
+  background: var(--sl-color-gray-6);
+  border: 0;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+/* Таблицы: только горизонтальные линии */
+.sl-markdown-content table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sl-text-sm);
+}
+.sl-markdown-content th,
+.sl-markdown-content td {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 0.6rem 1rem 0.6rem 0;
+  background: none;
+}
+.sl-markdown-content th {
+  font-weight: 600;
+  color: var(--sl-color-white);
+  border-bottom-color: var(--sl-color-gray-4);
+}
+/* Подсказки (Aside): тонкая линия слева, без цветного фона */
+.starlight-aside {
+  background: none;
+  border-inline-start-width: 2px;
+  padding-block: 0.25rem;
+}
+.starlight-aside--tip,
+.starlight-aside--note {
+  border-color: var(--sl-color-accent);
+}
+.starlight-aside__title {
+  color: var(--sl-color-white);
+  font-size: var(--sl-text-sm);
+}
+/* LinkCard: тонкая рамка, без тени */
+.sl-link-card {
+  border-color: var(--line);
+  box-shadow: none;
+  border-radius: 8px;
+}
+.sl-link-card:hover {
+  background: var(--sl-color-gray-6);
+  border-color: var(--line);
+}
+/* Подвал страницы */
+footer .meta {
+  font-size: var(--sl-text-sm);
+  color: var(--muted);
+}
+/* Наши компоненты сами задают отступы */
+.not-content li + li {
+  margin-top: 0 !important;
+}
+
+/* ---------- Главная ---------- */
+.hero {
+  padding-block: 4rem 1rem;
+}
+.hero h1 {
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  letter-spacing: -0.03em;
+}
+.hero .tagline {
+  color: var(--muted);
+}
+.sl-link-button {
+  border-radius: 8px;
+}
+/* Три карточки "Выберите путь" в один ряд */
+@media (min-width: 50rem) {
+  .card-grid:has(> :nth-child(3):last-child) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.sl-link-button.primary {
+  background: var(--sl-color-white);
+  border-color: var(--sl-color-white);
+  color: var(--sl-color-black);
+}
+.sl-link-button.secondary {
+  border-color: var(--line);
+}
+
+/* ---------- Ширина: контент на весь экран (максимум 120rem) ---------- */
+@media (min-width: 50rem) {
+  :root[data-has-sidebar] {
+    --sl-content-width: min(calc(100vw - var(--sl-sidebar-width) - 2 * var(--sl-content-pad-x) - 1rem), 120rem);
+  }
+}
+@media (min-width: 72rem) {
+  :root[data-has-sidebar][data-has-toc] {
+    --sl-content-width: min(calc(100vw - 2 * var(--sl-sidebar-width) - 2 * var(--sl-content-pad-x) - 1rem), 120rem);
+  }
+}
+:root:not([data-has-sidebar]) {
+  --sl-content-width: min(calc(100vw - 2 * var(--sl-content-pad-x) - 1rem), 120rem);
+}
+
+/* Иконки соцсетей — серые */
+.mh-right a {
+  color: var(--muted);
+}
+.mh-right a:hover {
+  color: var(--sl-color-white);
 }
