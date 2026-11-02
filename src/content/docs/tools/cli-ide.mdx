@@ -1,0 +1,197 @@
+---
+title: CLI и IDE
+description: "Инструменты разработчика данных: командная строка (CLI) и среды разработки (IDE)."
+sidebar:
+  order: 2
+tags:
+  - tools
+  - ide
+---
+import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Resource from '../../../components/Resource.astro';
+import ResourceList from '../../../components/ResourceList.astro';
+import ResourceFilter from '../../../components/ResourceFilter.astro';
+
+## Что это
+
+**IDE** (Integrated Development Environment) — редактор кода с подсказками, отладчиком и Git.
+**CLI** (Command Line Interface) — работа с файлами, облаком и API через терминал.
+Инженер данных каждый день использует и то, и другое.
+
+## Когда что использовать
+
+| Задача | Что взять |
+|---|---|
+| Python, dbt, YAML, Terraform | VS Code или PyCharm |
+| Писать SQL и смотреть данные в базе | DBeaver, DataGrip или расширение SQLTools в VS Code |
+| Быстро посмотреть CSV, JSON, Parquet | CLI: `csvkit`, `jq`, `xsv` |
+| Работа с облаком (S3, BigQuery, Azure) | CLI облака: `aws`, `gcloud`, `az`, `yc` |
+| Долгие задачи на удалённом сервере | `tmux` — сессия не пропадёт при обрыве SSH |
+
+## Сравнение IDE
+
+| | VS Code | PyCharm CE | DBeaver CE | DataGrip |
+|---|---|---|---|---|
+| Цена | Бесплатно | Бесплатно | Бесплатно | Платно |
+| Python | Да, через расширение | Да, лучший выбор | Нет | Нет |
+| SQL и базы данных | Частично, через расширения | Только в платной версии | Да | Да, лучший выбор |
+| dbt, YAML, Terraform | Да | Частично | Нет | Нет |
+| Скорость | Быстрый | Тяжелее | Средняя | Средняя |
+
+<Aside type="tip" title="Наш совет">
+Начните с **VS Code** + **DBeaver**. Этого хватит для 90% задач. PyCharm и DataGrip берите, когда упрётесь в ограничения.
+</Aside>
+
+## Лучшие практики
+
+- Держите настройки IDE и `.editorconfig` в репозитории — у всей команды одинаковое форматирование.
+- Настройте линтер и форматтер: `ruff` для Python, `sqlfluff` для SQL.
+- Выучите 10 горячих клавиш своей IDE: поиск файла, поиск по проекту, мультикурсор, переход к определению.
+- Не храните пароли к базам в настройках IDE в открытом виде. Используйте переменные окружения или менеджер секретов.
+- В терминале используйте `fzf` для поиска по истории команд — это экономит много времени.
+
+## Ресурсы
+
+<ResourceFilter />
+
+<ResourceList title="Среды разработки (IDE)">
+  <Resource title="Visual Studio Code" href="https://code.visualstudio.com/" type="Инструмент" level="Новичок" star>
+    Бесплатный редактор от Microsoft. Тысячи расширений, встроенный терминал, Git и отладчик.
+  </Resource>
+  <Resource title="PyCharm Community Edition" href="https://www.jetbrains.com/pycharm/download/" type="Инструмент" level="Средний">
+    Бесплатная IDE для Python от JetBrains. Умное автодополнение, рефакторинг, отладчик.
+  </Resource>
+  <Resource title="IntelliJ IDEA Community Edition" href="https://www.jetbrains.com/idea/download/" type="Инструмент" level="Продвинутый">
+    IDE для Java, Kotlin и Scala. Нужна, если пишете Spark-джобы на Scala.
+  </Resource>
+  <Resource title="Sublime Text" href="https://www.sublimetext.com/" type="Инструмент" level="Новичок">
+    Лёгкий и быстрый редактор кода с плагинами и темами.
+  </Resource>
+  <Resource title="RStudio" href="https://www.rstudio.com/products/rstudio/download/" type="Инструмент" level="Средний">
+    IDE для языка R: анализ данных, визуализация, статистика.
+  </Resource>
+</ResourceList>
+
+<ResourceList title="Работа с базами данных">
+  <Resource title="DBeaver Community" href="https://dbeaver.io/" type="Инструмент" level="Новичок" star>
+    Бесплатный клиент для любых SQL-баз: PostgreSQL, MySQL, SQLite, ClickHouse и других.
+  </Resource>
+  <Resource title="DataGrip" href="https://www.jetbrains.com/datagrip/download/" type="Инструмент" level="Средний" tags={['Платно']}>
+    IDE для баз данных от JetBrains. Умный SQL-редактор, рефакторинг, работа с Git.
+  </Resource>
+  <Resource title="SQLTools для VS Code" href="https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools" type="Инструмент" level="Новичок">
+    Самое популярное расширение VS Code для работы с SQL-базами.
+  </Resource>
+  <Resource title="Database Client для VS Code" href="https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-database-client2" type="Инструмент" level="Новичок">
+    Ещё одно удобное расширение VS Code для работы с базами данных.
+  </Resource>
+</ResourceList>
+
+<ResourceList title="Терминал">
+  <Resource title="Oh My Zsh" href="https://ohmyz.sh/" type="Инструмент" level="Новичок" tags={['Mac', 'Linux']} star>
+    Настройка Zsh: автодополнение, подсветка, алиасы, сотни плагинов.
+  </Resource>
+  <Resource title="Starship" href="https://starship.rs/" type="Инструмент" level="Новичок" tags={['Windows', 'Mac', 'Linux']}>
+    Быстрый промпт: показывает ветку git, версии языков, время выполнения команд.
+  </Resource>
+  <Resource title="Git Bash" href="https://gitforwindows.org/" type="Инструмент" level="Новичок" tags={['Windows']}>
+    Unix-команды и Git в Windows.
+  </Resource>
+  <Resource title="iTerm2" href="https://iterm2.com/" type="Инструмент" level="Новичок" tags={['Mac']}>
+    Продвинутый терминал для macOS: разделение окна, поиск, интеграция с shell.
+  </Resource>
+  <Resource title="Tmux" href="https://github.com/tmux/tmux" type="Инструмент" level="Средний" tags={['Mac', 'Linux']}>
+    Несколько сессий в одном терминале. Сессия живёт после обрыва SSH.
+  </Resource>
+  <Resource title="Terminator" href="https://gnome-terminator.org/" type="Инструмент" level="Новичок" tags={['Linux']}>
+    Терминал для Linux с гибким разделением окна на панели.
+  </Resource>
+</ResourceList>
+
+<ResourceList title="CLI: файлы данных">
+  <Resource title="jq" href="https://jqlang.org/" type="Инструмент" level="Новичок" star>
+    Фильтрация и преобразование JSON.
+  </Resource>
+  <Resource title="yq" href="https://github.com/mikefarah/yq" type="Инструмент" level="Новичок">
+    То же, что jq, но для YAML.
+  </Resource>
+  <Resource title="csvkit" href="https://csvkit.readthedocs.io/" type="Инструмент" level="Новичок">
+    Фильтрация, форматирование и конвертация CSV.
+  </Resource>
+  <Resource title="xsv" href="https://github.com/BurntSushi/xsv" type="Инструмент" level="Средний">
+    Быстрая обработка и анализ больших CSV.
+  </Resource>
+  <Resource title="Parquet Tools" href="https://github.com/apache/parquet-mr/tree/master/parquet-tools" type="Инструмент" level="Средний">
+    Просмотр файлов Parquet, конвертация, извлечение схемы.
+  </Resource>
+  <Resource title="datamash" href="https://www.gnu.org/software/datamash/" type="Инструмент" level="Средний">
+    Агрегация и группировка текстовых данных.
+  </Resource>
+</ResourceList>
+
+<ResourceList title="CLI: API и сеть">
+  <Resource title="curl" href="https://curl.se/" type="Инструмент" level="Новичок" star>
+    HTTP-запросы к API и загрузка данных.
+  </Resource>
+  <Resource title="HTTPie" href="https://httpie.io/" type="Инструмент" level="Новичок">
+    Простой и читаемый клиент для REST API.
+  </Resource>
+  <Resource title="Postman CLI (Newman)" href="https://www.npmjs.com/package/newman" type="Инструмент" level="Средний">
+    Запуск коллекций Postman для тестирования API.
+  </Resource>
+  <Resource title="Inso CLI (Insomnia)" href="https://docs.insomnia.rest/inso-cli/introduction" type="Инструмент" level="Средний">
+    Запуск запросов Insomnia для тестирования API.
+  </Resource>
+</ResourceList>
+
+<ResourceList title="CLI: облака и хранилища">
+  <Resource title="AWS CLI" href="https://aws.amazon.com/cli/" type="Инструмент" level="Средний">
+    S3, Athena, Redshift и другие сервисы AWS.
+  </Resource>
+  <Resource title="gcloud CLI" href="https://cloud.google.com/sdk/gcloud" type="Инструмент" level="Средний">
+    Работа с Google Cloud Platform.
+  </Resource>
+  <Resource title="Azure CLI" href="https://learn.microsoft.com/en-us/cli/azure/" type="Инструмент" level="Средний">
+    Управление ресурсами Azure.
+  </Resource>
+  <Resource title="yc (Yandex Cloud CLI)" href="https://cloud.yandex.ru/docs/cli/" type="Инструмент" level="Средний" lang="ru">
+    Управление ресурсами Yandex Cloud.
+  </Resource>
+  <Resource title="rclone" href="https://rclone.org/" type="Инструмент" level="Средний" star>
+    Копирование данных между облачными хранилищами и локальной машиной.
+  </Resource>
+  <Resource title="s3cmd" href="https://s3tools.org/s3cmd" type="Инструмент" level="Средний">
+    Управление объектным хранилищем S3.
+  </Resource>
+  <Resource title="mc (MinIO Client)" href="https://min.io/docs/minio/linux/reference/minio-mc.html" type="Инструмент" level="Средний">
+    Управление хранилищем MinIO (аналог S3).
+  </Resource>
+  <Resource title="rsync" href="https://rsync.samba.org/" type="Инструмент" level="Новичок">
+    Синхронизация файлов между папками и серверами.
+  </Resource>
+</ResourceList>
+
+<ResourceList title="CLI: разное">
+  <Resource title="fzf" href="https://github.com/junegunn/fzf" type="Инструмент" level="Новичок" star>
+    Быстрый поиск по файлам и истории команд.
+  </Resource>
+  <Resource title="bat" href="https://github.com/sharkdp/bat" type="Инструмент" level="Новичок">
+    Просмотр файлов с подсветкой синтаксиса.
+  </Resource>
+  <Resource title="htop" href="https://htop.dev/" type="Инструмент" level="Новичок">
+    Мониторинг ресурсов системы.
+  </Resource>
+  <Resource title="tqdm" href="https://tqdm.github.io/" type="Инструмент" level="Новичок">
+    Прогресс-бар для Python-скриптов.
+  </Resource>
+  <Resource title="invoke" href="http://www.pyinvoke.org/" type="Инструмент" level="Средний">
+    Запуск задач из командной строки — аналог Makefile на Python.
+  </Resource>
+</ResourceList>
+
+## Связанные темы
+
+<CardGrid>
+  <LinkCard title="Языки программирования" description="Python, SQL, Scala — с чего начать." href="/tools/coding/" />
+  <LinkCard title="DevOps" description="Git, Docker, CI/CD для инженера данных." href="/tools/devops/" />
+</CardGrid>

@@ -1,0 +1,125 @@
+---
+// Дорожная карта инженера данных: 4 уровня, у каждого — темы со ссылками на базу знаний.
+const levels = [
+  {
+    n: 0,
+    name: 'Основы',
+    note: 'Без этого никуда',
+    topics: [
+      ['SQL', '/processing/sql/'],
+      ['Python и языки', '/tools/coding/'],
+      ['CLI и IDE', '/tools/cli-ide/'],
+      ['Git и DevOps', '/tools/devops/'],
+    ],
+  },
+  {
+    n: 1,
+    name: 'Junior',
+    note: 'Первая работа',
+    topics: [
+      ['Хранилища данных', '/processing/dw/'],
+      ['Моделирование данных', '/processing/data-modelling/'],
+      ['ETL / ELT', '/processing/etl/'],
+      ['BI-инструменты', '/processing/bi/'],
+      ['Работа с API', '/tools/api/'],
+    ],
+  },
+  {
+    n: 2,
+    name: 'Middle',
+    note: 'Самостоятельные проекты',
+    topics: [
+      ['Облака', '/tools/cloud/'],
+      ['Apache Spark', '/processing/spark/'],
+      ['Big Data', '/processing/bigdata/'],
+      ['Качество данных', '/processing/data-quality/'],
+    ],
+  },
+  {
+    n: 3,
+    name: 'Senior',
+    note: 'Архитектура и команда',
+    topics: [
+      ['Streaming', '/processing/streaming/'],
+      ['AI-инструменты', '/ai/ai-tools/'],
+      ['Claude Code 101', '/ai/claude-code-101/'],
+      ['Управление', '/community/management/'],
+    ],
+  },
+];
+---
+
+<ol class="roadmap not-content">
+  {
+    levels.map((l) => (
+      <li class="lvl">
+        <div class="lvl-head">
+          <span class="lvl-n">0{l.n}</span>
+          <div>
+            <div class="lvl-name">{l.name}</div>
+            <div class="lvl-note">{l.note}</div>
+          </div>
+        </div>
+        <ul>
+          {l.topics.map(([t, href]) => (
+            <li>
+              <a href={href}>{t}</a>
+            </li>
+          ))}
+        </ul>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .roadmap {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 2rem;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    list-style: none;
+  }
+  .lvl {
+    border-top: 2px solid var(--sl-color-white);
+    padding-top: 0.9rem;
+  }
+  .lvl:not(:first-child) {
+    border-top-color: var(--line);
+  }
+  .lvl-head {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+  }
+  .lvl-n {
+    font-family: var(--sl-font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .lvl-name {
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+  .lvl-note {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  ul a {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+  }
+  ul a:hover {
+    color: var(--sl-color-accent);
+  }
+</style>

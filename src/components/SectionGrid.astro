@@ -1,0 +1,71 @@
+---
+// Сетка разделов на главной — карточки в стиле репозиториев на GitHub.
+// Число страниц считается из коллекции docs автоматически.
+import { getCollection } from 'astro:content';
+
+const docs = await getCollection('docs');
+const count = (dir: string) => docs.filter((d) => d.id.startsWith(dir + '/')).length;
+
+const sections = [
+  { dir: 'processing', title: 'Обработка и аналитика', desc: 'SQL, хранилища, моделирование, ETL, Spark, Streaming, BI.', href: '/processing/sql/', icon: 'database', color: '#3572A5' },
+  { dir: 'tools', title: 'Инструменты', desc: 'Языки, CLI и IDE, API, облака, DevOps.', href: '/tools/cli-ide/', icon: 'setting', color: '#f1e05a' },
+  { dir: 'ai', title: 'AI для инженера данных', desc: 'AI-инструменты и курс Claude Code 101.', href: '/ai/ai-tools/', icon: 'puzzle', color: '#8250df' },
+  { dir: 'career', title: 'Карьера', desc: 'Поиск работы, резюме, собеседования, треки.', href: '/career/job-search/', icon: 'analytics', color: '#e34c26' },
+  { dir: 'resources', title: 'Книги и материалы', desc: 'Книги, статьи и whitepapers.', href: '/resources/books/', icon: 'open-book', color: '#2ea043' },
+  { dir: 'community', title: 'Сообщество', desc: 'Где общаться и учиться вместе.', href: '/community/communities/', icon: 'comment', color: '#db61a2' },
+];
+---
+
+<div class="sg not-content">
+  {
+    sections.map((s) => (
+      <a class="card" href={s.href}>
+        <span class="card-title">{s.title} <span class="arrow">→</span></span>
+        <p>{s.desc}</p>
+        <span class="card-meta">{count(s.dir)} стр.</span>
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .sg {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(max(14rem, calc((100% - 4rem) / 3)), 1fr));
+    gap: 0 2rem;
+    margin: 1rem 0 0;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+  .card-title {
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+  .arrow {
+    color: var(--muted);
+    transition: transform 0.15s;
+    display: inline-block;
+  }
+  .card:hover .card-title {
+    color: var(--sl-color-accent);
+  }
+  .card:hover .arrow {
+    transform: translateX(3px);
+    color: var(--sl-color-accent);
+  }
+  p {
+    margin: 0;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+  .card-meta {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+</style>

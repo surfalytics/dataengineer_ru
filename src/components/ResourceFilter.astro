@@ -1,0 +1,87 @@
+---
+// Один фильтр на всю страницу: уровень и язык. Скрывает ресурсы и пустые группы.
+const levels = ['Все', 'Новичок', 'Средний', 'Продвинутый'];
+const langs = [
+  ['', 'Любой язык'],
+  ['ru', 'Рус'],
+  ['en', 'Англ'],
+];
+---
+
+<div class="rf not-content">
+  <div class="rf-row" data-filter="level">
+    {levels.map((l, i) => <button type="button" data-value={i === 0 ? '' : l} aria-pressed={i === 0 ? 'true' : 'false'}>{l}</button>)}
+  </div>
+  <div class="rf-row" data-filter="lang">
+    {langs.map(([v, l], i) => <button type="button" data-value={v} aria-pressed={i === 0 ? 'true' : 'false'}>{l}</button>)}
+  </div>
+  <span class="rf-count"></span>
+</div>
+
+<script>
+  const box = document.querySelector<HTMLElement>('.rf');
+  if (box) {
+    const state: Record<string, string> = { level: '', lang: '' };
+    const count = box.querySelector('.rf-count')!;
+    const apply = () => {
+      const items = [...document.querySelectorAll<HTMLElement>('.res')];
+      let shown = 0;
+      for (const it of items) {
+        const ok =
+          (!state.level || it.dataset.level === state.level) &&
+          (!state.lang || (it.dataset.lang ?? '').split(',').includes(state.lang));
+        it.hidden = !ok;
+        if (ok) shown++;
+      }
+      document.querySelectorAll<HTMLElement>('.rl').forEach((g) => {
+        g.hidden = !g.querySelector('.res:not([hidden])');
+      });
+      count.textContent = `${shown} из ${items.length}`;
+    };
+    box.querySelectorAll<HTMLElement>('.rf-row').forEach((row) => {
+      row.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('button');
+        if (!btn) return;
+        row.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+        state[row.dataset.filter!] = btn.dataset.value ?? '';
+        apply();
+      });
+    });
+    apply();
+  }
+</script>
+
+<style>
+  .rf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    margin-top: 1rem;
+    font-size: var(--sl-text-sm);
+  }
+  .rf-row {
+    display: flex;
+    gap: 0.25rem;
+  }
+  button {
+    font: inherit;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+    cursor: pointer;
+  }
+  button:hover {
+    color: var(--sl-color-white);
+  }
+  button[aria-pressed='true'] {
+    color: var(--sl-color-black);
+    background: var(--sl-color-white);
+  }
+  .rf-count {
+    color: var(--muted);
+    margin-inline-start: auto;
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+// Один ресурс: название-ссылка, под ним серая строка меток и короткое описание.
+// Пример: <Resource title="VS Code" href="..." type="Инструмент" level="Новичок" lang="en" star>Описание</Resource>
+
+type Level = 'Новичок' | 'Средний' | 'Продвинутый';
+interface Props {
+  title: string;
+  href: string;
+  type?: string; // Инструмент, Документация, Статья, Видео, Книга, Тренажёр
+  level?: Level;
+  lang?: 'ru' | 'en' | 'ru,en';
+  star?: boolean;
+  tags?: string[]; // доп. метки, например ОС: Mac, Linux
+}
+const { title, href, type, level, lang = 'en', star = false, tags = [] } = Astro.props;
+
+const langLabel = lang
+  .split(',')
+  .map((l) => (l === 'ru' ? 'Рус' : 'Англ'))
+  .join(', ');
+const meta = [level, type, langLabel, ...tags].filter(Boolean).join(' · ');
+---
+
+<li class="res" data-level={level ?? ''} data-lang={lang}>
+  <div class="res-title">
+    <a href={href} target="_blank" rel="noopener">{title}</a>
+    {star && <span class="star" title="Рекомендуем">★</span>}
+  </div>
+  <div class="res-desc"><slot /></div>
+  <div class="res-meta">{meta}</div>
+</li>
+
+<style>
+  .res {
+    list-style: none;
+    padding: 0.85rem 0;
+    margin: 0 !important;
+    border-bottom: 1px solid var(--line);
+  }
+  .res-title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+  .res-title a {
+    font-weight: 600;
+    color: var(--sl-color-white);
+    text-decoration: none;
+  }
+  .res-title a:hover {
+    color: var(--sl-color-accent);
+  }
+  .star {
+    color: var(--sl-color-accent);
+    font-size: 0.85rem;
+  }
+  .res-desc {
+    margin-top: 0.15rem;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+  }
+  .res-desc :global(p) {
+    margin: 0;
+  }
+  .res-meta {
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+</style>

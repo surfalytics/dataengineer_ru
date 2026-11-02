@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightSidebarTopics from 'starlight-sidebar-topics';
+import { topics } from './src/nav.mjs';
 
 const GA_ID = 'G-WWHHQZ07HV';
 
@@ -18,10 +20,12 @@ export default defineConfig({
       locales: {
         root: { label: 'Русский', lang: 'ru' },
       },
+      // Логотип "Дата Инженеръ" без плашки: чёрный для светлой темы, белый для тёмной.
       logo: {
-        src: './src/assets/surf2.svg',
-        alt: 'Инжиниринг Данных',
-        replacesTitle: false,
+        light: './src/assets/logo-light.svg',
+        dark: './src/assets/logo-dark.svg',
+        alt: 'Дата Инженеръ — Инжиниринг Данных',
+        replacesTitle: true,
       },
       favicon: '/favicon.png',
       customCss: ['./src/styles/custom.css'],
@@ -43,15 +47,13 @@ export default defineConfig({
           content: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`,
         },
       ],
-      sidebar: [
-        { label: 'Обработка и аналитика', items: [{ autogenerate: { directory: 'processing' } }] },
-        { label: 'Инструменты', items: [{ autogenerate: { directory: 'tools' } }] },
-        { label: 'AI', items: [{ autogenerate: { directory: 'ai' } }] },
-        { label: 'Карьера', items: [{ autogenerate: { directory: 'career' } }] },
-        { label: 'Книги и Материалы', items: [{ autogenerate: { directory: 'resources' } }] },
-        { label: 'Сообщество и Управление', items: [{ autogenerate: { directory: 'community' } }] },
-        { label: 'О проекте', items: [{ autogenerate: { directory: 'about' } }] },
-      ],
+      // Дата последнего изменения страницы из git.
+      lastUpdated: true,
+      components: {
+        Header: './src/components/Header.astro',
+      },
+      // Каждый раздел (вкладка в шапке) получает свой сайдбар.
+      plugins: [starlightSidebarTopics(topics.map(({ match, ...t }) => t))],
     }),
   ],
   redirects: {

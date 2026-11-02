@@ -1,0 +1,83 @@
+---
+// "Что нового": последние коммиты из git, собираются при сборке сайта.
+import { execFileSync } from 'node:child_process';
+
+const REPO = 'https://github.com/surfalytics/dataengineer_ru';
+const { limit = 5 } = Astro.props as { limit?: number };
+
+type Commit = { sha: string; date: string; author: string; subject: string };
+let commits: Commit[] = [];
+try {
+  const out = execFileSync(
+    'git',
+    ['log', `-n${limit}`, '--no-merges', '--date=short', '--format=%h%x1f%ad%x1f%an%x1f%s'],
+    { encoding: 'utf8' },
+  );
+  commits = out
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .map((l) => {
+      const [sha, date, author, subject] = l.split('\x1f');
+      return { sha, date, author, subject };
+    });
+} catch {
+  // Нет git (например, сборка из архива) — просто не показываем блок.
+}
+---
+
+{
+  commits.length > 0 && (
+    <div class="rc not-content">
+      <ul>
+        {commits.map((c) => (
+          <li>
+            <span class="rc-date">{c.date}</span>
+            <a class="rc-subj" href={`${REPO}/commit/${c.sha}`} target="_blank" rel="noopener">{c.subject}</a>
+          </li>
+        ))}
+      </ul>
+      <a class="rc-all" href={`${REPO}/commits/main`} target="_blank" rel="noopener">Все изменения →</a>
+    </div>
+  )
+}
+
+<style>
+  .rc {
+    margin-top: 1rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+    font-size: var(--sl-text-sm);
+  }
+  .rc-date {
+    font-family: var(--sl-font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .rc-subj {
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+  }
+  .rc-subj:hover {
+    color: var(--sl-color-accent);
+  }
+  .rc-all {
+    display: inline-block;
+    margin-top: 0.75rem;
+    font-size: var(--sl-text-sm);
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .rc-all:hover {
+    color: var(--sl-color-accent);
+  }
+</style>
