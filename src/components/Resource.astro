@@ -11,8 +11,9 @@ interface Props {
   lang?: 'ru' | 'en' | 'ru,en';
   star?: boolean;
   tags?: string[]; // доп. метки, например ОС: Mac, Linux
+  image?: string; // необязательная картинка справа, например /assets/ai-tools/orca.jpg
 }
-const { title, href, type, level, lang = 'en', star = false, tags = [] } = Astro.props;
+const { title, href, type, level, lang = 'en', star = false, tags = [], image } = Astro.props;
 
 const langLabel = lang
   .split(',')
@@ -21,13 +22,22 @@ const langLabel = lang
 const meta = [level, type, langLabel, ...tags].filter(Boolean).join(' · ');
 ---
 
-<li class="res" data-level={level ?? ''} data-lang={lang}>
-  <div class="res-title">
-    <a href={href} target="_blank" rel="noopener">{title}</a>
-    {star && <span class="star" title="Рекомендуем">★</span>}
+<li class:list={['res', { 'has-img': image }]} data-level={level ?? ''} data-lang={lang}>
+  <div class="res-body">
+    <div class="res-title">
+      <a href={href} target="_blank" rel="noopener">{title}</a>
+      {star && <span class="star" title="Рекомендуем">★</span>}
+    </div>
+    <div class="res-desc"><slot /></div>
+    <div class="res-meta">{meta}</div>
   </div>
-  <div class="res-desc"><slot /></div>
-  <div class="res-meta">{meta}</div>
+  {
+    image && (
+      <a class="res-img" href={href} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+        <img src={image} alt="" loading="lazy" decoding="async" />
+      </a>
+    )
+  }
 </li>
 
 <style>
@@ -36,6 +46,37 @@ const meta = [level, type, langLabel, ...tags].filter(Boolean).join(' · ');
     padding: 0.85rem 0;
     margin: 0 !important;
     border-bottom: 1px solid var(--line);
+  }
+  .res.has-img {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+  }
+  .res-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .res-img {
+    flex-shrink: 0;
+    width: 11rem;
+  }
+  .res-img img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1.9;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  @media (max-width: 40rem) {
+    .res.has-img {
+      flex-direction: column-reverse;
+      gap: 0.6rem;
+    }
+    .res-img {
+      width: 100%;
+      max-width: 22rem;
+    }
   }
   .res-title {
     display: flex;
