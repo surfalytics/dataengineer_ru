@@ -3450,7 +3450,7 @@ Claude Code — не единственный AI-агент для кода. З�
 
 ### OpenAI Codex
 
-[Codex](https://learn.chatgpt.com/docs) — агент от OpenAI. Работает в терминале (Codex CLI), в IDE, в приложении ChatGPT и в облаке. CLI — open source ([github.com/openai/codex](https://github.com/openai/codex), Apache-2.0).
+[Codex](https://learn.chatgpt.com/codex) — агент от OpenAI. Подробный курс — [Codex 101](/ai/codex-101/). Работает в терминале (Codex CLI), в IDE, в приложении ChatGPT и в облаке. CLI — open source ([github.com/openai/codex](https://github.com/openai/codex), Apache-2.0).
 
 **Установка:**
 
