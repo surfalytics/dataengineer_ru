@@ -141,6 +141,13 @@ header.header {
   border-collapse: collapse;
   font-size: var(--sl-text-sm);
 }
+/* На телефоне широкая таблица прокручивается сама, а не растягивает страницу */
+@media (max-width: 50rem) {
+  .sl-markdown-content table {
+    display: block;
+    overflow-x: auto;
+  }
+}
 .sl-markdown-content th,
 .sl-markdown-content td {
   border: 0;
