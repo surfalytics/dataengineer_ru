@@ -2,7 +2,7 @@
 title: Получение данных через API
 description: "Как получать данные через API: основы, инструменты и примеры."
 sidebar:
-  order: 3
+  order: 4
   label: API
 tags:
   - api

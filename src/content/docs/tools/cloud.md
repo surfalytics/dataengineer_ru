@@ -2,7 +2,7 @@
 title: Облачные вычисления
 description: "Облачные вычисления для аналитики: AWS, Azure, GCP и российские облака."
 sidebar:
-  order: 4
+  order: 5
 tags:
   - cloud
 ---

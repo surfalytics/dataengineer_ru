@@ -6,7 +6,11 @@ sidebar:
 tags:
   - data-quality
 ---
-Все про Data Goverance и Data Quality.
+:::note[Уровни]
+Базовые тесты данных (`not null`, `unique`, `accepted values` в dbt) нужны уже на уровне Junior и Middle. Система качества и data observability для всей платформы — тема уровня Senior в [дорожной карте](/start/roadmap/).
+:::
+
+Все про Data Governance и Data Quality.
 
 🇬🇧 - язык материалов
 
@@ -45,12 +49,40 @@ Data Quality (DQ) - это характеристика данных, опред
 
 ## Основные open-source инструменты для data quality
 
-- [Great Expectatitons](https://greatexpectations.io/?banner=false)
+- [Great Expectations](https://greatexpectations.io/?banner=false)
 - [Soda SQL](https://www.soda.io/resources/introducing-soda-sql)
 
-> Оба инструмента имеют интеграцию с DTB
+> Оба инструмента имеют интеграцию с dbt
 
-- [Elementary](https://www.elementary-data.com/) - дополняет возможности DBT в части тестов и визуализации.
+- [Elementary](https://www.elementary-data.com/) - дополняет возможности dbt в части тестов и визуализации.
+
+## Data Observability
+
+Тесты проверяют то, что вы заранее описали. Data observability ищет проблемы, о которых вы не подумали. Это постоянный мониторинг состояния данных во всех таблицах и пайплайнах.
+
+Пять признаков, за которыми следят:
+
+| Признак | Вопрос |
+|---|---|
+| **Свежесть (Freshness)** | Данные обновились вовремя? |
+| **Объём (Volume)** | Пришло столько строк, сколько обычно? |
+| **Схема (Schema)** | Не пропала ли колонка, не поменялся ли тип? |
+| **Распределение (Distribution)** | Значения в нормальном диапазоне? Не выросла ли доля `NULL`? |
+| **Lineage** | Какие таблицы и дашборды сломаются, если упадёт эта таблица? |
+
+Чем тесты отличаются от observability:
+
+- **Тесты** — правила, которые вы пишете руками. Работают в пайплайне. Ловят известные ошибки.
+- **Observability** — автоматический поиск аномалий по истории. Работает по всей платформе. Ловит неизвестные ошибки.
+
+На уровне Senior вы строите систему целиком: какие проверки где стоят, кто получает алерт, как быстро чинить и как оценить, на кого повлиял инцидент.
+
+Инструменты:
+
+- [Elementary](https://www.elementary-data.com/) 🇬🇧 — open-source, работает поверх dbt: аномалии, отчёты, алерты.
+- [Soda](https://www.soda.io/) 🇬🇧 — проверки данных на языке SodaCL и мониторинг.
+- [Monte Carlo](https://www.montecarlodata.com/) 🇬🇧 — коммерческая платформа, авторы термина data observability.
+- [OpenLineage](https://openlineage.io/) 🇬🇧 — открытый стандарт для lineage. [Marquez](https://marquezproject.ai/) — его эталонная реализация.
 
 ## Книги
 Из книг можно выделить следующие

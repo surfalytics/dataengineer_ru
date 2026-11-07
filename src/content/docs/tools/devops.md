@@ -2,10 +2,14 @@
 title: DevOps
 description: "DevOps для инженеров данных: CI/CD, контейнеризация и инфраструктура."
 sidebar:
-  order: 5
+  order: 6
 tags:
   - devops
 ---
+:::note[Уровень Senior]
+В [дорожной карте](/start/roadmap/) DevOps и инфраструктура как код — темы уровня Senior. Это часть system design: вы не только пишете пайплайн, но и описываете в коде, где и как он работает.
+:::
+
 **DevOps**-принципы и практики широко применяются в области Data Engineering и Data Analytics, обеспечивая более эффективное управление данными, автоматизацию и масштабируемость. 
 
 DevOps и Data Engineering/Data Analytics неразрывно связаны. Эта связь обеспечивает более эффективное
@@ -46,30 +50,11 @@ Data Engineering интегрируется с DevOps в следующих кл
    DataOps объединяет аналитиков, инженеров данных и DevOps-специалистов, помгая взаимодействовать разным командам и
 совместно использовать инструменты.
 
-## Git и версионность 
+## Git
 
-[Git](https://git-scm.com/) — это распределённая система контроля версий, которая стала стандартом в современной разработке, включая Data Engineering. В контексте Data Engineering и Analytics, Git и системы версионного контроля применяются в следующих ключевых аспектах:
+Git — основа, без него DevOps не работает. Про Git есть отдельная страница: [Git](/tools/git/).
 
-1. **Версионирование кода и конфигураций**  
-   Git позволяет отслеживать изменения в коде ETL-процессов, SQL-запросах и конфигурационных файлах. Это обеспечивает 
-возможность отката к предыдущим версиям и помогает понимать, кто и когда внёс изменения в data pipeline.
-
-2. **Командная работа и code review**  
-   Через механизмы pull/merge requests команды могут эффективно проводить code review изменений в ETL-процессах, 
-проверять качество кода и обмениваться знаниями. Это особенно важно при работе с критически важными data pipelines.
-
-3. **Интеграция с CI/CD**  
-   Современные Git-платформы предоставляют встроенные инструменты для CI/CD (например, GitHub Actions, GitLab CI/CD), 
-что позволяет автоматизировать тестирование, развертывание и валидацию данных при каждом изменении в репозитории.
-
-Основные платформы для хостинга Git-репозиториев:
-
-- [GitHub](https://github.com/) — крупнейшая платформа для хостинга открытого кода с широкими возможностями для CI/CD и командной работы
-- [GitLab](https://gitlab.com/) — наиболее популярная платформа в концепции self-hosted, предоставляющая полный набор инструментов DevOps
-- [Bitbucket](https://bitbucket.org/) — платформа от Atlassian, тесно интегрированная с другими продуктами компании
-- [Gitea](https://gitea.io/) — легковесная self-hosted платформа, простая в установке и администрировании
-
-## Repositoty Templates
+## Repository Templates
 
 Repository Templates (шаблоны репозиториев) — это предопределённые структуры проектов, которые помогают стандартизировать разработку и упростить начало новых проектов. В контексте Data Engineering они особенно важны для обеспечения согласованности структуры проектов и следования лучшим практикам.
 
@@ -170,13 +155,63 @@ Repository Templates (шаблоны репозиториев) — это пре
 
 ## Docker и Docker Compose
 
+Docker упаковывает код и все зависимости в контейнер. Контейнер работает одинаково на ноутбуке, на сервере и в облаке. Docker Compose запускает несколько контейнеров вместе, например Airflow + Postgres.
+
+- [Docker: Get started](https://docs.docker.com/get-started/) 🇬🇧 — официальный старт.
+- [Docker Compose](https://docs.docker.com/compose/) 🇬🇧 — документация.
+
 ## Kubernetes и Minikube
+
+Kubernetes запускает и масштабирует контейнеры на кластере. Многие дата-платформы (Airflow, Spark, Trino) работают в Kubernetes. Minikube поднимает маленький кластер на вашем компьютере, чтобы учиться.
+
+- [Kubernetes Basics](https://kubernetes.io/docs/tutorials/kubernetes-basics/) 🇬🇧 — официальный туториал.
+- [Minikube](https://minikube.sigs.k8s.io/docs/start/) 🇬🇧 — локальный кластер.
 
 ## CI/CD
 
+CI (continuous integration) — при каждом изменении автоматически запускаются линтеры и тесты. CD (continuous delivery/deployment) — изменения автоматически выкатываются на окружение. Для дата-проектов это, например, запуск `dbt build` на pull request и деплой DAG в Airflow после merge.
+
+- [GitHub Actions](https://docs.github.com/en/actions) 🇬🇧
+- [GitLab CI/CD](https://docs.gitlab.com/ee/ci/) 🇬🇧
+- [Azure Pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/) 🇬🇧
+
 ## Semantic Versioning
+
+[Semantic Versioning](https://semver.org/lang/ru/) 🇷🇺 — правило нумерации версий `MAJOR.MINOR.PATCH`. `MAJOR` — ломающие изменения, `MINOR` — новые функции, `PATCH` — исправления. Полезно для своих Python-пакетов, dbt-пакетов и API.
 
 ## Инфраструктура как код
 
+Инфраструктура как код (Infrastructure as Code, IaC) — вы описываете облачные ресурсы в файлах: хранилище, базу данных, кластер, права доступа. Потом инструмент создаёт или меняет их по этому описанию.
+
+Зачем это инженеру данных:
+
+- **Повторяемость.** Окружения dev, test и prod одинаковые.
+- **Review.** Изменения инфраструктуры проходят pull request, как код.
+- **История.** В Git видно, кто, когда и зачем поменял ресурс.
+- **Нет ручных кликов.** Ресурсы не создаются руками в консоли облака.
+
+Основные инструменты:
+
+| Инструмент | Облако | Язык |
+|---|---|---|
+| [Terraform](https://developer.hashicorp.com/terraform) | Любое (AWS, Azure, GCP, Snowflake, Databricks и др.) | HCL |
+| [OpenTofu](https://opentofu.org/) | Любое | HCL, open-source форк Terraform |
+| [Bicep](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview) | Только Azure | Bicep |
+| [AWS CloudFormation](https://aws.amazon.com/cloudformation/) | Только AWS | YAML / JSON |
+| [Pulumi](https://www.pulumi.com/) | Любое | Python, TypeScript, Go и др. |
+
+Если не знаете, с чего начать, начните с Terraform. Он работает с любым облаком и с дата-платформами: у Snowflake и Databricks есть свои Terraform-провайдеры.
+
+- [Terraform: Get Started](https://developer.hashicorp.com/terraform/tutorials) 🇬🇧 — официальные туториалы для AWS, Azure и GCP.
+- [Bicep: Learn modules](https://learn.microsoft.com/en-us/training/paths/fundamentals-bicep/) 🇬🇧 — бесплатный курс от Microsoft.
+- [Terraform: Up & Running](https://www.terraformupandrunning.com/) 🇬🇧 ⭐ — книга Евгения Брикмана.
+
 ## Мониторинг и логирование
 
+Мониторинг отвечает на вопрос «работает ли система». Логи отвечают на вопрос «что именно случилось». Для пайплайнов важно знать о падении раньше, чем об этом напишет пользователь дашборда.
+
+- [Prometheus](https://prometheus.io/) 🇬🇧 — сбор метрик.
+- [Grafana](https://grafana.com/) 🇬🇧 — дашборды и алерты.
+- [OpenTelemetry](https://opentelemetry.io/) 🇬🇧 — открытый стандарт для метрик, логов и трейсов.
+
+Мониторинг самих данных (свежесть, объём, схема) — это data observability. Про неё на странице [Качество данных](/processing/data-quality/#data-observability).
