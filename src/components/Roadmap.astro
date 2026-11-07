@@ -1,5 +1,5 @@
 ---
-// Дорожная карта инженера данных: 5 уровней, у каждого — темы со ссылками на базу знаний.
+// Дорожная карта инженера данных: 4 уровня. Junior нет: его темы входят в Middle, практика — через пет-проекты, у каждого — темы со ссылками на базу знаний.
 const levels = [
   {
     n: 0,
@@ -24,28 +24,21 @@ const levels = [
   },
   {
     n: 1,
-    name: 'Junior',
-    note: 'Первая работа',
+    name: 'Middle',
+    note: 'Пайплайн от источника до дашборда',
     topics: [
       ['Хранилища данных', '/processing/dw/'],
       ['Моделирование данных', '/processing/data-modelling/'],
       ['ETL / ELT', '/processing/etl/'],
       ['BI-инструменты', '/processing/bi/'],
       ['Работа с API', '/tools/api/'],
-    ],
-  },
-  {
-    n: 2,
-    name: 'Middle',
-    note: 'Самостоятельные проекты',
-    topics: [
       ['Облака', '/tools/cloud/'],
       ['Apache Spark', '/processing/spark/'],
       ['Big Data', '/processing/bigdata/'],
     ],
   },
   {
-    n: 3,
+    n: 2,
     name: 'Senior',
     note: 'Архитектура и команда',
     topics: [
@@ -57,7 +50,7 @@ const levels = [
     ],
   },
   {
-    n: 4,
+    n: 3,
     name: 'Senior+',
     note: 'Staff и Principal',
     topics: [
@@ -104,7 +97,7 @@ const levels = [
 <style>
   .roadmap {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
     gap: 2rem;
     padding: 0;
     margin: 1.5rem 0 0;
