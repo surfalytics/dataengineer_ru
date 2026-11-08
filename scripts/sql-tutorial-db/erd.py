@@ -1,4 +1,4 @@
-"""Рисует ERD-схемы (модель данных) для страниц уровней курса и вставляет их в страницы.
+"""Рисует ERD-схемы (модель данных) для стартовых страниц уровней курса (<уровень>/index.md) и вставляет их в страницы.
 
 Столбцы и типы берём из файла базы, поэтому схема не расходится с базой.
 Запуск: python3 erd.py <файл .duckdb>
@@ -247,7 +247,7 @@ def main():
     db = sys.argv[1]
     cols = columns(db)
     for page in PAGES:
-        path = SQL_DIR / f"{page}.md"
+        path = SQL_DIR / page / "index.md"
         text = path.read_text()
         new = block(page, build_svg(page, cols))
         if "<!-- erd:start -->" in text:
