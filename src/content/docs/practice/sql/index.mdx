@@ -47,12 +47,14 @@ import { Aside, LinkCard, CardGrid, Steps } from '@astrojs/starlight/components'
 
 Курс повторяет структуру [SQL Tutorial for Data Analysis](https://www.thoughtspot.com/sql-tutorial/introduction-to-sql) от ThoughtSpot (раньше он назывался Mode SQL Tutorial). Это один из самых известных бесплатных курсов SQL. Мы перевели задания на русский, объяснения написали заново и собрали свою базу с теми же таблицами.
 
-| Раздел | Что внутри |
+| Страница | Что внутри |
 |---|---|
-| **Основы** | `SELECT`, `WHERE`, операторы сравнения и логические операторы, `ORDER BY` |
-| **Средний уровень** | Агрегаты, `GROUP BY`, `HAVING`, `CASE`, `DISTINCT`, все виды `JOIN`, `UNION` |
-| **Аналитические кейсы** | Три задачи из жизни аналитика: падение вовлечённости, поиск в продукте, проверка A/B-теста |
-| **Продвинутый уровень** | Типы данных, даты, чистка данных, строки, подзапросы, оконные функции, производительность, pivot |
+| [**Основы**](/practice/sql/basic/) | `SELECT`, `WHERE`, операторы сравнения и логические операторы, `ORDER BY` |
+| [**Средний уровень**](/practice/sql/intermediate/) | Агрегаты, `GROUP BY`, `HAVING`, `CASE`, `DISTINCT`, все виды `JOIN`, `UNION` |
+| [**Аналитические кейсы**](/practice/sql/analytics/) | Три задачи из жизни аналитика: падение вовлечённости, поиск в продукте, проверка A/B-теста |
+| [**Продвинутый уровень**](/practice/sql/advanced/) | Типы данных, даты, чистка данных, строки, подзапросы, оконные функции, производительность, pivot |
+
+Каждый уровень — одна страница. Уроки идут на ней подряд. Список уроков виден справа.
 
 ## Как заниматься
 
@@ -99,5 +101,5 @@ AI — отличный инструмент для работы. Им стои�
 <CardGrid>
   <LinkCard title="Установка DuckDB и базы" href="/practice/sql/setup/" />
   <LinkCard title="Учебные данные" href="/practice/sql/datasets/" />
-  <LinkCard title="Первый урок: SELECT" href="/practice/sql/basic/select/" />
+  <LinkCard title="Первый урок: SELECT" href="/practice/sql/basic/#select-и-from" />
 </CardGrid>
