@@ -25,7 +25,16 @@ scripts/sql-tutorial-db/build.sh
 | `yammer_checks.sql` | Запросы, которые проверяют выводы кейсов на данных Yammer |
 | `build.sql` | Создаёт таблицы и представления в DuckDB |
 | `build.sh` | Запускает всё по порядку |
+| `erd.py` | Рисует ERD-схемы из файла базы и вставляет их в страницы уровней |
 | `check_lessons.py` | Выполняет все SQL-блоки из уроков и сообщает об ошибках |
+
+## Обновить ERD-схемы
+
+После изменения таблиц пересоберите базу и перерисуйте схемы:
+
+```bash
+python3 scripts/sql-tutorial-db/erd.py scripts/sql-tutorial-db/.cache/sql-tutorial.duckdb
+```
 
 ## Проверить уроки
 

@@ -245,3 +245,26 @@ footer .meta {
 .mh-right a:hover {
   color: var(--sl-color-white);
 }
+
+/* ---------- ERD-схемы (scripts/sql-tutorial-db/erd.py) ---------- */
+.erd {
+  overflow-x: auto;
+  margin: 1rem 0 0.75rem;
+  padding: 0.5rem;
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 0.5rem;
+  background: var(--sl-color-bg);
+}
+.erd-svg { display: block; margin: 0 auto; max-width: 100%; min-width: 440px; height: auto; font-family: var(--sl-font-mono); font-size: 12px; }
+.erd-svg .erd-box { fill: var(--sl-color-bg); stroke: var(--sl-color-gray-4); stroke-width: 1; }
+.erd-svg .erd-view { stroke-dasharray: 5 4; }
+.erd-svg .erd-head { fill: var(--sl-color-gray-5); }
+.erd-svg .erd-title { fill: var(--sl-color-white); font-weight: 600; }
+.erd-svg .erd-col { fill: var(--sl-color-text); }
+.erd-svg .erd-type, .erd-svg .erd-note { fill: var(--sl-color-gray-3); }
+.erd-svg .erd-note { font-style: italic; }
+.erd-svg .erd-keyrow { fill: var(--sl-color-accent-low); }
+.erd-svg .erd-key { fill: var(--sl-color-accent-high); font-weight: 600; }
+.erd-svg .erd-link { fill: none; stroke: var(--sl-color-accent); stroke-width: 1.5; }
+.erd-svg .erd-view-link { fill: none; stroke: var(--sl-color-gray-3); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.erd-svg .erd-card { fill: var(--sl-color-accent-high); font-weight: 700; }
