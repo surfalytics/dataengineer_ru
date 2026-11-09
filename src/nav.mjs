@@ -25,6 +25,31 @@ export const topics = [
     ],
   },
   {
+    label: 'Практика',
+    link: '/practice/',
+    icon: 'laptop',
+    match: ['/practice/'],
+    items: [
+      { label: 'Обзор', link: '/practice/' },
+      {
+        label: 'Базовый минимум SQL',
+        items: [
+          'practice/sql',
+          'practice/sql/setup',
+          'practice/sql/datasets',
+          { label: 'Основы', collapsed: true, items: [{ autogenerate: { directory: 'practice/sql/basic' } }] },
+          { label: 'Средний уровень', collapsed: true, items: [{ autogenerate: { directory: 'practice/sql/intermediate' } }] },
+          { label: 'Аналитические кейсы', collapsed: true, items: [{ autogenerate: { directory: 'practice/sql/analytics' } }] },
+          { label: 'Продвинутый уровень', collapsed: true, items: [{ autogenerate: { directory: 'practice/sql/advanced' } }] },
+        ],
+      },
+      { label: 'Базовый минимум CLI', items: [{ autogenerate: { directory: 'practice/cli' } }] },
+      { label: 'Базовый минимум Python', items: [{ autogenerate: { directory: 'practice/python' } }] },
+      { label: 'Базовый минимум Git и GitHub', items: [{ autogenerate: { directory: 'practice/git' } }] },
+      { label: 'Базовый минимум Docker', items: [{ autogenerate: { directory: 'practice/docker' } }] },
+    ],
+  },
+  {
     label: 'AI',
     link: '/ai/ai-tools/',
     icon: 'puzzle',
