@@ -25,8 +25,28 @@ function lastModified(url) {
   }
 }
 
+// Картинки в Markdown грузятся лениво: страница открывается быстрее.
+// Первую картинку страницы не трогаем — она может быть на первом экране.
+function rehypeLazyImages() {
+  return (tree) => {
+    let seen = 0;
+    const walk = (node) => {
+      if (node.type === 'element' && node.tagName === 'img') {
+        node.properties ??= {};
+        node.properties.decoding ??= 'async';
+        if (seen++ > 0) node.properties.loading ??= 'lazy';
+      }
+      node.children?.forEach(walk);
+    };
+    walk(tree);
+  };
+}
+
 export default defineConfig({
   site: SITE,
+  markdown: {
+    rehypePlugins: [rehypeLazyImages],
+  },
   // base intentionally omitted — apex custom domain serves from root.
   // Default build.format 'directory' keeps clean content URLs (/processing/sql/).
   // Legacy `*.html` redirect keys emit as `<name>.html/index.html`; GitHub Pages
