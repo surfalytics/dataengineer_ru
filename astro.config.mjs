@@ -5,9 +5,10 @@ import starlightSidebarTopics from 'starlight-sidebar-topics';
 import { topics } from './src/nav.mjs';
 
 const GA_ID = 'G-WWHHQZ07HV';
+const SITE = 'https://dataengineer.ru';
 
 export default defineConfig({
-  site: 'https://dataengineer.ru',
+  site: SITE,
   // base intentionally omitted — apex custom domain serves from root.
   // Default build.format 'directory' keeps clean content URLs (/processing/sql/).
   // Legacy `*.html` redirect keys emit as `<name>.html/index.html`; GitHub Pages
@@ -37,6 +38,28 @@ export default defineConfig({
         baseUrl: 'https://github.com/surfalytics/dataengineer_ru/edit/main/',
       },
       head: [
+        // SEO: подтверждение прав в Яндекс Вебмастере (дублирует файл public/yandex_*.html).
+        { tag: 'meta', attrs: { name: 'yandex-verification', content: '3e8b3a9a06bfb537' } },
+        // SEO: Open Graph для сниппетов Яндекса, Telegram и VK.
+        { tag: 'meta', attrs: { property: 'og:locale', content: 'ru_RU' } },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/og-image.png` } },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}/og-image.png` } },
+        // SEO: структурированные данные о сайте (Schema.org), их читают Яндекс и Google.
+        {
+          tag: 'script',
+          attrs: { type: 'application/ld+json' },
+          content: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'Инжиниринг Данных',
+            alternateName: 'Дата Инженеръ',
+            url: `${SITE}/`,
+            inLanguage: 'ru-RU',
+            description: 'Русскоязычный портал об аналитике и инжиниринге данных.',
+          }),
+        },
         // Google Analytics 4
         {
           tag: 'script',
