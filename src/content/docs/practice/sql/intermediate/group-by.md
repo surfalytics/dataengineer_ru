@@ -1,5 +1,9 @@
 ---
 title: "GROUP BY"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "GROUP BY в SQL: группировка и итоги | Инжиниринг Данных"
 description: "Как считать итоги по группам с помощью GROUP BY и какие правила нужно помнить."
 sidebar:
   order: 6

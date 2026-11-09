@@ -1,6 +1,10 @@
 ---
 title: "LIKE"
-description: "Как искать текст по шаблону с помощью LIKE и ILIKE и символов % и _."
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "LIKE и ILIKE в SQL: поиск по шаблону | Инжиниринг Данных"
+description: "Как искать текст по шаблону с помощью LIKE и ILIKE и символов % и _. Примеры и задачи на DuckDB."
 sidebar:
   order: 6
 tags:

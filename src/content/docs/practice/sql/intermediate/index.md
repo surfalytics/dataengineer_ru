@@ -1,5 +1,9 @@
 ---
 title: "Средний уровень SQL"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "SQL средний уровень: GROUP BY, JOIN — курс | Инжиниринг Данных"
 description: "Второй уровень курса: агрегаты, GROUP BY, HAVING, CASE, DISTINCT, все виды JOIN, UNION. Задания на DuckDB."
 sidebar:
   order: 0

@@ -11,6 +11,8 @@ const path = Astro.url.pathname;
 const isCurrent = (t: (typeof topics)[number]) => t.match.some((p) => path.startsWith(p));
 ---
 
+<!-- Яндекс Метрика без JavaScript. Тег <noscript> с картинкой нельзя ставить в <head>, поэтому он здесь. -->
+<noscript><div><img src="https://mc.yandex.ru/watch/114151925" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <div class="mh">
   <div class="mh-title"><SiteTitle /></div>
   <nav class="mh-nav" aria-label="Разделы портала">

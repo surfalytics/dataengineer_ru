@@ -1,5 +1,9 @@
 ---
 title: "Внешние соединения (OUTER JOIN)"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Внешние соединения (OUTER JOIN) в SQL | Инжиниринг Данных"
 description: "Обзор внешних соединений LEFT, RIGHT и FULL OUTER JOIN и знакомство с данными Crunchbase."
 sidebar:
   order: 12

@@ -44,6 +44,10 @@ All content is Markdown in `src/content/docs/`, grouped into one folder per side
 ```yaml
 ---
 title: Название страницы
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Как выучить SQL: лучшие курсы и тренажёры | Инжиниринг Данных"
 description: Краткое описание для поиска и SEO.
 sidebar:
   order: 10          # position within the section (lower = higher)
@@ -57,7 +61,7 @@ The content schema is extended in `src/content.config.ts` with optional `tags`, 
 
 ## Key Configuration
 
-- **`astro.config.mjs`**: site URL, `ru` locale, sidebar (section order + `autogenerate` per folder), GA4, and `redirects` (legacy Jekyll URLs → new paths). When adding/renaming a page that has an old Jekyll URL, add a redirect entry here.
+- **`astro.config.mjs`**: site URL, `ru` locale, sidebar (section order + `autogenerate` per folder), GA4, Yandex Metrika, SEO `head` tags (OG, JSON-LD, `yandex-verification`), sitemap with `lastmod` from git, lazy-loading of Markdown images, and `redirects` (legacy Jekyll URLs → new paths). When adding/renaming a page that has an old Jekyll URL, add a redirect entry here.
 - **`src/content.config.ts`**: Starlight docs collection + schema extension.
 - **`public/`**: static files served as-is. Images go in `public/assets/` and are referenced as `/assets/<file>`. Contains `CNAME` (custom domain) and `favicon.png`.
 - **`src/assets/`**: imported/optimized images (the logo `surf2.svg`).
@@ -65,6 +69,36 @@ The content schema is extended in `src/content.config.ts` with optional `tags`, 
 
 ### Image paths
 Reference body images with root-absolute paths: `![alt](/assets/file.png)` (files live in `public/assets/`). Do **not** use relative `../assets/` paths.
+
+## SEO Rules (Yandex + Google)
+
+Follow these for every new or edited page.
+
+### Pages
+- **`title`**: short. It is the H1 and the sidebar name.
+- **`head` title**: required. Format: `<search phrase> | Инжиниринг Данных`. Max 70 characters in total. Use the words people search for in Russian: "как выучить", "курс", "для инженера данных". See the example above.
+- **`description`**: required. Unique. 70–160 characters. Russian. Include the main keywords.
+- **One H1 per page.** The `title` is the H1. Start body headings at `##`. Never use `#` in the body.
+- **Renamed or moved page**: add an entry to `redirects` in `astro.config.mjs`.
+- **Internal links**: root-absolute with a trailing slash: `/processing/sql/`.
+
+### Images
+- Put files in `public/assets/<section>/`. Name them in lowercase Latin with hyphens: `kafka-architecture.png`.
+- **Always write `alt` in Russian.** Describe what the image shows. Never leave `alt` empty.
+- **Size limits:**
+  - Content images (screenshots, diagrams): max 1600px wide, under 200 KB.
+  - `<Resource image="...">` thumbnails: 480px wide, JPEG, under 30 KB. They are shown at 176px.
+- Format: JPEG for screenshots and photos, PNG only for diagrams with flat colors, SVG when possible.
+- Compress before commit. Use `sharp` (already installed) or any image optimizer.
+- Lazy loading is automatic for Markdown images. Do not add it by hand.
+
+### Do not touch
+- `public/robots.txt`, `public/yandex_*.html` (Yandex verification), `public/og-image.png`.
+- The sitemap is generated at build time. Do not add one by hand.
+
+### Check
+- `npm run build` must pass.
+- Optional speed check: `npx lighthouse <url> --only-categories=performance,seo`. Target: performance ≥ 90, SEO 100.
 
 ## Navigation & Ordering
 

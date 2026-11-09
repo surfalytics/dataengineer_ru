@@ -1,6 +1,10 @@
 ---
 title: DevOps
-description: "DevOps для инженеров данных: CI/CD, контейнеризация и инфраструктура."
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "DevOps для инженера данных: CI/CD и Docker | Инжиниринг Данных"
+description: "DevOps для инженеров данных: CI/CD, Docker, контейнеризация и инфраструктура как код."
 sidebar:
   order: 6
 tags:

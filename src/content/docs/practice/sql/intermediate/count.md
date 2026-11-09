@@ -1,5 +1,9 @@
 ---
 title: "COUNT"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "COUNT в SQL: подсчёт строк | Инжиниринг Данных"
 description: "Как считать строки с помощью COUNT, чем COUNT(*) отличается от COUNT(столбец) и как NULL влияет на результат."
 sidebar:
   order: 2

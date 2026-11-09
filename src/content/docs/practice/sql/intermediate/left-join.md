@@ -1,5 +1,9 @@
 ---
 title: "LEFT JOIN"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "LEFT JOIN в SQL: примеры и задачи | Инжиниринг Данных"
 description: "Как работает LEFT JOIN, чем он отличается от INNER JOIN и как с его помощью найти строки без пары."
 sidebar:
   order: 13

@@ -1,5 +1,9 @@
 ---
 title: "Подготовка данных (data wrangling)"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Чистка данных в SQL (data wrangling) | Инжиниринг Данных"
 description: "Что такое data wrangling, какие проблемы бывают в сырых данных и как чистить их средствами SQL."
 sidebar:
   order: 3

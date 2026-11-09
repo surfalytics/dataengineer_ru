@@ -1,5 +1,9 @@
 ---
 title: "RIGHT JOIN"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "RIGHT JOIN в SQL: примеры и задачи | Инжиниринг Данных"
 description: "Как работает RIGHT JOIN и почему его почти всегда можно заменить на LEFT JOIN."
 sidebar:
   order: 14

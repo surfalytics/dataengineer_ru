@@ -1,5 +1,9 @@
 ---
 title: "Строковые функции"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Строковые функции в SQL: TRIM, SUBSTR | Инжиниринг Данных"
 description: "Как чистить и разбирать текст в SQL с помощью LEFT, RIGHT, TRIM, SUBSTR, POSITION, CONCAT, UPPER и LOWER."
 sidebar:
   order: 4

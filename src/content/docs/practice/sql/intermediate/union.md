@@ -1,5 +1,9 @@
 ---
 title: "UNION"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "UNION и UNION ALL в SQL | Инжиниринг Данных"
 description: "Как объединять результаты двух запросов в один список с помощью UNION и UNION ALL."
 sidebar:
   order: 17

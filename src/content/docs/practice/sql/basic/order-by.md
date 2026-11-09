@@ -1,5 +1,9 @@
 ---
 title: "ORDER BY"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "ORDER BY в SQL: сортировка результата | Инжиниринг Данных"
 description: "Как сортировать результат запроса с помощью ORDER BY и как писать комментарии в SQL."
 sidebar:
   order: 13

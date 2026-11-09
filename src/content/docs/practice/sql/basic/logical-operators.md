@@ -1,5 +1,9 @@
 ---
 title: "Логические операторы"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Логические операторы в SQL: обзор | Инжиниринг Данных"
 description: "Обзор логических операторов SQL: LIKE, IN, BETWEEN, IS NULL, AND, OR, NOT, и знакомство с таблицей Billboard."
 sidebar:
   order: 5

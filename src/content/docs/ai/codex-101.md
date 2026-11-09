@@ -1,5 +1,9 @@
 ---
 title: Codex 101
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "OpenAI Codex 101: курс для инженеров данных | Инжиниринг Данных"
 description: "Codex 101: курс по AI-агенту OpenAI Codex для инженеров данных — установка, безопасность, AGENTS.md, лучшие практики и примеры с dbt, SQL и Airflow."
 sidebar:
   order: 3

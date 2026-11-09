@@ -1,5 +1,9 @@
 ---
 title: "CASE"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "CASE в SQL: условия if/then | Инжиниринг Данных"
 description: "Как писать условную логику if/then в SQL с помощью CASE, в том числе внутри агрегатных функций."
 sidebar:
   order: 8

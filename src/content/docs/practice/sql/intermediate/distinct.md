@@ -1,5 +1,9 @@
 ---
 title: "DISTINCT"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "DISTINCT в SQL: уникальные значения | Инжиниринг Данных"
 description: "Как находить уникальные значения с помощью DISTINCT и COUNT(DISTINCT)."
 sidebar:
   order: 9

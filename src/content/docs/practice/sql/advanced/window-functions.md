@@ -1,5 +1,9 @@
 ---
 title: "Оконные функции"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Оконные функции в SQL: ROW_NUMBER, LAG | Инжиниринг Данных"
 description: "Как считать накопительные суммы, ранги, процентили и сравнивать строки с соседними через OVER, PARTITION BY, ROW_NUMBER, RANK, NTILE, LAG и LEAD."
 sidebar:
   order: 6

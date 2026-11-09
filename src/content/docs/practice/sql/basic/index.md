@@ -1,5 +1,9 @@
 ---
 title: "Основы SQL"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Основы SQL: SELECT, WHERE, ORDER BY — курс | Инжиниринг Данных"
 description: "Первый уровень курса: SELECT, WHERE, операторы сравнения, LIKE, IN, BETWEEN, IS NULL, AND, OR, NOT, ORDER BY. Задания на DuckDB."
 sidebar:
   order: 0

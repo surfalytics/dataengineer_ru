@@ -1,5 +1,9 @@
 ---
 title: "FULL OUTER JOIN"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "FULL OUTER JOIN в SQL: примеры и задачи | Инжиниринг Данных"
 description: "Как работает FULL OUTER JOIN и как с его помощью измерить пересечение двух таблиц."
 sidebar:
   order: 16

@@ -1,5 +1,9 @@
 ---
 title: "HAVING"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "HAVING в SQL: фильтр после GROUP BY | Инжиниринг Данных"
 description: "Как фильтровать результат группировки с помощью HAVING и чем он отличается от WHERE."
 sidebar:
   order: 7

@@ -1,5 +1,9 @@
 ---
 title: "SELECT и FROM"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "SELECT и FROM в SQL: первый запрос | Инжиниринг Данных"
 description: "Как устроена база данных и как выбрать столбцы из таблицы с помощью SELECT и FROM."
 sidebar:
   order: 1

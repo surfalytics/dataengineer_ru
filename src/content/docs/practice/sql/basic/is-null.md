@@ -1,6 +1,10 @@
 ---
 title: "IS NULL"
-description: "Как найти пустые значения NULL с помощью IS NULL."
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "IS NULL в SQL: поиск пустых значений | Инжиниринг Данных"
+description: "Как найти пустые значения NULL в SQL с помощью IS NULL и IS NOT NULL. Примеры и задачи на DuckDB."
 sidebar:
   order: 9
 tags:

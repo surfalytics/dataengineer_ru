@@ -1,5 +1,9 @@
 ---
 title: "INNER JOIN"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "INNER JOIN в SQL: примеры и задачи | Инжиниринг Данных"
 description: "Как работает INNER JOIN, какие строки он оставляет и как не запутаться в одинаковых именах столбцов."
 sidebar:
   order: 11

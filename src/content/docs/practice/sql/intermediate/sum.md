@@ -1,5 +1,9 @@
 ---
 title: "SUM"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "SUM в SQL: сумма значений | Инжиниринг Данных"
 description: "Как складывать значения столбца с помощью SUM и как SUM ведёт себя с NULL."
 sidebar:
   order: 3

@@ -1,5 +1,9 @@
 ---
 title: Apache Spark
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Apache Spark: курсы и ресурсы для изучения | Инжиниринг Данных"
 description: "Apache Spark для инженеров данных и аналитиков: курсы, видео и практические задания."
 sidebar:
   order: 6

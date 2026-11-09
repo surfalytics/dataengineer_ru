@@ -1,6 +1,10 @@
 ---
 title: "BETWEEN"
-description: "Как отфильтровать строки по диапазону значений с помощью BETWEEN."
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "BETWEEN в SQL: фильтр по диапазону | Инжиниринг Данных"
+description: "Как отфильтровать строки по диапазону значений с помощью BETWEEN. Примеры и задачи на DuckDB."
 sidebar:
   order: 8
 tags:

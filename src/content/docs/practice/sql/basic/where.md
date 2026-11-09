@@ -1,6 +1,10 @@
 ---
 title: "WHERE"
-description: "Как отфильтровать строки в SQL-запросе с помощью WHERE."
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "WHERE в SQL: фильтрация строк | Инжиниринг Данных"
+description: "Как отфильтровать строки в SQL-запросе с помощью WHERE. Примеры и задачи на DuckDB."
 sidebar:
   order: 3
 tags:

@@ -1,5 +1,9 @@
 ---
 title: "Senior+: Staff и Principal"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Staff и Principal Data Engineer: рост после Senior | Инжиниринг Данных"
 description: "Что после Senior: роли Staff и Principal Engineer в данных, чем они отличаются от Senior и как туда вырасти."
 sidebar:
   order: 5

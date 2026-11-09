@@ -1,5 +1,9 @@
 ---
 title: "Сводные таблицы (PIVOT)"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "PIVOT и UNPIVOT в SQL: сводные таблицы | Инжиниринг Данных"
 description: "Как превращать строки в колонки и колонки в строки в SQL: через CASE и UNION ALL и через PIVOT и UNPIVOT в DuckDB."
 sidebar:
   order: 8
