@@ -94,7 +94,13 @@ Follow these for every new or edited page.
 
 ### Do not touch
 - `public/robots.txt`, `public/yandex_*.html` (Yandex verification), `public/og-image.png`.
+- `public/favicon.png` (120×120) and `public/favicon.ico` (16 + 32). Yandex accepts only these sizes.
+- `public/<32 hex>.txt`: the IndexNow key. The file name must equal its content.
 - The sitemap is generated at build time. Do not add one by hand.
+
+### Automatic (no action needed)
+- **Page date**: `src/routeData.ts` adds `article:published_time` from the first git commit of each page.
+- **IndexNow**: after each deploy, `scripts/indexnow.mjs` sends changed page URLs to Yandex (job `indexnow` in `deploy.yml`).
 
 ### Check
 - `npm run build` must pass.
