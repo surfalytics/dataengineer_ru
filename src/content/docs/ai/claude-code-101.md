@@ -1,5 +1,9 @@
 ---
 title: Claude Code 101
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Claude Code 101: курс для инженеров данных | Инжиниринг Данных"
 description: "Claude Code 101: руководство по агентному инструменту разработки от Anthropic."
 sidebar:
   order: 2

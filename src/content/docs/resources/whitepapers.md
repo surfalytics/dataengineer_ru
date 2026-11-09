@@ -1,5 +1,9 @@
 ---
 title: White Papers
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Whitepapers по данным: ключевые документы | Инжиниринг Данных"
 description: Технические whitepapers и официальные документы по данным.
 sidebar:
   order: 2
