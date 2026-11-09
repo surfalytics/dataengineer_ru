@@ -6,7 +6,7 @@ head:
     content: "Staff и Principal Data Engineer: рост после Senior | Инжиниринг Данных"
 description: "Что после Senior: роли Staff и Principal Engineer в данных, чем они отличаются от Senior и как туда вырасти."
 sidebar:
-  order: 4
+  order: 5
   label: Senior+ (Staff, Principal)
 tags:
   - career

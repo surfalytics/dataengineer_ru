@@ -4,7 +4,7 @@ title: White Papers
 head:
   - tag: title
     content: "Whitepapers по данным: ключевые документы | Инжиниринг Данных"
-description: Технические whitepapers и официальные документы по данным.
+description: "Технические whitepapers и официальные документы по данным: архитектура, хранилища, обработка данных."
 sidebar:
   order: 2
 tags:

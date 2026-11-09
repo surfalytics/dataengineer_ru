@@ -1,0 +1,189 @@
+---
+title: Установка DuckDB и учебной базы
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Как установить DuckDB и учебную базу SQL | Инжиниринг Данных"
+description: Как установить DuckDB на macOS и Windows, скачать учебную базу и выполнить первый запрос в терминале.
+sidebar:
+  order: 2
+  label: Установка
+tags:
+  - sql
+  - practice
+  - duckdb
+---
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Для курса нужны две вещи:
+
+1. **DuckDB** — программа-база данных.
+2. **Файл учебной базы** `sql-tutorial.duckdb` — в нём все таблицы курса.
+
+## Что такое DuckDB
+
+**DuckDB** — аналитическая база данных, которая работает прямо на вашем компьютере. Сервер не нужен. Вся база — один файл.
+
+Почему DuckDB:
+
+- Ставится за минуту, бесплатно, работает на macOS, Windows и Linux.
+- Диалект SQL почти как у Postgres. Всё, что вы выучите, пригодится в Postgres, Snowflake, BigQuery и других базах.
+- Очень быстрая. Миллионы строк считаются за доли секунды.
+- Её используют в реальной работе: в dbt, в Python-пайплайнах, для анализа файлов CSV и Parquet.
+
+## Шаг 1. Установите DuckDB
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+Откройте приложение **Терминал** (Terminal). Найти его можно через Spotlight: `⌘ + Пробел`, введите «Терминал».
+
+Если у вас есть [Homebrew](https://brew.sh/):
+
+```bash
+brew install duckdb
+```
+
+Без Homebrew — официальный скрипт установки:
+
+```bash
+curl https://install.duckdb.org | sh
+```
+
+Скрипт напишет в конце, какую строку добавить в `~/.zshrc`, чтобы команда `duckdb` работала. Сделайте это и откройте новое окно терминала.
+
+</TabItem>
+<TabItem label="Windows">
+
+Откройте **PowerShell** или **Терминал Windows**: нажмите `Win`, введите «PowerShell», нажмите Enter.
+
+```powershell
+winget install DuckDB.cli
+```
+
+После установки **закройте и снова откройте** PowerShell. Иначе Windows не найдёт команду `duckdb`.
+
+Если `winget` нет, скачайте `duckdb_cli-windows-amd64.zip` со [страницы установки DuckDB](https://duckdb.org/install/). Распакуйте `duckdb.exe` в папку, где будете заниматься, например `C:\sql-course`. Запускайте его из этой папки как `.\duckdb.exe`.
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash
+curl https://install.duckdb.org | sh
+```
+
+Добавьте папку из подсказки скрипта в `PATH` и откройте новый терминал.
+
+</TabItem>
+</Tabs>
+
+Проверьте, что всё работает:
+
+```bash
+duckdb --version
+```
+
+Должна появиться версия, например `v1.4.3`. Нужна версия 1.2 или новее.
+
+## Шаг 2. Скачайте учебную базу
+
+Создайте папку для курса и скачайте в неё файл базы (около 40 МБ).
+
+**Скачать:** [sql-tutorial.duckdb](https://github.com/surfalytics/dataengineer_ru/releases/latest/download/sql-tutorial.duckdb)
+
+Или из терминала:
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+```bash
+mkdir -p ~/sql-course && cd ~/sql-course
+curl -L -o sql-tutorial.duckdb https://github.com/surfalytics/dataengineer_ru/releases/latest/download/sql-tutorial.duckdb
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+mkdir C:\sql-course; cd C:\sql-course
+curl.exe -L -o sql-tutorial.duckdb https://github.com/surfalytics/dataengineer_ru/releases/latest/download/sql-tutorial.duckdb
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash
+mkdir -p ~/sql-course && cd ~/sql-course
+curl -L -o sql-tutorial.duckdb https://github.com/surfalytics/dataengineer_ru/releases/latest/download/sql-tutorial.duckdb
+```
+
+</TabItem>
+</Tabs>
+
+## Шаг 3. Откройте базу и выполните первый запрос
+
+В терминале, в папке курса:
+
+```bash
+duckdb sql-tutorial.duckdb
+```
+
+Появится приглашение `D`. Это значит, вы внутри DuckDB. Введите запрос и нажмите Enter:
+
+```sql
+SELECT *
+FROM tutorial.us_housing_units
+LIMIT 5;
+```
+
+Вы увидите таблицу из 5 строк. Всё готово.
+
+<Aside type="tip">
+Запрос заканчивается точкой с запятой `;`. Пока её нет, DuckDB ждёт продолжения и показывает `‣`. Так можно писать запрос в несколько строк.
+</Aside>
+
+## Полезные команды DuckDB
+
+Команды с точкой — это команды самой программы, а не SQL. Точка с запятой им не нужна.
+
+| Команда | Что делает |
+|---|---|
+| `.tables` | Показать все таблицы |
+| `DESCRIBE tutorial.us_housing_units;` | Показать столбцы таблицы и их типы |
+| `.maxrows 100` | Показывать до 100 строк результата (по умолчанию DuckDB сокращает вывод) |
+| `.mode line` | Показывать каждую строку столбиком — удобно для широких таблиц. Вернуть: `.mode duckbox` |
+| `.timer on` | Показывать время выполнения запроса |
+| `.read queries.sql` | Выполнить запросы из файла |
+| `.exit` или `Ctrl + D` | Выйти |
+
+Стрелка `↑` возвращает предыдущий запрос. Его можно исправить и запустить снова.
+
+## Как удобнее писать запросы
+
+Длинные запросы неудобно набирать в терминале. Есть три удобных способа.
+
+**1. Файл + терминал.** Пишите запрос в редакторе (VS Code, Notepad++ или любой другой) и сохраняйте в файл, например `lesson.sql`. В DuckDB выполните `.read lesson.sql`.
+
+**2. Встроенный интерфейс DuckDB в браузере.** Запустите:
+
+```bash
+duckdb -ui sql-tutorial.duckdb
+```
+
+Откроется страница в браузере с редактором запросов и таблицами слева. База при этом остаётся на вашем компьютере.
+
+**3. DBeaver.** Бесплатный SQL-клиент, как на работе. Установите [DBeaver Community](https://dbeaver.io/download/), создайте подключение **DuckDB** и укажите путь к файлу `sql-tutorial.duckdb`. DBeaver сам скачает драйвер.
+
+<Aside type="note">
+Если базу открыть в двух программах сразу для записи, вторая выдаст ошибку о блокировке файла. Закройте одну из них. Или откройте базу только для чтения: `duckdb -readonly sql-tutorial.duckdb`.
+</Aside>
+
+## Если что-то сломалось
+
+- **`duckdb: command not found`** (macOS/Linux) или **«не является внутренней или внешней командой»** (Windows). Откройте новое окно терминала. Если не помогло — повторите шаг 1 и проверьте `PATH`.
+- **`Catalog Error: Table with name ... does not exist`.** Проверьте имя таблицы и схему: `tutorial.` или `benn.`. Посмотрите список через `.tables`.
+- **Испортили данные.** Скачайте файл базы заново. Он всегда такой же, как в начале курса.
+
+## DuckDB и другие базы
+
+Уроки написаны и проверены в DuckDB. Почти весь SQL курса работает и в Postgres. Где DuckDB отличается от других баз, мы пишем об этом в уроке.

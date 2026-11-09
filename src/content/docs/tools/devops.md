@@ -4,7 +4,7 @@ title: DevOps
 head:
   - tag: title
     content: "DevOps для инженера данных: CI/CD и Docker | Инжиниринг Данных"
-description: "DevOps для инженеров данных: CI/CD, контейнеризация и инфраструктура."
+description: "DevOps для инженеров данных: CI/CD, Docker, контейнеризация и инфраструктура как код."
 sidebar:
   order: 6
 tags:

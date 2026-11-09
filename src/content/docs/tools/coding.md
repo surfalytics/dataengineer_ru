@@ -4,7 +4,7 @@ title: Языки программирования
 head:
   - tag: title
     content: "Python и другие языки для инженера данных | Инжиниринг Данных"
-description: "Языки программирования для инженера данных: Python, Scala и другие."
+description: "Языки программирования для инженера данных: Python, Scala, Java и другие. Что учить и где."
 sidebar:
   order: 1
 tags:
