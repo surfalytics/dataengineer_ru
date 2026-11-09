@@ -67,6 +67,8 @@ export default defineConfig({
         replacesTitle: true,
       },
       favicon: '/favicon.png',
+      // Дата публикации страницы (article:published_time) для сниппетов Яндекса.
+      routeMiddleware: './src/routeData.ts',
       customCss: ['./src/styles/custom.css'],
       social: [
         { icon: 'telegram', label: 'Telegram', href: 'https://t.me/rockyourdata' },

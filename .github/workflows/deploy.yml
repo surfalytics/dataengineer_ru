@@ -40,3 +40,17 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # После деплоя сообщаем Яндексу (IndexNow) об изменённых страницах.
+  # Ошибка здесь не ломает деплой: скрипт только пишет предупреждение.
+  indexnow:
+    needs: deploy
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Ping IndexNow
+        run: node scripts/indexnow.mjs "${{ github.event.before }}" "${{ github.sha }}"
