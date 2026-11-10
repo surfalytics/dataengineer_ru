@@ -1,0 +1,238 @@
+---
+title: Разброс
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Дисперсия, стандартное отклонение, перцентили: Python и SQL | Инжиниринг Данных"
+description: Как измерить разброс данных. Размах, дисперсия, стандартное отклонение, квартили и перцентили. Примеры на Python и DuckDB с заданиями.
+sidebar:
+  order: 5
+  label: Разброс
+tags:
+  - statistics
+  - practice
+---
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Среднее не говорит, насколько данные «разбросаны». Две группы заказов могут иметь среднее 50, но в одной все заказы 49–51, а в другой от 1 до 99. Для этого есть меры разброса.
+
+## Меры разброса
+
+| Мера | Что это |
+|---|---|
+| **Размах** (range) | `max − min`. Просто, но зависит от двух крайних значений |
+| **Дисперсия** (variance) | Среднее квадрата отклонения от среднего |
+| **Стандартное отклонение** (standard deviation, `σ` или `s`) | Корень из дисперсии. В тех же единицах, что и данные |
+| **Перцентиль** (percentile) | Значение, ниже которого лежит заданная доля данных. P90 — ниже него 90% данных |
+| **Квартили** | Q1 = P25, Q2 = P50 (медиана), Q3 = P75 |
+
+Стандартное отклонение — главная мера. Если время доставки 48 часов, а `σ` = 8 часов, то обычно заказ приходит за `48 ± 8` часов.
+
+## Как считается стандартное отклонение
+
+1. Для каждого значения возьмите отклонение от среднего: `x − среднее`.
+2. Возведите в квадрат.
+3. Сложите.
+4. Разделите на `n − 1`. Это **дисперсия**.
+5. Возьмите корень. Это **стандартное отклонение**.
+
+Пример: данные `2, 4, 6`. Среднее 4. Отклонения: `−2, 0, 2`. Квадраты: `4, 0, 4`. Сумма 8. Дисперсия `8 / 2 = 4`. Стандартное отклонение `2`.
+
+<Aside type="note" title="n или n − 1?">
+Если у вас **выборка**, делите на `n − 1`. Это выборочное отклонение. Если у вас вся совокупность, делите на `n`. Для выборки в 1000 строк разница крошечная. В Python это `st.stdev` и `st.pstdev`. В SQL это `stddev_samp` и `stddev_pop`. Обычно нужно выборочное: `stdev` и `stddev_samp`. Так же делает `stddev()` в SQL.
+</Aside>
+
+## Считаем
+
+Подготовка: вы в папке `stats-practice`.
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
+```python
+import csv
+import statistics as st
+
+with open("data/orders.csv") as f:
+    orders = list(csv.DictReader(f))
+
+hours = [float(r["delivery_hours"]) for r in orders]
+
+print(min(hours), max(hours), round(max(hours) - min(hours), 1))
+print(round(st.variance(hours), 2))
+print(round(st.stdev(hours), 2))
+
+# квартили: 3 точки, делящие данные на 4 части
+print(st.quantiles(hours, n=4, method="inclusive"))
+```
+
+Ответ:
+
+```
+21.8 69.9 48.1
+65.58
+8.1
+[42.8, 48.25, 54.0]
+```
+
+`method="inclusive"` даёт тот же результат, что и SQL. Без этого параметра Python считает чуть иначе.
+
+</TabItem>
+<TabItem label="SQL">
+
+```sql
+SELECT
+    min(delivery_hours)                          AS min_h,
+    max(delivery_hours)                          AS max_h,
+    round(var_samp(delivery_hours), 2)           AS variance,
+    round(stddev_samp(delivery_hours), 2)        AS std,
+    quantile_cont(delivery_hours, [0.25, 0.5, 0.75]) AS quartiles
+FROM orders;
+```
+
+Ответ:
+
+```
+min_h  max_h  variance  std   quartiles
+21.8   69.9   65.58     8.1   [42.8, 48.25, 54.0]
+```
+
+`quantile_cont(x, p)` — перцентиль с долей `p` (0,9 = P90). Можно передать список долей.
+
+</TabItem>
+</Tabs>
+
+Читаем: время доставки в среднем 48 часов, стандартное отклонение 8,1 часа. Половина заказов приходит за 42,8–54 часа (от Q1 до Q3).
+
+## Практика
+
+### Задание 1
+
+Посчитайте стандартное отклонение сумм заказов (`amount`). Сравните его со средним (77,33).
+
+**Проверка:** 276,83. Оно в 3,5 раза больше среднего. Это признак выбросов.
+
+<details>
+<summary>Решение</summary>
+
+Python:
+
+```python
+amount = [float(r["amount"]) for r in orders]
+print(round(st.stdev(amount), 2))
+```
+
+SQL:
+
+```sql
+SELECT round(stddev_samp(amount), 2) FROM orders;
+```
+
+</details>
+
+### Задание 2
+
+Посчитайте стандартное отклонение сумм **без** заказов дороже 1000. Сколько заказов осталось?
+
+**Проверка:** 995 заказов, стандартное отклонение 40,82. Пять заказов подняли его с 40,82 до 276,83.
+
+<details>
+<summary>Решение</summary>
+
+Python:
+
+```python
+rest = [a for a in amount if a <= 1000]
+print(len(rest), round(st.stdev(rest), 2))
+```
+
+SQL:
+
+```sql
+SELECT count(*), round(stddev_samp(amount), 2)
+FROM orders
+WHERE amount <= 1000;
+```
+
+</details>
+
+### Задание 3
+
+Найдите P90 суммы заказа: значение, ниже которого лежат 90% заказов.
+
+**Проверка:** 101,75. Девять из десяти заказов дешевле 101,75.
+
+<details>
+<summary>Решение</summary>
+
+Python. `quantiles(..., n=10)` возвращает 9 точек: P10, P20, ..., P90. Нам нужна последняя:
+
+```python
+deciles = st.quantiles(amount, n=10, method="inclusive")
+print(round(deciles[-1], 2))
+```
+
+SQL:
+
+```sql
+SELECT quantile_cont(amount, 0.9) FROM orders;
+```
+
+</details>
+
+### Задание 4
+
+В какой срок приходят 90% заказов? Найдите P5 и P95 времени доставки. Это и есть «обычный диапазон».
+
+**Проверка:** P5 = 34,8 часа, P95 = 61,8 часа. 90% заказов приходят за 35–62 часа.
+
+<details>
+<summary>Решение</summary>
+
+SQL:
+
+```sql
+SELECT quantile_cont(delivery_hours, [0.05, 0.95]) FROM orders;
+```
+
+Python:
+
+```python
+cuts = st.quantiles(hours, n=100, method="inclusive")
+print(cuts[4], cuts[94])
+```
+
+`cuts[4]` — это P5, `cuts[94]` — это P95: индексы идут с нуля.
+
+</details>
+
+### Задание 5
+
+Для каждого месяца посчитайте число заказов, средний чек и медианный чек.
+
+**Проверка:**
+
+| месяц | заказов | среднее | медиана |
+|---|---|---|---|
+| 2024-01 | 334 | 84,47 | 50,18 |
+| 2024-02 | 312 | 71,91 | 48,46 |
+| 2024-03 | 354 | 75,39 | 44,52 |
+
+Среднее и медиана показывают разную картину. В марте среднее выше, чем в феврале, а медиана — ниже (44,52 против 48,46). Причина — выбросы.
+
+<details>
+<summary>Решение</summary>
+
+```sql
+SELECT strftime(order_date, '%Y-%m') AS month,
+       count(*)                      AS orders,
+       round(avg(amount), 2)         AS mean_amount,
+       round(median(amount), 2)      AS median_amount
+FROM orders
+GROUP BY month
+ORDER BY month;
+```
+
+</details>
+
+Дальше: [Распределения и выбросы](/practice/stats/distribution/).
