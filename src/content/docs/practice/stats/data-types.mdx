@@ -1,0 +1,208 @@
+---
+title: Данные и типы
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Выборка, генеральная совокупность и типы данных | Инжиниринг Данных"
+description: Что такое генеральная совокупность и выборка, какие бывают типы данных (числовые, категориальные) и как загрузить CSV в Python и DuckDB.
+sidebar:
+  order: 3
+  label: Данные и типы
+tags:
+  - statistics
+  - practice
+---
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Прежде чем считать, нужно понять, какие у нас данные.
+
+## Строки и столбцы
+
+В таблице `orders` одна строка — один заказ. Это **наблюдение**. Один столбец — один **признак** (переменная): сумма, канал, устройство.
+
+## Генеральная совокупность и выборка
+
+- **Генеральная совокупность** — все объекты, о которых мы хотим знать. Например, все заказы магазина за всё время.
+- **Выборка** — часть совокупности, которую мы реально видим. Например, 1000 заказов за три месяца.
+
+Почти всегда мы работаем с выборкой, а выводы хотим сделать про всю совокупность. Для этого нужна статистика. Подробнее — в уроке [Выборка и доверительный интервал](/practice/stats/sampling/).
+
+Если выборка собрана плохо, выводы будут неверными. Например, опрос только среди клиентов с мобильным приложением не покажет мнение всех клиентов.
+
+## Типы данных
+
+| Тип | Что это | Пример в `orders` | Что можно считать |
+|---|---|---|---|
+| **Числовой непрерывный** | Любое число на шкале | `amount`, `delivery_hours` | Среднее, медиана, разброс |
+| **Числовой дискретный** | Целые числа, счёт | `items` | Среднее, медиана, мода |
+| **Категориальный** | Группы без порядка | `channel`, `device` | Количество и доля, мода |
+| **Порядковый** | Группы с порядком | Оценка 1–5, размер S/M/L | Медиана, мода |
+| **Время** | Дата или момент | `order_date` | Группировка по дням и месяцам |
+| **Идентификатор** | Имя записи | `order_id`, `customer_id` | Только считать. Среднее бессмысленно |
+
+Тип определяет, что можно считать. Среднее `customer_id` посчитать можно, но смысла в нём нет.
+
+<Aside type="caution" title="Число не всегда число">
+`customer_id = 275` выглядит как число, но это идентификатор. Складывать и усреднять его нельзя. Всегда спрашивайте: что означает этот столбец?
+</Aside>
+
+## Загрузка данных
+
+Подготовка: вы в папке `stats-practice`.
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
+```python
+import csv
+
+with open("data/orders.csv") as f:
+    orders = list(csv.DictReader(f))
+
+print(len(orders))
+
+# все суммы как числа
+amount = [float(row["amount"]) for row in orders]
+print(amount[:3])
+
+# уникальные каналы
+channels = set(row["channel"] for row in orders)
+print(channels)
+```
+
+Ответ (порядок каналов в `set` может отличаться):
+
+```
+1000
+[77.62, 34.75, 16.18]
+{'organic', 'ads', 'email'}
+```
+
+`[float(row["amount"]) for row in orders]` — это генератор списка. Он берёт каждую строку и делает из текста число.
+
+</TabItem>
+<TabItem label="SQL">
+
+```sql
+SELECT count(*) AS orders, count(DISTINCT customer_id) AS customers
+FROM orders;
+
+DESCRIBE orders;
+
+SELECT DISTINCT channel FROM orders;
+```
+
+Первый запрос:
+
+```
+orders  customers
+1000    288
+```
+
+`DESCRIBE` показывает, какие типы DuckDB определил сам: `amount` и `delivery_hours` — `DOUBLE`, `items` — `BIGINT`, `order_date` — `DATE`, `channel` — `VARCHAR`.
+
+</TabItem>
+</Tabs>
+
+## Практика
+
+### Задание 1
+
+Сколько строк в `orders`? Сколько разных клиентов (`customer_id`) сделали заказы? Посчитайте на Python **и** на SQL.
+
+**Проверка:** 1000 заказов, 288 клиентов.
+
+<details>
+<summary>Решение</summary>
+
+Python:
+
+```python
+import csv
+
+with open("data/orders.csv") as f:
+    orders = list(csv.DictReader(f))
+
+print(len(orders))
+print(len(set(row["customer_id"] for row in orders)))
+```
+
+SQL:
+
+```sql
+SELECT count(*), count(DISTINCT customer_id) FROM orders;
+```
+
+</details>
+
+### Задание 2
+
+Определите тип каждого столбца `orders`: непрерывный, дискретный, категориальный, время или идентификатор.
+
+**Проверка:**
+
+| Столбец | Тип |
+|---|---|
+| `order_id`, `customer_id` | идентификатор |
+| `order_date` | время |
+| `channel`, `device` | категориальный |
+| `items` | дискретный |
+| `amount`, `delivery_hours` | непрерывный |
+
+### Задание 3
+
+Сколько заказов сделано в феврале 2024? Назовём это задание «на фильтр».
+
+**Проверка:** 312.
+
+<details>
+<summary>Решение</summary>
+
+Python. Дата в файле — текст вида `2024-02-11`. Значит, подходит проверка начала строки:
+
+```python
+feb = [row for row in orders if row["order_date"].startswith("2024-02")]
+print(len(feb))
+```
+
+SQL:
+
+```sql
+SELECT count(*)
+FROM orders
+WHERE order_date >= '2024-02-01' AND order_date < '2024-03-01';
+```
+
+</details>
+
+### Задание 4
+
+Сколько заказов пришло через каждый канал? Какой канал самый частый?
+
+**Проверка:** `organic` — 386, `ads` — 360, `email` — 254. Самый частый — `organic`.
+
+<details>
+<summary>Решение</summary>
+
+Python:
+
+```python
+from collections import Counter
+
+print(Counter(row["channel"] for row in orders))
+```
+
+`Counter` считает, сколько раз встретился каждый элемент.
+
+SQL:
+
+```sql
+SELECT channel, count(*) AS n
+FROM orders
+GROUP BY channel
+ORDER BY n DESC;
+```
+
+</details>
+
+Дальше: [Среднее, медиана, мода](/practice/stats/center/).

@@ -1,0 +1,156 @@
+---
+title: Установка
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Python и DuckDB для курса статистики: установка и данные | Инжиниринг Данных"
+description: Как установить Python и DuckDB и скачать три учебных CSV-файла для курса по основам статистики.
+sidebar:
+  order: 2
+  label: Установка
+tags:
+  - statistics
+  - practice
+---
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Нужны три вещи: **Python 3.10 или новее**, **DuckDB** и **учебные файлы**.
+
+Работаем в терминале. Если он незнаком, пройдите [курс CLI](/practice/cli/setup/).
+
+## Шаг 1. Python
+
+Проверьте, что Python уже есть:
+
+<Tabs syncKey="os">
+<TabItem label="macOS / Linux / WSL">
+
+```bash
+python3 --version
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```bash
+python --version
+```
+
+</TabItem>
+</Tabs>
+
+Ответ должен быть `Python 3.10` или выше. Если Python нет или версия старая, скачайте его на [python.org](https://www.python.org/downloads/). На Windows при установке включите галочку **Add Python to PATH**. На macOS можно: `brew install python`.
+
+<Aside type="note">
+Дальше мы пишем `python3`. На Windows пишите `python`.
+</Aside>
+
+Библиотеки ставить не нужно. Мы используем только то, что идёт вместе с Python: `csv`, `statistics`, `random`, `math`.
+
+## Шаг 2. DuckDB
+
+Если DuckDB уже стоит после курса SQL, пропустите шаг. Проверьте:
+
+```bash
+duckdb --version
+```
+
+Если нет, установите по [инструкции из курса SQL](/practice/sql/setup/). Коротко: `brew install duckdb` на macOS, `winget install DuckDB.cli` на Windows.
+
+## Шаг 3. Учебные файлы
+
+```bash
+cd ~
+curl -L -o stats-practice.tar.gz https://dataengineer.ru/assets/practice/stats-practice.tar.gz
+tar xzf stats-practice.tar.gz
+cd stats-practice
+ls data
+```
+
+**Проверка:** `ls data` показывает три файла:
+
+```
+ab_test.csv  daily.csv  orders.csv
+```
+
+| Файл | Строк | Что внутри |
+|---|---|---|
+| `orders.csv` | 1000 | Заказы интернет-магазина за январь–март 2024: сумма, число товаров, канал, устройство, время доставки в часах |
+| `daily.csv` | 120 | Маркетинг по дням: затраты на рекламу, визиты, заказы, выручка, обращения в поддержку |
+| `ab_test.csv` | 4000 | A/B-тест кнопки «Купить»: группа A (старая кнопка) и B (новая), купил ли пользователь |
+
+Данные учебные. Мы их сгенерировали, но сделали похожими на настоящие: в суммах заказов есть выбросы, а время доставки распределено почти нормально.
+
+## Шаг 4. Проверка Python
+
+Вы должны быть в папке `stats-practice`. Запустите Python:
+
+```bash
+python3
+```
+
+И введите:
+
+```python
+import csv
+
+with open("data/orders.csv") as f:
+    orders = list(csv.DictReader(f))
+
+print(len(orders))
+print(orders[0])
+```
+
+Ответ:
+
+```
+1000
+{'order_id': '1001', 'order_date': '2024-02-11', 'customer_id': '275', 'channel': 'organic', 'device': 'desktop', 'items': '4', 'amount': '77.62', 'delivery_hours': '49.5'}
+```
+
+Выйти из Python: `exit()`.
+
+Заметьте: все значения — строки (`'77.62'`). Для расчётов их нужно превращать в числа: `float(...)`.
+
+Код можно писать прямо в Python-сессии. Или сохранять в файл, например `lesson.py`, и запускать: `python3 lesson.py`.
+
+## Шаг 5. Проверка DuckDB
+
+Откройте базу в файле `stats.duckdb` (файл создастся сам) и загрузите три таблицы:
+
+```bash
+duckdb stats.duckdb
+```
+
+```sql
+CREATE TABLE orders  AS SELECT * FROM 'data/orders.csv';
+CREATE TABLE daily   AS SELECT * FROM 'data/daily.csv';
+CREATE TABLE ab_test AS SELECT * FROM 'data/ab_test.csv';
+
+SELECT count(*) FROM orders;
+```
+
+Ответ: `1000`.
+
+Таблицы остаются в файле `stats.duckdb`. В следующий раз просто откройте его: `duckdb stats.duckdb`. Запускайте DuckDB всегда из папки `stats-practice`. Выйти: `.exit`.
+
+<Aside type="note" title="Как начать заново">
+Если что-то сломали:
+
+```bash
+cd ~
+rm -rf stats-practice
+tar xzf stats-practice.tar.gz
+```
+
+Потом снова создайте таблицы из шага 5.
+</Aside>
+
+## Если что-то не работает
+
+- **`python3: command not found`**. На Windows пишите `python`. Если и это не работает, переустановите Python с галочкой **Add Python to PATH**.
+- **`FileNotFoundError: data/orders.csv`**. Вы не в папке `stats-practice`. Проверьте `pwd` и перейдите: `cd ~/stats-practice`.
+- **`AttributeError: module 'statistics' has no attribute 'correlation'`**. Версия Python ниже 3.10. Обновите её.
+- **DuckDB: `Could not set lock on file`**. База открыта в другом окне. Закройте его.
+
+Дальше: [Данные и типы](/practice/stats/data-types/).

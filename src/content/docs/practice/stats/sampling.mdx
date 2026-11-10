@@ -1,0 +1,239 @@
+---
+title: Выборка и доверительный интервал
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Доверительный интервал и стандартная ошибка: Python и SQL | Инжиниринг Данных"
+description: Как по выборке оценить среднее всей совокупности. Стандартная ошибка, центральная предельная теорема и 95% доверительный интервал. Примеры на Python и DuckDB.
+sidebar:
+  order: 9
+  label: Выборка и доверительный интервал
+tags:
+  - statistics
+  - practice
+---
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Мы видим 1000 заказов. Но интересует **все** заказы магазина. Среднее по нашим 1000 — это оценка. Насколько ей можно верить?
+
+Если взять другие 1000 заказов, среднее будет чуть другим. Эту разницу описывает **стандартная ошибка**.
+
+## Стандартная ошибка
+
+```
+SE = σ / √n
+```
+
+- `σ` — стандартное отклонение данных.
+- `n` — число наблюдений.
+
+Чем больше данных, тем меньше ошибка. Но не быстро: чтобы уменьшить ошибку вдвое, нужно **в четыре раза** больше данных.
+
+## Доверительный интервал
+
+**95% доверительный интервал** (confidence interval, CI) — диапазон, в котором, скорее всего, лежит настоящее среднее:
+
+```
+CI = среднее ± 1,96 × SE
+```
+
+Число 1,96 берётся из нормального распределения: в пределах `±1,96σ` лежат 95% значений.
+
+<Aside type="note" title="Как читать «95%»">
+Если много раз брать выборки и каждый раз строить такой интервал, то 95% интервалов накроют настоящее среднее. Это не значит, что «с вероятностью 95% среднее в этом интервале». Но для практики можно читать так: «настоящее значение, скорее всего, где-то здесь».
+</Aside>
+
+## Считаем
+
+Подготовка: вы в папке `stats-practice`.
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
+```python
+import csv
+import math
+import statistics as st
+
+with open("data/orders.csv") as f:
+    orders = list(csv.DictReader(f))
+
+hours = [float(r["delivery_hours"]) for r in orders]
+
+n = len(hours)
+m = st.mean(hours)
+se = st.stdev(hours) / math.sqrt(n)
+
+print(round(m, 2), round(se, 3))
+print(round(m - 1.96 * se, 2), round(m + 1.96 * se, 2))
+```
+
+Ответ:
+
+```
+48.34 0.256
+47.84 48.84
+```
+
+</TabItem>
+<TabItem label="SQL">
+
+```sql
+SELECT round(avg(delivery_hours), 2) AS mean_h,
+       round(stddev_samp(delivery_hours) / sqrt(count(*)), 3) AS se,
+       round(avg(delivery_hours) - 1.96 * stddev_samp(delivery_hours) / sqrt(count(*)), 2) AS ci_low,
+       round(avg(delivery_hours) + 1.96 * stddev_samp(delivery_hours) / sqrt(count(*)), 2) AS ci_high
+FROM orders;
+```
+
+Ответ:
+
+```
+mean_h  se     ci_low  ci_high
+48.34   0.256  47.84   48.84
+```
+
+</TabItem>
+</Tabs>
+
+Читаем: среднее время доставки 48,3 часа. Настоящее среднее, скорее всего, между **47,84 и 48,84**. Интервал узкий: данных много, а разброс небольшой.
+
+## Опыт: что значит «другая выборка»
+
+Возьмём 1000 случайных выборок по 30 заказов и посчитаем среднее каждой.
+
+```python
+import random
+
+random.seed(42)   # чтобы результат повторялся
+means = [st.mean(random.sample(hours, 30)) for _ in range(1000)]
+
+print(round(st.mean(means), 2))
+print(round(st.stdev(means), 2))
+print(round(st.stdev(hours) / math.sqrt(30), 2))
+```
+
+Ответ:
+
+```
+48.27
+1.5
+1.48
+```
+
+- Среднее 1000 выборочных средних — 48,27. Почти то же, что среднее всех данных (48,34).
+- Их разброс — 1,50. Формула `σ / √n` предсказала 1,48. Это та же стандартная ошибка.
+
+Выборочные средние сами образуют колокол вокруг настоящего среднего. Это **центральная предельная теорема**. Она работает, даже когда сами данные не нормальные, если выборка достаточно большая.
+
+<Aside type="note" title="Число «30»">
+В DuckDB случайную выборку можно взять так: `SELECT * FROM orders USING SAMPLE 30 ROWS;` Каждый раз она будет другой.
+</Aside>
+
+## Доверительный интервал для доли
+
+Для доли (например, конверсии) формула другая:
+
+```
+SE = √( p × (1 − p) / n )
+```
+
+Пример: в группе A 200 из 2000 пользователей купили. `p = 0,10`. `SE = √(0,1 × 0,9 / 2000) = 0,0067`. Интервал: `0,10 ± 1,96 × 0,0067`, то есть от **8,7% до 11,3%**.
+
+## Практика
+
+### Задание 1
+
+Посчитайте 95% доверительный интервал для **среднего чека** (`amount`) по всем заказам. Что вы скажете про его ширину?
+
+**Проверка:** среднее 77,33, интервал 60,18–94,49. Он очень широкий: ±17. Из-за выбросов стандартное отклонение огромное (277).
+
+<details>
+<summary>Решение</summary>
+
+```python
+amount = [float(r["amount"]) for r in orders]
+m = st.mean(amount)
+se = st.stdev(amount) / math.sqrt(len(amount))
+print(round(m - 1.96 * se, 2), round(m + 1.96 * se, 2))
+```
+
+SQL:
+
+```sql
+SELECT round(avg(amount) - 1.96 * stddev_samp(amount) / sqrt(count(*)), 2) AS ci_low,
+       round(avg(amount) + 1.96 * stddev_samp(amount) / sqrt(count(*)), 2) AS ci_high
+FROM orders;
+```
+
+</details>
+
+### Задание 2
+
+Повторите задание 1 для заказов **дешевле 1000**. Как изменился интервал?
+
+**Проверка:** среднее 58,04, интервал 55,51–60,58. Ширина ±2,5. Пять заказов делали интервал в семь раз шире.
+
+<details>
+<summary>Решение</summary>
+
+```python
+rest = [a for a in amount if a <= 1000]
+m = st.mean(rest)
+se = st.stdev(rest) / math.sqrt(len(rest))
+print(round(m - 1.96 * se, 2), round(m + 1.96 * se, 2))
+```
+
+SQL:
+
+```sql
+SELECT round(avg(amount) - 1.96 * stddev_samp(amount) / sqrt(count(*)), 2),
+       round(avg(amount) + 1.96 * stddev_samp(amount) / sqrt(count(*)), 2)
+FROM orders
+WHERE amount <= 1000;
+```
+
+</details>
+
+### Задание 3
+
+Сколько заказов нужно, чтобы доверительный интервал времени доставки стал вдвое уже (±0,25 вместо ±0,50)?
+
+**Проверка:** в 4 раза больше, то есть около 4000 заказов. `SE = σ / √n`: чтобы `SE` уменьшился вдвое, `√n` должен вырасти вдвое, значит, `n` — вчетверо.
+
+### Задание 4
+
+Постройте 95% доверительный интервал для конверсии группы B из `ab_test` (250 покупок из 2000).
+
+**Проверка:** `p = 0,125`, интервал от 11,05% до 13,95%.
+
+<details>
+<summary>Решение</summary>
+
+```python
+with open("data/ab_test.csv") as f:
+    ab = list(csv.DictReader(f))
+
+b = [int(r["converted"]) for r in ab if r["grp"] == "B"]
+p = sum(b) / len(b)
+se = math.sqrt(p * (1 - p) / len(b))
+print(round(p - 1.96 * se, 4), round(p + 1.96 * se, 4))
+```
+
+SQL:
+
+```sql
+SELECT grp,
+       avg(converted) AS p,
+       round(avg(converted) - 1.96 * sqrt(avg(converted) * (1 - avg(converted)) / count(*)), 4) AS ci_low,
+       round(avg(converted) + 1.96 * sqrt(avg(converted) * (1 - avg(converted)) / count(*)), 4) AS ci_high
+FROM ab_test
+GROUP BY grp
+ORDER BY grp;
+```
+
+Для группы A интервал: 8,69%–11,31%. Интервалы A и B немного пересекаются. Что это значит, разберём в следующем уроке.
+
+</details>
+
+Дальше: [A/B-тест](/practice/stats/ab-test/).
