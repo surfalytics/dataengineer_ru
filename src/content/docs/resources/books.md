@@ -27,6 +27,14 @@ tags:
 
 - [DAMA-DMBOK / Свод знаний по управлению данными (второе издание)](https://t.me/analyst_books/17)
 
+### Метрики и бизнес-аналитика
+
+- [Alistair Croll, Ben Yoskovitz / Lean Analytics](/resources/lean-analytics/) 🇬🇧 ⭐ - как выбирать метрики и измерять продукт
+
+## Бизнес-книги
+
+- [Alistair Croll, Ben Yoskovitz / Lean Analytics](/resources/lean-analytics/) 🇬🇧 ⭐ - конспект на русском с разбором по главам: как измерять стартап, метрики по бизнес-моделям и стадиям
+
 ## Инструменты
 
 
