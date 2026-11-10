@@ -1,0 +1,189 @@
+---
+title: Установка терминала
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Терминал на Windows, macOS и Linux: Git Bash, WSL | Инжиниринг Данных"
+description: Какой терминал выбрать на Windows (Git Bash или WSL, а не PowerShell), macOS и Linux, и как скачать учебные файлы курса CLI.
+sidebar:
+  order: 2
+  label: Установка
+tags:
+  - cli
+  - practice
+---
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Нужен терминал с **bash** или **zsh**. На macOS и Linux он уже есть. На Windows его нужно поставить.
+
+## Терминал и shell
+
+- **Терминал** — окно, в котором вы пишете команды.
+- **Shell** — программа внутри терминала. Она читает команду и выполняет её. Самые частые: **bash** (Linux) и **zsh** (macOS).
+
+Команды bash и zsh почти одинаковые. Всё, что вы выучите в курсе, работает и там, и там. И на серверах Linux тоже.
+
+## Windows: PowerShell, Git Bash или WSL
+
+На Windows есть три варианта.
+
+| Вариант | Что это | Берём в курс? |
+|---|---|---|
+| **PowerShell** | Свой shell Windows. Команды другие: `Get-ChildItem` вместо `ls`, `Select-String` вместо `grep` | **Нет.** Серверы, Docker, облака, AI-агенты и почти все инструкции в интернете используют bash |
+| **Git Bash** | bash и главные команды Linux (`ls`, `grep`, `ssh`, `tar`, `curl`). Ставится вместе с Git for Windows | **Да, для старта.** Git всё равно нужен для следующих практик. Ставится за 5 минут, права администратора обычно не нужны |
+| **WSL** | Windows Subsystem for Linux. Настоящий Linux (Ubuntu) внутри Windows | **Да, для серьёзной работы.** Нужен для Docker и Python. Нужны права администратора и перезагрузка |
+
+Наш совет:
+
+- Начните с **Git Bash**. Его хватит на весь этот курс.
+- Когда дойдёте до Docker, поставьте **WSL**. Или поставьте его сразу, если у вас есть права администратора.
+
+<Aside type="caution" title="Ограничения Git Bash">
+Git Bash — это не полный Linux. В нём нет `apt` и `sudo`, а `chmod` почти не работает: Windows хранит права файлов по-своему. В уроках мы отмечаем такие места.
+</Aside>
+
+## Шаг 1. Откройте терминал
+
+<Tabs syncKey="os">
+<TabItem label="Windows: Git Bash">
+
+<Steps>
+
+1. Скачайте Git for Windows с [git-scm.com](https://git-scm.com/downloads/win) и установите. Все настройки можно оставить по умолчанию.
+
+   Или поставьте его одной командой в PowerShell. Это единственный раз, когда нам нужен PowerShell:
+
+   ```powershell
+   winget install --id Git.Git -e
+   ```
+
+2. Откройте меню «Пуск» и найдите **Git Bash**.
+
+3. Проверьте, что всё работает:
+
+   ```bash
+   echo $SHELL
+   ```
+
+   Ответ: `/usr/bin/bash`.
+
+</Steps>
+
+Ваша домашняя папка в Git Bash — `/c/Users/<имя>`. Это та же папка, что `C:\Users\<имя>` в проводнике.
+
+</TabItem>
+<TabItem label="Windows: WSL">
+
+<Steps>
+
+1. Откройте **PowerShell от имени администратора** (правый клик → «Запуск от имени администратора»).
+
+2. Выполните:
+
+   ```powershell
+   wsl --install
+   ```
+
+3. Перезагрузите компьютер.
+
+4. Откройте **Ubuntu** из меню «Пуск». В первый раз придумайте имя пользователя и пароль для Linux. Пароль при вводе не виден. Это нормально.
+
+5. Обновите пакеты:
+
+   ```bash
+   sudo apt update && sudo apt install -y curl unzip
+   ```
+
+</Steps>
+
+Ваша домашняя папка в WSL — `/home/<имя>`. Диск `C:` виден как `/mnt/c`. Учебные файлы держите в домашней папке Linux: там всё работает быстрее.
+
+Подробная инструкция: [learn.microsoft.com/windows/wsl/install](https://learn.microsoft.com/ru-ru/windows/wsl/install).
+
+</TabItem>
+<TabItem label="macOS">
+
+Откройте **Терминал**: `Cmd + Пробел`, напишите «Терминал» или «Terminal», нажмите Enter.
+
+На macOS shell по умолчанию — **zsh**. Проверьте:
+
+```bash
+echo $SHELL
+```
+
+Ответ: `/bin/zsh`.
+
+</TabItem>
+<TabItem label="Linux">
+
+Откройте **Terminal** (часто `Ctrl + Alt + T`). Shell по умолчанию — **bash**.
+
+```bash
+echo $SHELL
+```
+
+Ответ: `/bin/bash` или `/usr/bin/bash`.
+
+</TabItem>
+</Tabs>
+
+<Aside type="tip" title="Удобный терминал">
+На Windows поставьте [Windows Terminal](https://aka.ms/terminal). В нём можно открывать Git Bash, Ubuntu (WSL) и PowerShell во вкладках. На macOS многие используют [iTerm2](https://iterm2.com/) или [Warp](https://www.warp.dev/), но обычного Терминала хватит.
+</Aside>
+
+## Шаг 2. Скачайте учебные файлы
+
+Скопируйте команды в терминал по одной и нажимайте Enter. Что делают `curl` и `tar`, разберём в уроках.
+
+```bash
+cd ~
+curl -L -o cli-practice.tar.gz https://dataengineer.ru/assets/practice/cli-practice.tar.gz
+tar xzf cli-practice.tar.gz
+cd cli-practice
+ls
+```
+
+**Проверка:** `ls` показывает шесть имён:
+
+```
+README.txt  config  data  inbox  logs  scripts
+```
+
+Что лежит в папке:
+
+| Папка | Что внутри |
+|---|---|
+| `data/` | Продажи за январь–март 2024 (`sales_*.csv`), клиенты (`customers.csv`), 10 000 событий (`events.csv`) |
+| `logs/` | Лог ночного пайплайна за март (`pipeline.log`) и старые логи в `archive/` |
+| `config/` | Настройки подключения к базе (`app.env`). Пароль ненастоящий |
+| `scripts/` | Скрипт отчёта `report.sh` |
+| `inbox/` | Выгрузка от поставщика для итоговой практики |
+
+<Aside type="note" title="Как начать заново">
+Если что-то сломали, удалите папку и скачайте файлы ещё раз:
+
+```bash
+cd ~
+rm -rf cli-practice
+tar xzf cli-practice.tar.gz
+```
+
+Архив `cli-practice.tar.gz` остаётся в домашней папке, поэтому скачивать его снова не нужно.
+</Aside>
+
+## Шаг 3 (по желанию). Удобный zsh
+
+На macOS (и в WSL, если поставите zsh) можно добавить [Oh My Zsh](https://ohmyz.sh/). Это темы и плагины для zsh. Два полезных плагина:
+
+- **zsh-autosuggestions** — подсказывает команду из истории, пока вы печатаете. Стрелка вправо принимает подсказку.
+- **zsh-syntax-highlighting** — подсвечивает верные команды зелёным, а опечатки красным.
+
+Для курса это не нужно. Вернитесь к этому, когда освоитесь.
+
+## Если что-то не работает
+
+- **`curl: command not found`** (WSL/Linux). Поставьте curl: `sudo apt install -y curl`.
+- **`tar: Error is not recoverable`**. Файл скачался не полностью. Удалите его (`rm cli-practice.tar.gz`) и скачайте снова.
+- **Не нашли Git Bash в меню «Пуск».** Переустановите Git for Windows и проверьте, что галочка «Git Bash Here» включена.
+
+Дальше: [Что такое shell](/practice/cli/shell/).
