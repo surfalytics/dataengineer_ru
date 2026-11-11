@@ -1,0 +1,323 @@
+---
+title: Open source за минуты
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Docker для Airflow, dbt, Metabase: примеры | Инжиниринг Данных"
+description: Как запустить Airflow, dbt, Metabase, Postgres, Kafka и другие инструменты данных в Docker на своём компьютере. Три шаблона и примеры.
+sidebar:
+  order: 13
+  label: Open source за минуты
+tags:
+  - docker
+  - practice
+---
+
+Почти любой инструмент данных можно запустить в контейнере. Одна команда или один `compose.yaml`. Ничего не нужно ставить на ноутбук.
+
+## Почему контейнеры подходят для данных
+
+- **Изоляция.** Airflow, dbt и Jupyter требуют разные версии Python и библиотек. В контейнерах они не мешают друг другу.
+- **Одинаковое окружение.** У вас, у коллеги и в CI работает один и тот же образ. Фраза «у меня работает» не нужна.
+- **Одноразовость.** Попробовали инструмент, удалили контейнер. Ноутбук остался чистым.
+- **Несколько версий рядом.** `postgres:15` и `postgres:17` работают одновременно на разных портах.
+- **Быстрый старт команды.** Новый коллега делает `git clone` и `docker compose up`. Окружение готово.
+
+## Три шаблона
+
+| Шаблон | Когда | Как |
+|---|---|---|
+| Разовый инструмент | Запустить команду и забыть | `docker run --rm ...` |
+| Сервис | База, BI, оркестратор. Работает долго | `compose.yaml`, `docker compose up -d` |
+| Своя задача | Ваш пайплайн или скрипт | `Dockerfile` и `docker build` |
+
+## Что запускают в Docker
+
+| Инструмент | Образ | Для чего |
+|---|---|---|
+| Postgres | `postgres:17` | База данных для пайплайнов и тестов |
+| Adminer | `adminer:5` | Лёгкий веб-клиент для баз |
+| Metabase | `metabase/metabase:v0.65.4` | BI: графики и дашборды |
+| Superset | `apache/superset` | BI. Нужна дополнительная настройка |
+| Airflow | официальный `docker-compose.yaml` | Оркестрация пайплайнов |
+| dbt | свой образ (ниже) | Трансформации в SQL |
+| Jupyter | `quay.io/jupyter/scipy-notebook:python-3.12` | Ноутбуки для анализа |
+| ClickHouse | `clickhouse/clickhouse-server:26.8` | Колоночная база для аналитики |
+| Kafka | `apache/kafka:4.4.0` | Потоки событий |
+| MLflow | `ghcr.io/mlflow/mlflow:v3.5.0` | Учёт ML-экспериментов |
+
+Мы проверили, что эти теги существуют (`docker manifest inspect`). Версии быстро устаревают. Перед работой откройте страницу образа на Docker Hub и выберите свежий тег.
+
+:::caution
+Образы Airflow, Jupyter, Superset и ClickHouse большие. Они занимают сотни мегабайт или гигабайты. Не качайте их в мобильной сети.
+:::
+
+## Разовый инструмент: скрипт без Dockerfile
+
+Не нужно ставить Python. Подключите папку и запустите скрипт в готовом образе:
+
+```bash
+cd ~/docker-practice
+docker run --rm -v "$PWD:/work" -w /work \
+  -e ORDERS_PATH=/work/data/orders.csv \
+  python:3.12-slim python app/report.py
+```
+
+Ответ:
+
+```
+Файл: /work/data/orders.csv
+Заказов: 500
+Выручка по каналам (только completed):
+  organic    23715.82
+  ads        23082.74
+  email      15459.67
+```
+
+- `-v "$PWD:/work"` подключает текущую папку в контейнер.
+- `-w /work` делает `/work` рабочей папкой.
+- `--rm` удаляет контейнер после выхода.
+
+Так же запускают DuckDB, `jq`, `psql` и любые другие утилиты. Ставить их не нужно.
+
+## Сервис: Postgres и Adminer
+
+Подробно `compose` разобран в [уроке про Compose](/practice/docker/compose/). Пример с пином версии:
+
+```yaml
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer:5
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
+```
+
+Всегда пишите версию образа. Не используйте `latest`: завтра он может стать другим.
+
+## Airflow
+
+Airflow состоит из нескольких сервисов. Писать их вручную не нужно: у проекта есть готовый `docker-compose.yaml`. Мы проверили, что ссылка ниже работает. Он **из официальной документации и может измениться**. Открывайте [страницу Airflow про Docker Compose](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html) и берите версию оттуда.
+
+```bash
+mkdir airflow && cd airflow
+curl -LfO https://airflow.apache.org/docs/apache-airflow/3.4.0/docker-compose.yaml
+mkdir -p ./dags ./logs ./plugins ./config
+echo "AIRFLOW_UID=$(id -u)" > .env
+docker compose up airflow-init
+docker compose up
+```
+
+- `airflow-init` создаёт базу и пользователя. Это разовый шаг.
+- Веб-интерфейс: `http://localhost:8080`. Логин и пароль по умолчанию написаны в официальной инструкции.
+- Свои DAG кладите в папку `dags`.
+- Это окружение для обучения. В продакшене так не запускают: смотрите [урок про продакшен](/practice/docker/production/).
+
+В файле восемь сервисов. Список мы получили командой `docker compose config --services`:
+
+```
+postgres redis airflow-init airflow-apiserver airflow-dag-processor airflow-scheduler airflow-triggerer airflow-worker
+```
+
+## dbt в контейнере
+
+Официальный образ `ghcr.io/dbt-labs/dbt-postgres` не собран для arm64. На Mac с чипом Apple (M1 и новее) он не запускается:
+
+```
+docker: no matching manifest for linux/arm64/v8 in the manifest list entries
+```
+
+Решение: свой образ из `python:3.12-slim`. Он работает на любой архитектуре.
+
+```dockerfile
+FROM python:3.12-slim
+RUN pip install --no-cache-dir dbt-core==1.12.6 dbt-postgres==1.11.0
+WORKDIR /project
+ENTRYPOINT ["dbt"]
+```
+
+Версию `dbt-core` нужно закрепить. Мы поставили только `dbt-postgres==1.11.0`, и `pip` взял `dbt-core 1.13.0-b1`. Это бета-версия.
+
+Сервис в `compose.yaml`. Он запускается только по просьбе (`profiles`):
+
+```yaml
+  dbt:
+    build: ./dbt
+    profiles: ["tools"]
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
+      DBT_PROFILES_DIR: /project
+    volumes:
+      - ./dbt:/project
+    depends_on:
+      db:
+        condition: service_healthy
+```
+
+Запуск:
+
+```bash
+docker compose run --rm dbt run
+```
+
+Результат на наших данных. Модель `revenue_by_channel` создала представление в схеме `analytics`:
+
+```
+1 of 1 OK created sql view model analytics.revenue_by_channel ... [CREATE VIEW in 0.04s]
+Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=1
+```
+
+Полный пример со всеми файлами — в [итоговой практике](/practice/docker/final/).
+
+## Стартеры: оркестраторы и ELT
+
+Почти у каждого open source проекта есть публичный образ и готовый пример запуска. Это быстрый способ попробовать инструмент. Мы проверили, какие архитектуры у образов (ноябрь 2026).
+
+| Инструмент | Что это | Образ или стартер | Mac с Apple (arm64) |
+|---|---|---|---|
+| **Airflow** | Оркестратор | `apache/airflow:3.4.0` и официальный `docker-compose.yaml` (выше) | Да |
+| **Prefect** | Оркестратор на Python | `prefecthq/prefect:3-latest` | Да |
+| **Dagster** | Оркестратор, ориентирован на данные | Официальный пример [deploy_docker](https://github.com/dagster-io/dagster/tree/master/examples/deploy_docker) | Да (`dagster/dagster-k8s`) |
+| **Kestra** | Оркестратор, потоки в YAML | Официальный [docker-compose.yml](https://raw.githubusercontent.com/kestra-io/kestra/develop/docker-compose.yml) | Да |
+| **Mage** | Пайплайны в ноутбуке | `mageai/mageai`, [инструкция](https://docs.mage.ai/getting-started/setup) | Да |
+| **Meltano** | ELT на Singer | `meltano/meltano` | Да |
+| **dbt** | Трансформации в SQL | `ghcr.io/dbt-labs/dbt-core`, `dbt-postgres`, `dbt-snowflake`, `dbt-bigquery` | **Нет, только amd64.** Соберите свой образ |
+| **Superset** | BI | `apache/superset`, [репозиторий](https://github.com/apache/superset) | Да |
+| **Lightdash** | BI поверх dbt | `lightdash/lightdash` | **Нет, только amd64** |
+| **Trino** | Запросы к разным источникам | `trinodb/trino` | Да |
+| **Spark** | Обработка больших данных | `apache/spark` | Да |
+| **Redpanda** | Kafka-совместимый брокер | `redpandadata/redpanda` | Да |
+| **Grafana** | Мониторинг и графики | `grafana/grafana` | Да |
+
+Как читать столбец arm64: если написано «только amd64», на Mac с чипом M образ запустится только через эмуляцию (`--platform linux/amd64`). Это медленно. Для dbt лучше собрать свой образ.
+
+### Пример: Prefect за минуту
+
+Мы запустили этот пример. Сервер Prefect с веб-интерфейсом:
+
+```bash
+docker run -d --name prefect -p 4200:4200 \
+  prefecthq/prefect:3-latest \
+  prefect server start --host 0.0.0.0
+```
+
+Проверка:
+
+```bash
+curl -s localhost:4200/api/health
+```
+
+Ответ: `true`. Интерфейс: [http://localhost:4200](http://localhost:4200). Остановить и удалить: `docker rm -f prefect`.
+
+`--host 0.0.0.0` нужен, чтобы сервер слушал не только внутри контейнера. Без него порт `-p` не сработает.
+
+Образ большой (сотни мегабайт). Тег `3-latest` меняется. Для своего проекта закрепите точную версию.
+
+### Что искать в стартере
+
+- **Официальный пример.** Ищите в документации раздел Docker, Docker Compose или Self-hosted.
+- **Версии образов.** В примерах часто стоит `latest`. Замените его на конкретную версию.
+- **Пароли.** В стартерах стоят пароли для обучения. Не берите их в продакшен.
+- **Данные.** Проверьте, где пример хранит данные. Если тома нет, данные пропадут при удалении контейнера.
+- **Размер.** Стартеры оркестраторов поднимают 4–8 контейнеров. Им нужно 4 ГБ памяти и больше.
+
+## Остальные инструменты
+
+Для них мы только проверили образ. Запускать их целиком не будем.
+
+- **Kafka.** Один брокер для опытов. Команда из официальной документации:
+  ```bash
+  docker run -p 9092:9092 apache/kafka:4.4.0
+  ```
+- **Jupyter.** Образ большой, несколько гигабайт. Порт `8888`, папку с ноутбуками подключают через `-v`.
+- **ClickHouse.** Образ `clickhouse/clickhouse-server:26.8`. Данные храните в томе: `-v ch-data:/var/lib/clickhouse`.
+- **MLflow.** Образ `ghcr.io/mlflow/mlflow:v3.5.0`. Сервер учёта экспериментов на порту `5000`.
+- **Superset.** Нужны база, секретный ключ и первый запуск с созданием пользователя. Следуйте [официальной инструкции](https://superset.apache.org/docs/installation/docker-compose/).
+
+## Docker в CI и в команде
+
+- **Тесты пайплайна.** CI запускает тот же образ, что и продакшен. Тест проходит в том же окружении.
+- **Тесты с базой.** В CI поднимают `postgres:17` как сервис, грузят тестовые данные, проверяют SQL.
+- **Новый коллега.** `git clone`, `cp .env.example .env`, `docker compose up`. Через пять минут всё работает.
+
+## Практика
+
+Все задания — в папке `~/docker-practice`.
+
+### Задание 1
+
+Запустите `app/report.py` в одноразовом контейнере `python:3.12-slim`, без `Dockerfile`. Подключите текущую папку через `-v`.
+
+**Проверка:** в выводе `Заказов: 500` и три строки по каналам: `organic 23715.82`, `ads 23082.74`, `email 15459.67`.
+
+<details>
+<summary>Решение</summary>
+
+```bash
+cd ~/docker-practice
+docker run --rm -v "$PWD:/work" -w /work \
+  -e ORDERS_PATH=/work/data/orders.csv \
+  python:3.12-slim python app/report.py
+```
+
+Без `-e ORDERS_PATH` скрипт ищет файл `/data/orders.csv` и падает с `FileNotFoundError`.
+
+</details>
+
+### Задание 2
+
+Найдите образ Adminer на Docker Hub и посмотрите его теги. Закрепите версию `5` и напишите сервис для `compose.yaml` на порту `8080`. Проверьте файл командой `docker compose config -q`.
+
+**Проверка:** команда `docker compose config -q` ничего не печатает и возвращает код 0 (`echo $?` показывает `0`).
+
+<details>
+<summary>Решение</summary>
+
+Теги: [hub.docker.com/_/adminer/tags](https://hub.docker.com/_/adminer/tags). Файл `compose.yaml`:
+
+```yaml
+services:
+  adminer:
+    image: adminer:5
+    ports:
+      - "8080:8080"
+```
+
+```bash
+docker compose config -q
+echo $?
+```
+
+Если порт 8080 занят, поменяйте левую часть: `"8081:8080"`.
+
+</details>
+
+### Задание 3
+
+Скачайте официальный `docker-compose.yaml` Airflow и выведите список его сервисов. Ничего не запускайте.
+
+**Проверка:** в списке 8 сервисов, среди них `airflow-scheduler` и `airflow-apiserver`.
+
+<details>
+<summary>Решение</summary>
+
+```bash
+mkdir -p ~/airflow-look && cd ~/airflow-look
+curl -LfO https://airflow.apache.org/docs/apache-airflow/3.4.0/docker-compose.yaml
+docker compose config --services 2>/dev/null
+```
+
+`2>/dev/null` прячет предупреждения о пустых переменных (`FERNET_KEY`, `AIRFLOW_UID`). Команда только читает файл. Контейнеры не стартуют. Если файл сменился, список может отличаться.
+
+</details>
+
+Дальше: [Контейнеры в продакшене](/practice/docker/production/).
