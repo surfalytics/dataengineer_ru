@@ -21,6 +21,7 @@ tags:
 ### Инжиниринг данных
 
 - [Joe Reis, Matt Housley / Fundamentals of Data Engineering](/book-summaries/engineering/fundamentals-of-data-engineering/) 🇬🇧 ⭐ - обязательная книга для дата-инженера: конспект на русском с разбором по главам и схемами
+- [Martin Kleppmann / Designing Data-Intensive Applications](/book-summaries/engineering/designing-data-intensive-applications/) 🇬🇧 ⭐ - как устроены базы данных, репликация, транзакции, пакетная и потоковая обработка: конспект на русском с разбором по главам и схемами
 
 ### Хранилища данных
 
