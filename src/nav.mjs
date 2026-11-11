@@ -46,7 +46,7 @@ export const topics = [
       { label: 'Базовый минимум CLI', items: [{ autogenerate: { directory: 'practice/cli' } }] },
       { label: 'Базовый минимум Python', items: [{ autogenerate: { directory: 'practice/python' } }] },
       { label: 'Базовый минимум статистики', items: [{ autogenerate: { directory: 'practice/stats' } }] },
-      { label: 'Базовый минимум Git и GitHub', items: [{ autogenerate: { directory: 'practice/git' } }] },
+      { label: 'Базовый минимум Git', items: [{ autogenerate: { directory: 'practice/git' } }] },
       { label: 'Базовый минимум Docker', items: [{ autogenerate: { directory: 'practice/docker' } }] },
     ],
   },
