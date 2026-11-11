@@ -70,7 +70,23 @@ export const topics = [
     icon: 'document',
     match: ['/resources/', '/community/'],
     items: [
-      { label: 'Книги и материалы', items: [{ autogenerate: { directory: 'resources' } }] },
+      {
+        label: 'Книги и материалы',
+        items: [
+          'resources/books',
+          'resources/whitepapers',
+          {
+            label: 'Fundamentals of Data Engineering',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'resources/fundamentals-of-data-engineering' } }],
+          },
+          {
+            label: 'Lean Analytics',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'resources/lean-analytics' } }],
+          },
+        ],
+      },
       { label: 'Сообщество', items: [{ autogenerate: { directory: 'community' } }] },
     ],
   },

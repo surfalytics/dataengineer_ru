@@ -5,8 +5,8 @@ head:
     content: "Fundamentals of Data Engineering: конспект | Инжиниринг Данных"
 description: "Конспект книги Fundamentals of Data Engineering на русском. Жизненный цикл данных, архитектура, выбор технологий, разбор всех глав и приложений."
 sidebar:
-  order: 10
-  label: "Fundamentals of Data Engineering"
+  order: 0
+  label: "Обзор книги"
 tags:
   - books
   - data-engineering
