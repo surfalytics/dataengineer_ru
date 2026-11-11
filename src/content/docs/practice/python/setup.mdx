@@ -1,0 +1,372 @@
+---
+title: Установка Python 3.14
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Установка Python 3.14 на Windows, macOS, Linux | Инжиниринг Данных"
+description: Как установить Python 3.14 на macOS, Linux и Windows, запустить REPL и первый скрипт, прочитать типичные ошибки.
+sidebar:
+  order: 2
+  label: Установка Python 3.14
+tags:
+  - python
+  - practice
+---
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+После урока у вас будет Python 3.14, запущенный REPL и первый скрипт. Всё делаем в терминале. Если он незнаком, пройдите [курс CLI](/practice/cli/setup/).
+
+<Aside type="caution">
+Правило курса: решайте задания сами, без AI. Так навык остаётся с вами.
+</Aside>
+
+## Шаг 1. Проверьте, что уже есть
+
+<Tabs syncKey="os">
+<TabItem label="macOS / Linux">
+
+```bash
+python3 --version
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+python --version
+```
+
+</TabItem>
+</Tabs>
+
+Нужен ответ `Python 3.14.x`. Если версия старая или команды нет, установите Python.
+
+<Aside type="note">
+Дальше в курсе мы пишем `python3`. На Windows пишите `python`.
+</Aside>
+
+## Шаг 2. Установка
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+Вариант 1. Homebrew:
+
+```bash
+brew install python@3.14
+python3.14 --version
+```
+
+Вариант 2. Установщик с [python.org/downloads](https://www.python.org/downloads/). Скачайте файл `.pkg` и запустите его.
+
+</TabItem>
+<TabItem label="Linux">
+
+Ubuntu и Debian. В стандартных репозиториях может не быть 3.14. Используйте PPA `deadsnakes`:
+
+```bash
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.14 python3.14-venv
+python3.14 --version
+```
+
+Fedora:
+
+```bash
+sudo dnf install python3.14
+```
+
+Не меняйте системный `python3`. Системные утилиты зависят от него. Запускайте `python3.14` или используйте [uv](/practice/python/environments/): он сам скачает нужную версию.
+
+</TabItem>
+<TabItem label="Windows">
+
+Вариант 1. Установщик с [python.org/downloads](https://www.python.org/downloads/). Включите галочку **Add python.exe to PATH**.
+
+Вариант 2. winget:
+
+```powershell
+winget install Python.Python.3.14
+```
+
+После установки закройте терминал и откройте новый. Проверьте:
+
+```powershell
+python --version
+```
+
+Если Windows открывает Microsoft Store, отключите «псевдонимы приложения» (App execution aliases) для `python.exe` в настройках.
+
+</TabItem>
+</Tabs>
+
+<Aside type="tip">
+Не уверены, какой Python запускается? Команда `which python3` (macOS / Linux) или `where python` (Windows) покажет путь.
+</Aside>
+
+## REPL: интерактивный режим
+
+REPL читает команду, выполняет её и сразу показывает результат. Удобно для быстрых проверок.
+
+```bash
+python3
+```
+
+Вы увидите приглашение `>>>`. Введите:
+
+```python
+>>> 2 + 2
+4
+>>> orders = [120.5, 80.0, 45.25]
+>>> sum(orders)
+245.75
+>>> len(orders)
+3
+```
+
+Выход: `exit()` или `Ctrl+D` (на Windows `Ctrl+Z`, потом `Enter`).
+
+В Python 3.14 REPL цветной и лучше подсвечивает синтаксис. Это включено само.
+
+## Первый скрипт
+
+Создайте папку и файл:
+
+```bash
+mkdir python-practice
+cd python-practice
+```
+
+Файл `hello.py`:
+
+```python
+print("Привет, данные!")
+```
+
+Запуск:
+
+```bash
+python3 hello.py
+```
+
+**Проверка:**
+
+```
+Привет, данные!
+```
+
+Теперь скрипт посложнее. Файл `first.py`:
+
+```python
+import sys
+
+orders = [120.5, 80.0, 45.25]
+total = sum(orders)
+print(f"Python {sys.version_info.major}.{sys.version_info.minor}")
+print(f"Заказов: {len(orders)}, сумма: {total:.2f}")
+```
+
+```bash
+python3 first.py
+```
+
+```
+Python 3.14
+Заказов: 3, сумма: 245.75
+```
+
+Что здесь есть:
+
+- `import sys` подключает модуль из стандартной библиотеки.
+- `f"..."` это f-string. Значения идут в фигурных скобках.
+- `{total:.2f}` печатает число с двумя знаками после точки.
+
+## Что нового в Python 3.14
+
+Нужно знать три вещи.
+
+| Что | Зачем нам |
+|---|---|
+| Цветной REPL | Проще читать вывод |
+| Понятнее сообщения об ошибках | Подсказки вида `Did you mean: 'sqrt'?` |
+| t-strings (`t"..."`) | Шаблоны, которые можно проверить до подстановки. Нужны в основном библиотекам |
+
+Пример t-string. Файл `t.py`:
+
+```python
+user = "anna"
+amount = 99.5
+q = t"user={user}, amount={amount}"
+print(type(q).__name__)
+print(q.strings)
+print([i.value for i in q.interpolations])
+```
+
+```
+Template
+('user=', ', amount=', '')
+['anna', 99.5]
+```
+
+t-string не делает строку. Он возвращает объект `Template`. Для обычной работы используйте f-string. Тема t-strings нужна, чтобы узнать их в чужом коде.
+
+## Типичные ошибки
+
+Python пишет `Traceback`. Читайте его снизу вверх. Последняя строка говорит, что случилось. Строка над ней показывает, где.
+
+| Ошибка | Причина | Что делать |
+|---|---|---|
+| `command not found: python3` / `'python' is not recognized` | Python не установлен или нет в PATH | Переустановите, включите **Add to PATH**, откройте новый терминал |
+| `ModuleNotFoundError: No module named 'polars'` | Пакет не установлен в этом окружении | Установите пакет в окружение: [урок про окружения](/practice/python/environments/) |
+| `SyntaxError: expected ':'` | Забыли `:` | Добавьте двоеточие |
+| `TypeError: can only concatenate str (not "int") to str` | Сложили строку и число | Используйте f-string |
+| `IndexError: list index out of range` | Индекса нет в списке | Проверьте `len(...)` |
+| `AttributeError: ... Did you mean: 'sqrt'?` | Опечатка в имени | Исправьте по подсказке |
+
+Реальный пример. Файл `err.py`:
+
+```python
+orders = [10, 20]
+print(orders[5])
+```
+
+```
+Traceback (most recent call last):
+  File "err.py", line 2, in <module>
+    print(orders[5])
+          ~~~~~~^^^
+IndexError: list index out of range
+```
+
+Тут `~~~~~~^^^` показывает точное место ошибки. Путь к файлу у вас будет свой.
+
+## Где это в работе
+
+- Скрипт `python3 job.py` это самая простая форма пайплайна. Его запускает cron или Airflow.
+- REPL нужен, чтобы быстро проверить кусок данных или функцию.
+- Версия Python в проекте фиксируется. Иначе на сервере будет не то, что у вас.
+
+## Задания
+
+### Задание 1. Версия
+
+Выведите версию Python одной командой.
+
+<details>
+<summary>Решение</summary>
+
+```bash
+python3 --version
+```
+
+**Проверка:** `Python 3.14.x`. Если у вас 3.13 или ниже, вернитесь к шагу 2.
+
+</details>
+
+### Задание 2. REPL
+
+Откройте REPL. Посчитайте цену с налогом: `100 * 1.2`. Затем найдите длину строки `"order_id"`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+>>> 100 * 1.2
+120.0
+>>> len("order_id")
+8
+```
+
+**Проверка:** `120.0` и `8`. Выход: `exit()`.
+
+</details>
+
+### Задание 3. Свой скрипт
+
+Создайте `orders.py`. В нём список сумм `[250, 90, 130]`. Выведите максимум и среднее через f-string, среднее с одним знаком после точки.
+
+<details>
+<summary>Решение</summary>
+
+```python
+amounts = [250, 90, 130]
+print(f"Максимум: {max(amounts)}")
+print(f"Среднее: {sum(amounts) / len(amounts):.1f}")
+```
+
+**Проверка:**
+
+```
+Максимум: 250
+Среднее: 156.7
+```
+
+</details>
+
+### Задание 4. Аргументы командной строки
+
+Скрипт должен принять имя и поприветствовать. Без имени пишет «аноним».
+
+<details>
+<summary>Решение</summary>
+
+Файл `args.py`:
+
+```python
+import sys
+
+name = sys.argv[1] if len(sys.argv) > 1 else "аноним"
+print(f"Привет, {name}!")
+```
+
+```bash
+python3 args.py Dima
+python3 args.py
+```
+
+**Проверка:**
+
+```
+Привет, Dima!
+Привет, аноним!
+```
+
+`sys.argv` это список аргументов. Первый элемент всегда имя файла.
+
+</details>
+
+### Задание 5. Прочитайте ошибку
+
+Запустите скрипт. Скажите, какая строка сломана и почему. Исправьте.
+
+```python
+print("amount: " + 100)
+```
+
+<details>
+<summary>Решение</summary>
+
+```
+TypeError: can only concatenate str (not "int") to str
+```
+
+Нельзя сложить строку и число. Исправление:
+
+```python
+print(f"amount: {100}")
+```
+
+**Проверка:** `amount: 100`
+
+</details>
+
+## Что запомнить
+
+- Нужен Python 3.14. Проверка: `python3 --version`.
+- `python3 file.py` запускает файл. `python3` без файла открывает REPL.
+- Ошибки читайте снизу вверх. Последняя строка называет проблему.
+- На Windows команда `python`, а не `python3`.
+- Системный Python не трогайте. Для проектов используйте окружения.
+
+Дальше: [Окружения: venv, Poetry, uv](/practice/python/environments/). Теория: Python Crash Course, глава 1.

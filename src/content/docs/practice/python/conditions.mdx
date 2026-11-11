@@ -1,0 +1,341 @@
+---
+title: Условия if
+head:
+  - tag: title
+    content: "Условия if, and, or, in и match в Python | Инжиниринг Данных"
+description: Как писать условия if/elif/else в Python, сравнения, and, or, not, in, истинность значений и match. Задания на данных заказов.
+sidebar:
+  order: 7
+  label: Условия if
+tags:
+  - python
+  - practice
+---
+import { Aside } from '@astrojs/starlight/components';
+
+Условие выбирает, какой код выполнить. Без условий нельзя ни фильтровать, ни проверять данные.
+
+## if, elif, else
+
+```python
+amount = 75
+if amount >= 100:
+    print("big")
+elif amount >= 50:
+    print("medium")
+else:
+    print("small")
+```
+
+Ответ:
+
+```
+medium
+```
+
+- Python проверяет условия сверху вниз. Выполняется **первый** подходящий блок.
+- `elif` и `else` необязательны.
+- После `:` идёт блок с отступом.
+
+## Сравнения
+
+```python
+print(1 == 1, 1 != 2, 3 < 5, 5 <= 5, 1 < 5 < 10)
+print("a" == "A", "a" < "b")
+```
+
+Ответ:
+
+```
+True True True True True
+False True
+```
+
+- `==` сравнивает. `=` присваивает. Не путайте.
+- Цепочка `1 < x < 10` работает как в математике.
+- Строки сравниваются с учётом регистра.
+
+## and, or, not
+
+```python
+device = "mobile"
+is_paid = True
+print(device == "mobile" and is_paid)
+print(device == "web" or is_paid)
+print(not is_paid)
+```
+
+Ответ:
+
+```
+True
+True
+False
+```
+
+| Оператор | Значение |
+|---|---|
+| `a and b` | Оба истинны |
+| `a or b` | Хотя бы одно истинно |
+| `not a` | Наоборот |
+
+Если смешиваете `and` и `or`, ставьте скобки. `and` сильнее, чем `or`.
+
+## Оператор in
+
+`in` проверяет, есть ли значение в списке или подстрока в строке.
+
+```python
+print("app" in ["web", "app"], "x" not in "abc", "err" in "error: disk")
+```
+
+Ответ:
+
+```
+True True True
+```
+
+Это короткая замена цепочке `or`. Вместо `ch == "web" or ch == "app"` пишите `ch in ["web", "app"]`.
+
+## Истинность значений
+
+Любое значение можно использовать как условие. Ложными считаются `0`, `0.0`, `""`, `[]`, `None`, `False`. Остальное истинно.
+
+```python
+for v in [0, "", [], None, "0", [0], " "]:
+    print(repr(v), bool(v))
+```
+
+Ответ:
+
+```
+0 False
+'' False
+[] False
+None False
+'0' True
+[0] True
+' ' True
+```
+
+<Aside type="caution" title="Строка с пробелом не пустая">
+`" "` и `"0"` истинны. Для текста из файла проверяйте `v and v.strip()`.
+</Aside>
+
+Два частых приёма:
+
+```python
+coupon = None
+code = coupon or "NO_COUPON"     # значение по умолчанию
+print(code)
+
+items = []
+if not items:                    # список пустой
+    print("empty")
+
+label = "paid" if code else "unpaid"   # условное выражение в одну строку
+```
+
+Ответ:
+
+```
+NO_COUPON
+empty
+```
+
+`None` проверяйте через `is None`. Так вы отличите `None` от `0` и пустой строки.
+
+## match
+
+`match` удобен, когда одно значение надо сравнить с несколькими вариантами. Он есть с Python 3.10.
+
+```python
+def channel_group(ch):
+    match ch:
+        case "web" | "app":
+            return "own"
+        case "email":
+            return "crm"
+        case _:
+            return "other"
+
+print(channel_group("web"), channel_group("email"), channel_group("tv"))
+```
+
+Ответ:
+
+```
+own crm other
+```
+
+- `|` объединяет несколько вариантов.
+- `_` — «всё остальное».
+- `match` умеет и больше (разбор словарей и списков). Для старта хватает простых значений.
+
+## Где это в работе
+
+- Фильтр строк: оставить заказы дороже 100 с мобильного.
+- Проверка данных: пустое поле, `None`, значение вне допустимого списка.
+- Значения по умолчанию: `x or "unknown"`.
+- Группировка категорий: каналы в «свои» и «чужие».
+
+## Практика
+
+### Задание 1
+
+Напишите функцию `size(a)`. Она возвращает `"big"` при сумме от 100, `"medium"` от 50, иначе `"small"`. Проверьте на `120`, `75`, `10`.
+
+**Проверка:** `big medium small`
+
+<details>
+<summary>Решение</summary>
+
+```python
+def size(a):
+    if a >= 100:
+        return "big"
+    elif a >= 50:
+        return "medium"
+    return "small"
+
+print(size(120), size(75), size(10))
+```
+
+Функции подробно в уроке про [функции](/practice/python/functions/). Сейчас важно только условие.
+
+</details>
+
+### Задание 2
+
+Для возрастов `17`, `18`, `65` выведите `ok`, если возраст от 18 включительно до 65 не включая. Иначе `no`. Используйте цепочку сравнений.
+
+**Проверка:**
+
+```
+17 no
+18 ok
+65 no
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+for age in [17, 18, 65]:
+    print(age, "ok" if 18 <= age < 65 else "no")
+```
+
+</details>
+
+### Задание 3
+
+Заказы: `[("anna", "mobile", 30), ("bob", "web", 200), ("carl", "mobile", 150)]`. Выведите имена тех, кто купил с `mobile` и на сумму больше 100.
+
+**Проверка:** `carl`
+
+<details>
+<summary>Решение</summary>
+
+```python
+orders = [("anna", "mobile", 30), ("bob", "web", 200), ("carl", "mobile", 150)]
+for user, device, amount in orders:
+    if device == "mobile" and amount > 100:
+        print(user)
+```
+
+</details>
+
+### Задание 4
+
+Для каналов `web`, `tv`, `app`, `radio` выведите `known`, если канал в списке `["web", "app", "email"]`, иначе `unknown`.
+
+**Проверка:**
+
+```
+web known
+tv unknown
+app known
+radio unknown
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+for ch in ["web", "tv", "app", "radio"]:
+    if ch in ["web", "app", "email"]:
+        print(ch, "known")
+    else:
+        print(ch, "unknown")
+```
+
+</details>
+
+### Задание 5
+
+Значения из файла: `""`, `"  "`, `"x"`, `None`. Выведите `filled`, если в значении есть текст, иначе `empty`.
+
+**Проверка:**
+
+```
+'' empty
+'  ' empty
+'x' filled
+None empty
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+for v in ["", "  ", "x", None]:
+    if v and v.strip():
+        print(repr(v), "filled")
+    else:
+        print(repr(v), "empty")
+```
+
+</details>
+
+### Задание 6
+
+Статусы заказа: `paid`, `refunded`, `new`. Через `match` выведите действие: `paid` и `shipped` дают `keep`, `refunded` даёт `revert`, всё остальное `check`.
+
+**Проверка:**
+
+```
+paid keep
+refunded revert
+new check
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+def action(status):
+    match status:
+        case "paid" | "shipped":
+            return "keep"
+        case "refunded":
+            return "revert"
+        case _:
+            return "check"
+
+for s in ["paid", "refunded", "new"]:
+    print(s, action(s))
+```
+
+</details>
+
+## Что запомнить
+
+- `if / elif / else` — выполняется первый подходящий блок.
+- `==` сравнивает, `=` присваивает. `None` проверяют через `is None`.
+- `in` заменяет длинную цепочку `or`.
+- Ложные значения: `0`, `""`, `[]`, `None`, `False`. Строка `" "` истинна.
+- `match` — для выбора по значению. `_` значит «всё остальное».
+
+Дальше: Python Crash Course, глава 5.
+
+Следующий урок: [Словари](/practice/python/dicts/).

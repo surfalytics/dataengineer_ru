@@ -1,0 +1,212 @@
+---
+title: Установка
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Установка Docker на Windows, macOS и Linux | Инжиниринг Данных"
+description: Как установить Docker Desktop на macOS и Windows (WSL 2) или Docker Engine на Linux, проверить установку и скачать учебные файлы курса.
+sidebar:
+  order: 2
+  label: Установка
+tags:
+  - docker
+  - practice
+---
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Нужны три вещи: **Docker**, **терминал** и **учебные файлы**. Терминал разбирали в [курсе CLI](/practice/cli/setup/).
+
+## Что устанавливаем
+
+Слово «Docker» значит несколько вещей.
+
+| Часть | Что это |
+|---|---|
+| **Docker Engine** | Программа, которая запускает контейнеры. Работает в фоне |
+| **Docker CLI** | Команда `docker`. Вы пишете её в терминале, она говорит Engine, что делать |
+| **Docker Compose** | Команда `docker compose`. Запускает много контейнеров по одному файлу |
+| **Docker Desktop** | Приложение для macOS и Windows. Внутри: Engine, CLI, Compose и окно для просмотра контейнеров |
+
+Контейнеры Linux работают только на ядре Linux. На macOS и Windows Docker Desktop запускает маленькую виртуальную машину с Linux и держит Engine внутри неё. Вы этого не видите.
+
+<Aside type="caution" title="Лицензия Docker Desktop">
+Docker Desktop бесплатен для личного использования, учёбы и небольших компаний. Для крупных компаний он платный. Проверьте правила своей работы. Если Docker Desktop нельзя, смотрите «Альтернативы» ниже.
+</Aside>
+
+## Шаг 1. Установите Docker
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+<Steps>
+
+1. Скачайте **Docker Desktop** с [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/). Выберите версию для вашего чипа: **Apple Silicon** (M1, M2, M3, M4) или **Intel**.
+
+   Или поставьте через Homebrew:
+
+   ```bash
+   brew install --cask docker-desktop
+   ```
+
+2. Откройте Docker Desktop из «Программ». Дождитесь, пока значок кита в верхнем меню перестанет мигать.
+
+3. Проверьте установку (ниже).
+
+</Steps>
+
+</TabItem>
+<TabItem label="Windows">
+
+На Windows Docker Desktop работает поверх **WSL 2**. Это Linux внутри Windows. Если вы прошли [установку терминала](/practice/cli/setup/) с WSL, он уже есть.
+
+<Steps>
+
+1. Установите WSL, если его нет. Откройте PowerShell **от имени администратора**:
+
+   ```powershell
+   wsl --install
+   ```
+
+   Перезагрузите компьютер.
+
+2. Скачайте **Docker Desktop** с [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/) и установите. Оставьте галочку **Use WSL 2 instead of Hyper-V**.
+
+3. Запустите Docker Desktop. Дождитесь статуса **Engine running** в левом нижнем углу.
+
+4. Откройте терминал **Ubuntu** (WSL) из меню «Пуск». Все команды курса пишите там, а не в PowerShell.
+
+</Steps>
+
+<Aside type="tip" title="Файлы держите в Linux">
+Храните учебные файлы в домашней папке Linux (`~`), а не в `/mnt/c/...`. Так Docker работает намного быстрее.
+</Aside>
+
+</TabItem>
+<TabItem label="Linux">
+
+На Linux Docker Desktop не нужен. Ставят **Docker Engine** напрямую.
+
+<Steps>
+
+1. Установите Docker по официальной инструкции для вашего дистрибутива: [docs.docker.com/engine/install](https://docs.docker.com/engine/install/). Для Ubuntu и Debian это подключение репозитория Docker и пакеты `docker-ce` и `docker-compose-plugin`.
+
+2. Разрешите своему пользователю запускать Docker без `sudo`:
+
+   ```bash
+   sudo usermod -aG docker $USER
+   ```
+
+3. Выйдите из системы и войдите снова. Группа применяется только после нового входа.
+
+</Steps>
+
+<Aside type="caution" title="Группа docker равна root">
+Пользователь в группе `docker` может получить права root на машине. На личном ноутбуке это нормально. На общем сервере не добавляйте туда всех подряд.
+</Aside>
+
+</TabItem>
+</Tabs>
+
+## Шаг 2. Проверьте установку
+
+```bash
+docker --version
+docker compose version
+```
+
+Ответ похож на это. Номера версий у вас будут другие:
+
+```
+Docker version 28.5.0, build 887030fbe8
+Docker Compose version v5.5.1
+```
+
+Теперь запустите первый контейнер:
+
+```bash
+docker run --rm hello-world
+```
+
+Docker скачает маленький образ и запустит его. Вы увидите:
+
+```
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+```
+
+Если вы видите это сообщение, Docker работает.
+
+## Шаг 3. Учебные файлы
+
+```bash
+cd ~
+curl -L -o docker-practice.tar.gz https://dataengineer.ru/assets/practice/docker-practice.tar.gz
+tar xzf docker-practice.tar.gz
+cd docker-practice
+ls
+```
+
+**Проверка:** `ls` показывает три имени:
+
+```
+README.txt  app  data
+```
+
+| Файл | Что внутри |
+|---|---|
+| `data/orders.csv` | 500 заказов интернет-магазина: дата, клиент, канал, сумма, статус |
+| `app/report.py` | Скрипт на Python. Печатает выручку по каналам. Нужен только Python |
+| `app/load_orders.py` | Скрипт на Python. Загружает заказы в Postgres. Нужна библиотека `psycopg` |
+| `app/requirements.txt` | Список библиотек для скриптов |
+
+Посмотрите на данные:
+
+```bash
+head -3 data/orders.csv
+```
+
+```
+order_id,order_date,customer_id,channel,amount,status
+1001,2024-02-27,110,email,261.07,completed
+1002,2024-02-27,76,organic,157.27,completed
+```
+
+Python на вашем компьютере **не нужен**. Скрипты мы будем запускать внутри контейнеров.
+
+<Aside type="note" title="Как начать заново">
+Если что-то сломали, удалите папку и распакуйте архив снова:
+
+```bash
+cd ~
+rm -rf docker-practice
+tar xzf docker-practice.tar.gz
+```
+</Aside>
+
+## Настройки ресурсов
+
+Docker Desktop использует часть памяти и процессора вашего компьютера. Для курса хватит **4 ГБ памяти**. Metabase в итоговой практике любит больше. Поставьте 6–8 ГБ, если можно.
+
+Где менять: Docker Desktop → **Settings → Resources**.
+
+## Альтернативы Docker Desktop
+
+Если Docker Desktop нельзя, есть другие способы. Команды `docker` остаются теми же.
+
+| Вариант | Для чего |
+|---|---|
+| **Colima** | macOS и Linux. Лёгкая виртуальная машина и Docker Engine. `brew install colima docker` |
+| **Rancher Desktop** | macOS, Windows, Linux. Бесплатное приложение с окном, как Docker Desktop |
+| **Podman** | Linux, macOS, Windows. Своя программа. Команды почти те же: `podman run` |
+
+В курсе мы пишем `docker`. С Colima и Rancher Desktop всё работает без изменений.
+
+## Если что-то не работает
+
+- **`Cannot connect to the Docker daemon ... Is the docker daemon running?`** Docker Desktop не запущен. Откройте его и подождите, пока Engine запустится. На Linux: `sudo systemctl start docker`.
+- **`permission denied while trying to connect to the Docker daemon socket`** (Linux). Вы не в группе `docker`. Выполните шаг 2 установки и войдите в систему заново.
+- **`docker: command not found` в WSL.** В Docker Desktop откройте Settings → Resources → WSL integration и включите вашу Ubuntu.
+- **Docker на Windows просит включить виртуализацию.** Включите её в BIOS (Intel VT-x или AMD-V).
+- **`curl: command not found`.** Поставьте curl: `sudo apt install -y curl`.
+
+Дальше: [Что такое контейнер](/practice/docker/containers/).

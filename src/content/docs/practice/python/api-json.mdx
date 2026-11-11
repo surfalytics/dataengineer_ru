@@ -1,0 +1,650 @@
+---
+title: API и JSON
+head:
+  - tag: title
+    content: "Python: JSON и REST API через requests | Инжиниринг Данных"
+description: "Как работать с JSON и REST API в Python: модуль json, requests и httpx, статусы, параметры, таймауты, API-ключи, пагинация, retry и сохранение raw-данных."
+sidebar:
+  order: 15
+  label: API и JSON
+tags:
+  - python
+  - practice
+---
+import { Aside } from '@astrojs/starlight/components';
+
+Данные часто приходят не из файла, а из API. Формат ответа почти всегда JSON.
+
+В этом уроке: читаем JSON, вызываем API, обрабатываем ошибки, забираем все страницы и сохраняем сырой ответ.
+
+<Aside type="note">
+Правило курса: решайте задания сами, без AI.
+</Aside>
+
+## Подготовка
+
+Нужны `requests` и `httpx`. Создайте проект (см. [урок про uv](/practice/python/environments/)):
+
+```bash
+uv init api-demo --python 3.14
+cd api-demo
+uv add requests httpx
+```
+
+Запускайте скрипты так: `uv run python file.py`.
+
+Для примеров берём бесплатный API без ключа: [jsonplaceholder.typicode.com](https://jsonplaceholder.typicode.com). Он отдаёт тестовые посты, пользователей и задачи. Данные в нём не меняются, поэтому ваш вывод совпадёт с нашим.
+
+## JSON и Python
+
+JSON похож на dict и list. Соответствие:
+
+| JSON | Python |
+|---|---|
+| `{...}` object | `dict` |
+| `[...]` array | `list` |
+| `"text"` | `str` |
+| `12`, `3.5` | `int`, `float` |
+| `true` / `false` | `True` / `False` |
+| `null` | `None` |
+
+Четыре функции:
+
+| Функция | Что делает |
+|---|---|
+| `json.loads(text)` | строка в Python-объект |
+| `json.dumps(obj)` | Python-объект в строку |
+| `json.load(f)` | файл в Python-объект |
+| `json.dump(obj, f)` | Python-объект в файл |
+
+Буква `s` значит string.
+
+### Вложенный JSON
+
+```python
+import json
+
+text = '{"order_id": 1001, "user": {"id": 7, "city": "Berlin"}, "items": [{"sku": "A1", "price": 10.5, "qty": 2}, {"sku": "B2", "price": 4.0, "qty": 1}], "paid": true, "coupon": null}'
+order = json.loads(text)
+print(type(order))
+print(order["user"]["city"])
+print(order["items"][0]["price"])
+print(order["paid"], order["coupon"])
+total = sum(i["price"] * i["qty"] for i in order["items"])
+print(total)
+```
+
+Вывод:
+
+```
+<class 'dict'>
+Berlin
+10.5
+True None
+25.0
+```
+
+Идём вглубь по ключам и индексам: `order["items"][0]["price"]`.
+
+### Запись и кириллица
+
+```python
+out = json.dumps(order, ensure_ascii=False, indent=2)
+print(out[:60])
+print(json.dumps({"город": "Москва"}))
+print(json.dumps({"город": "Москва"}, ensure_ascii=False))
+```
+
+Вывод:
+
+```
+{
+  "order_id": 1001,
+  "user": {
+    "id": 7,
+    "city": "
+{"город": "Москва"}
+{"город": "Москва"}
+```
+
+- `indent=2` делает вывод читаемым.
+- `ensure_ascii=False` оставляет кириллицу как есть. Без него будут коды `м`.
+
+## Первый запрос
+
+```python
+import requests
+
+url = "https://jsonplaceholder.typicode.com/posts/1"
+resp = requests.get(url, timeout=10)
+print(resp.status_code)
+print(resp.headers["content-type"])
+data = resp.json()
+print(type(data))
+print(data["id"], data["userId"])
+print(data["title"])
+
+resp = requests.get("https://jsonplaceholder.typicode.com/users/1", timeout=10)
+user = resp.json()
+print(user["name"], user["address"]["city"], user["address"]["geo"]["lat"])
+```
+
+Вывод:
+
+```
+200
+application/json; charset=utf-8
+<class 'dict'>
+1 1
+sunt aut facere repellat provident occaecati excepturi optio reprehenderit
+Leanne Graham Gwenborough -37.3159
+```
+
+- `resp.json()` сам разбирает тело ответа. Это то же самое, что `json.loads(resp.text)`.
+- `timeout=10` обязателен. Без него запрос может висеть вечно.
+
+### Статус-коды
+
+| Код | Значение | Что делать |
+|---|---|---|
+| 200 | ok | читать данные |
+| 400 | плохой запрос | исправить параметры |
+| 401 / 403 | нет доступа | проверить ключ |
+| 404 | не найдено | пропустить или сообщить |
+| 429 | слишком много запросов | подождать и повторить |
+| 500-504 | ошибка сервера | повторить позже |
+
+`resp.raise_for_status()` бросает `requests.HTTPError`, если код 4xx или 5xx.
+
+### Параметры и ошибки
+
+Параметры передавайте через `params`. Не склеивайте URL вручную.
+
+```python
+import requests
+
+BASE = "https://jsonplaceholder.typicode.com"
+
+resp = requests.get(f"{BASE}/posts", params={"userId": 2}, timeout=10)
+print(resp.url)
+print(len(resp.json()))
+
+resp = requests.get(f"{BASE}/posts/9999", timeout=10)
+print(resp.status_code)
+print(resp.json())
+try:
+    resp.raise_for_status()
+except requests.HTTPError as e:
+    print("Ошибка:", e)
+
+try:
+    requests.get("http://localhost:1", timeout=2)
+except requests.ConnectionError as e:
+    print("Нет соединения:", type(e).__name__)
+```
+
+Вывод:
+
+```
+https://jsonplaceholder.typicode.com/posts?userId=2
+10
+404
+{}
+Ошибка: 404 Client Error: Not Found for url: https://jsonplaceholder.typicode.com/posts/9999
+Нет соединения: ConnectionError
+```
+
+`requests` сам кодирует параметры. Он также ставит `?` и `&`.
+
+## Заголовки и API-ключи
+
+Ключ передают в заголовке (headers). Никогда не пишите ключ в коде. Берите его из переменной окружения.
+
+```python
+import os
+import requests
+
+token = os.environ.get("GITHUB_TOKEN")
+headers = {"Accept": "application/vnd.github+json", "User-Agent": "course-demo"}
+if token:
+    headers["Authorization"] = f"Bearer {token}"
+
+resp = requests.get("https://api.github.com/repos/python/cpython", headers=headers, timeout=10)
+print(resp.status_code)
+repo = resp.json()
+print(repo["full_name"], repo["language"])
+print("limit:", resp.headers["x-ratelimit-limit"])
+print("осталось:", resp.headers["x-ratelimit-remaining"])
+```
+
+Вывод без токена:
+
+```
+200
+python/cpython Python
+limit: 60
+осталось: 58
+```
+
+Число `осталось` у вас будет другое. Оно уменьшается с каждым запросом.
+
+Задать ключ в терминале:
+
+```bash
+export GITHUB_TOKEN="ваш_токен"
+```
+
+- Без токена GitHub даёт 60 запросов в час. С токеном больше.
+- Не коммитьте токены в git. Храните их в `.env` и добавьте файл в `.gitignore`.
+- `os.environ["KEY"]` падает с `KeyError`, если ключа нет. Для обязательных ключей это хорошо.
+
+## Пагинация
+
+API не отдаёт миллион строк за раз. Он делит их на страницы. Нужен цикл, пока страницы не кончатся.
+
+```python
+import requests
+
+BASE = "https://jsonplaceholder.typicode.com"
+
+def fetch_all(path: str, page_size: int = 50) -> list[dict]:
+    items = []
+    page = 1
+    while True:
+        resp = requests.get(f"{BASE}/{path}", params={"_page": page, "_limit": page_size}, timeout=10)
+        resp.raise_for_status()
+        batch = resp.json()
+        print("страница", page, "строк", len(batch))
+        if not batch:
+            break
+        items.extend(batch)
+        page += 1
+    return items
+
+todos = fetch_all("todos")
+print(len(todos))
+```
+
+Вывод:
+
+```
+страница 1 строк 50
+страница 2 строк 50
+страница 3 строк 50
+страница 4 строк 50
+страница 5 строк 0
+200
+```
+
+Бывают разные схемы пагинации:
+
+| Схема | Как работает |
+|---|---|
+| page + limit | как выше |
+| offset + limit | сдвиг от начала |
+| cursor / next_url | ответ содержит ссылку на следующую страницу |
+
+Читайте документацию API. Остановка всегда одна: пустая страница или нет `next`.
+
+## Retry и rate limit
+
+Сеть ломается. Сервер иногда отвечает 503 или 429. Повторяйте запрос только для временных ошибок.
+
+- Повторять: таймаут, обрыв соединения, 429, 500-504.
+- Не повторять: 400, 401, 403, 404. Повтор не поможет.
+- Ждите дольше с каждой попыткой (backoff): 2, 4, 8 секунд.
+- Если есть заголовок `Retry-After`, ждите столько, сколько он говорит.
+
+```python
+import time
+import requests
+
+RETRY_STATUS = {429, 500, 502, 503, 504}
+
+def get_with_retry(url: str, *, attempts: int = 3, **kwargs) -> requests.Response:
+    for attempt in range(1, attempts + 1):
+        try:
+            resp = requests.get(url, timeout=5, **kwargs)
+            if resp.status_code not in RETRY_STATUS:
+                return resp
+            print(f"попытка {attempt}: статус {resp.status_code}")
+            wait = float(resp.headers.get("Retry-After", 2 ** attempt))
+        except (requests.ConnectionError, requests.Timeout) as e:
+            print(f"попытка {attempt}: {type(e).__name__}")
+            wait = 2 ** attempt
+        if attempt == attempts:
+            raise RuntimeError(f"{url}: не удалось за {attempts} попытки")
+        time.sleep(wait * 0.1)  # в учебном примере ждём меньше
+    raise AssertionError("недостижимо")
+
+resp = get_with_retry("https://jsonplaceholder.typicode.com/posts/1")
+print("ok", resp.status_code)
+
+try:
+    get_with_retry("http://localhost:1/x")
+except RuntimeError as e:
+    print(e)
+```
+
+Вывод:
+
+```
+ok 200
+попытка 1: ConnectionError
+попытка 2: ConnectionError
+попытка 3: ConnectionError
+http://localhost:1/x: не удалось за 3 попытки
+```
+
+В реальном скрипте уберите `* 0.1`. Для сложных случаев есть библиотеки `tenacity` и `urllib3.Retry`.
+
+**Rate limit** — лимит числа запросов. Что делать:
+
+- Читайте заголовки вроде `x-ratelimit-remaining`.
+- Делайте паузу между запросами: `time.sleep(0.2)`.
+- Не гоняйте цикл по тысячам страниц без паузы.
+
+## Сохраняйте raw JSON
+
+Сначала сохраните ответ как есть. Потом чистите. Так вы не теряете данные и можете повторить обработку без нового запроса.
+
+```python
+import json
+from datetime import datetime, UTC
+from pathlib import Path
+import requests
+
+raw_dir = Path("raw")
+raw_dir.mkdir(exist_ok=True)
+
+resp = requests.get("https://jsonplaceholder.typicode.com/users", timeout=10)
+resp.raise_for_status()
+stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+path = raw_dir / f"users_{stamp}.json"
+path.write_text(json.dumps(resp.json(), ensure_ascii=False, indent=2), encoding="utf-8")
+print(path.suffix, path.stat().st_size > 0)
+
+users = json.loads(path.read_text(encoding="utf-8"))
+print(len(users), users[0]["name"])
+```
+
+Вывод:
+
+```
+.json True
+10 Leanne Graham
+```
+
+Дата в имени файла нужна, чтобы запуски не затирали друг друга.
+
+## Если нет интернета
+
+Тренироваться можно и без сети. Два способа.
+
+**1. Кэш-файл.** Пробуем API. Если не вышло, читаем последний сохранённый файл.
+
+```python
+import json
+from pathlib import Path
+import requests
+
+CACHE = Path("cache_users.json")
+
+def load_users() -> list[dict]:
+    try:
+        resp = requests.get("https://jsonplaceholder.typicode.com/users", timeout=5)
+        resp.raise_for_status()
+        users = resp.json()
+        CACHE.write_text(json.dumps(users), encoding="utf-8")
+        print("источник: API")
+    except requests.RequestException:
+        users = json.loads(CACHE.read_text(encoding="utf-8"))
+        print("источник: файл")
+    return users
+
+print(len(load_users()))
+```
+
+Вывод при работающей сети:
+
+```
+источник: API
+10
+```
+
+Вывод без сети (мы заменили URL на `http://localhost:1`):
+
+```
+источник: файл
+10
+```
+
+Сначала запустите скрипт с сетью один раз. Он создаст `cache_users.json`.
+
+**2. Строка с JSON.** Скопируйте ответ в файл и читайте его через `json.loads`. Так работают тесты (урок 13).
+
+## Другие API
+
+`api.github.com` (посмотрели выше) и [open-meteo.com](https://open-meteo.com) тоже работают без ключа. Open-meteo отдаёт погоду. Данные там меняются каждый день:
+
+```python
+import requests
+
+r = requests.get(
+    "https://api.open-meteo.com/v1/forecast",
+    params={"latitude": 52.52, "longitude": 13.41, "daily": "temperature_2m_max", "timezone": "UTC", "forecast_days": 3},
+    timeout=10,
+)
+print(r.json()["daily"])
+```
+
+Пример вывода (числа у вас будут другие):
+
+```
+{'time': ['2026-11-11', '2026-11-12', '2026-11-13'], 'temperature_2m_max': [5.1, 6.0, 8.0]}
+```
+
+## httpx
+
+`httpx` похож на `requests`. Он умеет async и HTTP/2. Для простых скриптов хватает `requests`. Если проект уже использует async, берите `httpx`.
+
+```python
+import httpx
+
+resp = httpx.get("https://jsonplaceholder.typicode.com/posts/1", timeout=10)
+print(resp.status_code, resp.json()["id"])
+
+with httpx.Client(base_url="https://jsonplaceholder.typicode.com", timeout=10) as client:
+    r = client.get("/users/2")
+    print(r.json()["name"])
+```
+
+Вывод:
+
+```
+200 1
+Ervin Howell
+```
+
+Отличия:
+
+- Таймаут в `httpx` по умолчанию 5 секунд. В `requests` его нет.
+- `httpx.Client` держит соединение открытым. Это быстрее для многих запросов. В `requests` то же делает `requests.Session`.
+- Редиректы в `httpx` по умолчанию выключены.
+
+## Где это в работе
+
+- Extract в ETL: забрать данные из API (CRM, реклама, платежи).
+- Raw-слой: сохранить ответ без изменений, потом разбирать.
+- Retry, timeout и лимиты нужны в любом пайплайне. Без них job падает ночью.
+- Ключи из env: так работает любой деплой.
+
+## Задания
+
+Задания 2-6 нужен интернет.
+
+### Задание 1
+
+В строке `text` лежит заказ. Посчитайте сумму `price * qty` по всем позициям.
+
+```python
+text = '{"order_id": 1, "items": [{"sku": "A", "price": 5.0, "qty": 3}, {"sku": "B", "price": 2.5, "qty": 4}]}'
+```
+
+**Проверка:** `25.0`
+
+<details>
+<summary>Решение</summary>
+
+```python
+import json
+
+order = json.loads(text)
+print(sum(i["price"] * i["qty"] for i in order["items"]))
+```
+
+</details>
+
+### Задание 2
+
+Получите пользователя с `id=3` из `/users/3`. Выведите имя, email и название компании (вложенный ключ `company`).
+
+**Проверка:** `Clementine Bauch Nathan@yesenia.net Romaguera-Jacobson`
+
+<details>
+<summary>Решение</summary>
+
+```python
+import requests
+
+u = requests.get("https://jsonplaceholder.typicode.com/users/3", timeout=10).json()
+print(u["name"], u["email"], u["company"]["name"])
+```
+
+</details>
+
+### Задание 3
+
+Получите комментарии к посту 1 через `/comments` и `params={"postId": 1}`. Выведите итоговый URL, число комментариев и первые два email.
+
+**Проверка:**
+
+```
+https://jsonplaceholder.typicode.com/comments?postId=1
+5
+['Eliseo@gardner.biz', 'Jayne_Kuhic@sydney.com']
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+import requests
+
+r = requests.get("https://jsonplaceholder.typicode.com/comments", params={"postId": 1}, timeout=10)
+print(r.url)
+print(len(r.json()))
+print([c["email"] for c in r.json()][:2])
+```
+
+</details>
+
+### Задание 4
+
+Напишите `get_post(post_id)`. Для 404 она возвращает `None`. Для других ошибок бросает исключение. Для успеха возвращает dict. Проверьте на постах 5 и 500.
+
+**Проверка:**
+
+```
+5
+None
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+import requests
+
+def get_post(post_id: int) -> dict | None:
+    r = requests.get(f"https://jsonplaceholder.typicode.com/posts/{post_id}", timeout=10)
+    if r.status_code == 404:
+        return None
+    r.raise_for_status()
+    return r.json()
+
+print(get_post(5)["id"])
+print(get_post(500))
+```
+
+</details>
+
+### Задание 5
+
+Заберите все задачи `/todos` по 50 штук на страницу. Посчитайте, сколько всего задач, сколько выполнено (`completed`) и какой процент выполнен.
+
+**Проверка:** `200 90 45.0`
+
+<details>
+<summary>Решение</summary>
+
+```python
+import requests
+
+done = 0
+total = 0
+for page in range(1, 5):
+    r = requests.get("https://jsonplaceholder.typicode.com/todos", params={"_page": page, "_limit": 50}, timeout=10)
+    r.raise_for_status()
+    for t in r.json():
+        total += 1
+        done += t["completed"]
+print(total, done, round(done / total * 100, 1))
+```
+
+`True` в Python равно 1. Поэтому `done += t["completed"]` считает выполненные.
+
+</details>
+
+### Задание 6
+
+Скачайте `/posts` и сохраните в `posts.json`. Прочитайте файл обратно. Выведите число постов и двух авторов (`userId`) с самым большим числом постов (`Counter.most_common`).
+
+**Проверка:**
+
+```
+100
+[(1, 10), (2, 10)]
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+import json
+from collections import Counter
+from pathlib import Path
+
+import requests
+
+r = requests.get("https://jsonplaceholder.typicode.com/posts", timeout=10)
+r.raise_for_status()
+Path("posts.json").write_text(json.dumps(r.json(), ensure_ascii=False), encoding="utf-8")
+posts = json.loads(Path("posts.json").read_text(encoding="utf-8"))
+print(len(posts))
+print(Counter(p["userId"] for p in posts).most_common(2))
+```
+
+У каждого из 10 авторов по 10 постов. Поэтому порядок при равенстве идёт по первому появлению.
+
+</details>
+
+## Что запомнить
+
+- JSON это dict, list, str, числа, `True`/`False`, `None`. Читать: `json.loads`. Писать: `json.dumps(..., ensure_ascii=False)`.
+- Всегда ставьте `timeout` и вызывайте `raise_for_status()`.
+- Параметры: `params=`. Ключи: заголовки и переменные окружения, не код.
+- Для списков: пагинация в цикле. Для сбоев: retry с backoff только на 429 и 5xx.
+- Сначала сохраните raw JSON, потом обрабатывайте.
+
+Дальше: [PyArrow, Polars, DuckDB](/practice/python/data-libs/). Для углубления: Python Crash Course, глава 10 (JSON и файлы).
