@@ -18,6 +18,10 @@ tags:
 
 ## Фундаментальные знания
 
+### Инжиниринг данных
+
+- [Joe Reis, Matt Housley / Fundamentals of Data Engineering](/resources/fundamentals-of-data-engineering/) 🇬🇧 ⭐ - обязательная книга для дата-инженера: конспект на русском с разбором по главам и схемами
+
 ### Хранилища данных
 
 - [Ральф Кимбалл, Марджи Росс / Инструментарий хранений и анализа данных: полное руководство по размерному моделированию](https://t.me/analyst_books/21) 🇷🇺
@@ -26,10 +30,6 @@ tags:
 ### Data Governance
 
 - [DAMA-DMBOK / Свод знаний по управлению данными (второе издание)](https://t.me/analyst_books/17)
-
-### Метрики и бизнес-аналитика
-
-- [Alistair Croll, Ben Yoskovitz / Lean Analytics](/resources/lean-analytics/) 🇬🇧 ⭐ - как выбирать метрики и измерять продукт
 
 ## Бизнес-книги
 
