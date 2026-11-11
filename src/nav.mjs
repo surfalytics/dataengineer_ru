@@ -65,6 +65,36 @@ export const topics = [
     items: [{ label: 'Карьера', items: [{ autogenerate: { directory: 'career' } }] }],
   },
   {
+    label: 'Конспекты книг',
+    link: '/book-summaries/',
+    icon: 'pencil',
+    match: ['/book-summaries/'],
+    items: [
+      { label: 'Обзор', link: '/book-summaries/' },
+      {
+        label: 'Инженерия',
+        items: [
+          {
+            label: 'Fundamentals of Data Engineering',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/fundamentals-of-data-engineering' } }],
+          },
+        ],
+      },
+      // AI: добавить группу, когда появится первая книга (папка book-summaries/ai/).
+      {
+        label: 'Бизнес и Soft Skills',
+        items: [
+          {
+            label: 'Lean Analytics',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/lean-analytics' } }],
+          },
+        ],
+      },
+    ],
+  },
+  {
     label: 'Библиотека',
     link: '/resources/books/',
     icon: 'document',

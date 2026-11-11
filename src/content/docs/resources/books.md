@@ -20,7 +20,7 @@ tags:
 
 ### Инжиниринг данных
 
-- [Joe Reis, Matt Housley / Fundamentals of Data Engineering](/resources/fundamentals-of-data-engineering/) 🇬🇧 ⭐ - обязательная книга для дата-инженера: конспект на русском с разбором по главам и схемами
+- [Joe Reis, Matt Housley / Fundamentals of Data Engineering](/book-summaries/engineering/fundamentals-of-data-engineering/) 🇬🇧 ⭐ - обязательная книга для дата-инженера: конспект на русском с разбором по главам и схемами
 
 ### Хранилища данных
 
@@ -33,7 +33,7 @@ tags:
 
 ## Бизнес-книги
 
-- [Alistair Croll, Ben Yoskovitz / Lean Analytics](/resources/lean-analytics/) 🇬🇧 ⭐ - конспект на русском с разбором по главам: как измерять стартап, метрики по бизнес-моделям и стадиям
+- [Alistair Croll, Ben Yoskovitz / Lean Analytics](/book-summaries/business/lean-analytics/) 🇬🇧 ⭐ - конспект на русском с разбором по главам: как измерять стартап, метрики по бизнес-моделям и стадиям
 
 ## Инструменты
 
