@@ -1,0 +1,660 @@
+---
+title: Итоговая практика
+head:
+  - tag: title
+    content: "Мини-ETL на Python: API, Polars, DuckDB, Parquet | Инжиниринг Данных"
+description: "Итоговый проект курса Python. Мини-ETL в проекте uv: API, raw JSON, Polars, DuckDB, Parquet, логирование и тесты pytest. Пошагово, с чек-листом."
+sidebar:
+  order: 17
+  label: Итоговая практика
+tags:
+  - python
+  - practice
+---
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Соберём мини-ETL. Он берёт данные из API и кладёт в Parquet. В нём всё, что мы прошли: функции, файлы, исключения, логи, тесты, `requests`, Polars, DuckDB.
+
+<Aside type="note">
+Правило курса: решайте задания сами, без AI. Код проекта ниже можно набрать руками и разобрать по шагам.
+</Aside>
+
+## Что строим
+
+Источник: [jsonplaceholder.typicode.com](https://jsonplaceholder.typicode.com). Берём `/todos` (200 задач) и `/users` (10 пользователей). Считаем, сколько процентов задач выполнил каждый пользователь.
+
+```
+API  ->  raw JSON  ->  Polars (clean)  ->  DuckDB (SQL)  ->  Parquet
+```
+
+| Шаг | Что делаем | Модуль |
+|---|---|---|
+| Extract | запрос к API с retry и пагинацией | `etl/extract.py` |
+| Raw | сохраняем JSON как есть | `etl/extract.py` |
+| Clean | читаем в Polars, чистим | `etl/transform.py` |
+| Transform | SQL в DuckDB: join и проценты | `etl/transform.py` |
+| Load | пишем Parquet | `etl/pipeline.py` |
+
+Проверено на Python 3.14 с `polars 2.1.0`, `pyarrow 26.0.1`, `duckdb 2.0.0`, `requests 2.34.2`, `pytest 9.2.0`.
+
+## Структура проекта
+
+```
+mini-etl/
+├── pyproject.toml
+├── .gitignore
+├── etl/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── extract.py
+│   ├── transform.py
+│   └── pipeline.py
+├── tests/
+│   ├── test_extract.py
+│   └── test_transform.py
+└── data/
+    ├── raw/
+    └── out/
+```
+
+- Одна задача на модуль. Так проще тестировать.
+- `data/` не коммитим. Это результат работы кода.
+- Конфиг лежит в одном месте.
+
+## Шаг 1. Создаём проект
+
+<Steps>
+
+1. Создайте проект и добавьте библиотеки:
+
+   ```bash
+   uv init mini-etl --python 3.14
+   cd mini-etl
+   rm main.py
+   uv add requests polars pyarrow duckdb
+   uv add --dev pytest
+   mkdir -p etl tests data/raw data/out
+   touch etl/__init__.py
+   echo "data/" >> .gitignore
+   ```
+
+2. Добавьте в конец `pyproject.toml` настройки pytest:
+
+   ```toml
+   [tool.pytest.ini_options]
+   pythonpath = ["."]
+   testpaths = ["tests"]
+   ```
+
+   `pythonpath = ["."]` позволяет писать `from etl.extract import ...` в тестах.
+
+</Steps>
+
+`pyarrow` нужен DuckDB для метода `.pl()`.
+
+## Шаг 2. Конфиг
+
+`etl/config.py`:
+
+```python
+from pathlib import Path
+
+BASE_URL = "https://jsonplaceholder.typicode.com"
+RAW_DIR = Path("data/raw")
+OUT_DIR = Path("data/out")
+TIMEOUT = 10
+PAGE_SIZE = 50
+```
+
+## Шаг 3. Extract и raw
+
+`etl/extract.py`:
+
+```python
+import json
+import logging
+import time
+from datetime import UTC, datetime
+from pathlib import Path
+
+import requests
+
+from etl.config import BASE_URL, PAGE_SIZE, RAW_DIR, TIMEOUT
+
+log = logging.getLogger(__name__)
+
+RETRY_STATUS = {429, 500, 502, 503, 504}
+
+
+def get_json(path: str, params: dict | None = None, attempts: int = 3):
+    url = f"{BASE_URL}/{path}"
+    for attempt in range(1, attempts + 1):
+        try:
+            resp = requests.get(url, params=params, timeout=TIMEOUT)
+            if resp.status_code not in RETRY_STATUS:
+                resp.raise_for_status()
+                return resp.json()
+            log.warning("%s: status %s, attempt %s", url, resp.status_code, attempt)
+        except (requests.ConnectionError, requests.Timeout) as e:
+            log.warning("%s: %s, attempt %s", url, type(e).__name__, attempt)
+        if attempt < attempts:
+            time.sleep(2**attempt)
+    raise RuntimeError(f"failed to get {url} after {attempts} attempts")
+
+
+def fetch_all(path: str) -> list[dict]:
+    items: list[dict] = []
+    page = 1
+    while True:
+        batch = get_json(path, {"_page": page, "_limit": PAGE_SIZE})
+        if not batch:
+            break
+        items.extend(batch)
+        page += 1
+    log.info("fetched %s rows from /%s", len(items), path)
+    return items
+
+
+def save_raw(name: str, data: list[dict], raw_dir: Path = RAW_DIR) -> Path:
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    path = raw_dir / f"{name}_{stamp}.json"
+    path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    log.info("saved raw file %s", path)
+    return path
+
+
+def latest_raw(name: str, raw_dir: Path = RAW_DIR) -> Path:
+    files = sorted(raw_dir.glob(f"{name}_*.json"))
+    if not files:
+        raise FileNotFoundError(f"no raw files for {name} in {raw_dir}")
+    return files[-1]
+```
+
+Что здесь важно:
+
+- `get_json`: timeout, retry на 429 и 5xx, ошибка 404 не повторяется (урок про [API](/practice/python/api-json/)).
+- `fetch_all`: пагинация до пустой страницы.
+- `save_raw`: файл с меткой времени. Запуски не затирают друг друга.
+- `latest_raw`: берёт последний файл. Нужен для режима `--offline`.
+- `log = logging.getLogger(__name__)`: логгер модуля (урок про [логирование](/practice/python/logging/)). Настройка логов только в одном месте, в `pipeline.py`.
+
+## Шаг 4. Clean и transform
+
+`etl/transform.py`:
+
+```python
+import logging
+from pathlib import Path
+
+import duckdb
+import polars as pl
+
+log = logging.getLogger(__name__)
+
+
+def load_raw(path: Path) -> pl.DataFrame:
+    return pl.read_json(path)
+
+
+def clean_todos(df: pl.DataFrame) -> pl.DataFrame:
+    before = df.height
+    out = (
+        df.rename({"id": "todo_id", "userId": "user_id"})
+        .with_columns(pl.col("title").str.strip_chars())
+        .filter(pl.col("title") != "")
+        .unique(subset="todo_id", keep="first")
+        .with_columns(pl.col("title").str.len_chars().alias("title_len"))
+        .sort("todo_id")
+    )
+    log.info("clean: %s rows in, %s rows out", before, out.height)
+    return out
+
+
+def clean_users(df: pl.DataFrame) -> pl.DataFrame:
+    return df.select(
+        pl.col("id").alias("user_id"),
+        pl.col("name"),
+        pl.col("address").struct.field("city").alias("city"),
+    )
+
+
+def user_summary(todos: pl.DataFrame, users: pl.DataFrame) -> pl.DataFrame:
+    return duckdb.sql(
+        """
+        SELECT u.user_id,
+               u.name,
+               count(*)                                  AS todos,
+               count(*) FILTER (WHERE t.completed)       AS done,
+               round(100.0 * count(*) FILTER (WHERE t.completed) / count(*), 1) AS done_pct
+        FROM todos t
+        JOIN users u USING (user_id)
+        GROUP BY u.user_id, u.name
+        ORDER BY done_pct DESC, u.user_id
+        """
+    ).pl()
+```
+
+Что здесь важно:
+
+- Каждая функция принимает DataFrame и возвращает DataFrame. Нет скрытого состояния, поэтому легко тестировать.
+- `clean_todos`: переименовать колонки, обрезать пробелы, убрать пустые заголовки и дубли, добавить колонку.
+- `clean_users`: вложенный `address.city` достаём через `struct.field`.
+- `user_summary`: DuckDB видит `todos` и `users` по именам параметров функции.
+- Логируем число строк до и после. Так видно, что чистка что-то убрала.
+
+## Шаг 5. Pipeline
+
+`etl/pipeline.py`:
+
+```python
+import argparse
+import logging
+
+from etl import extract, transform
+from etl.config import OUT_DIR
+
+log = logging.getLogger("etl")
+
+
+def run(offline: bool = False) -> None:
+    if offline:
+        todos_path = extract.latest_raw("todos")
+        users_path = extract.latest_raw("users")
+        log.info("offline mode, using %s", todos_path.name)
+    else:
+        todos_path = extract.save_raw("todos", extract.fetch_all("todos"))
+        users_path = extract.save_raw("users", extract.fetch_all("users"))
+
+    todos = transform.clean_todos(transform.load_raw(todos_path))
+    users = transform.clean_users(transform.load_raw(users_path))
+    summary = transform.user_summary(todos, users)
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / "user_summary.parquet"
+    summary.write_parquet(out)
+    log.info("wrote %s rows to %s", summary.height, out)
+    print(summary.head(3))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--offline", action="store_true", help="use latest raw files")
+    args = parser.parse_args()
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    run(offline=args.offline)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+- `run` связывает шаги. Логики в нём нет, только порядок.
+- `--offline` пропускает API и берёт последние raw-файлы. Так можно работать без сети и повторять чистку без новых запросов.
+- `logging.basicConfig` вызывается один раз, в точке входа.
+
+## Шаг 6. Запуск
+
+```bash
+uv run python -m etl.pipeline
+```
+
+Вывод (время и имена файлов у вас будут другие):
+
+```
+2026-11-11 10:35:27,291 INFO etl.extract: fetched 200 rows from /todos
+2026-11-11 10:35:27,291 INFO etl.extract: saved raw file data/raw/todos_20261111T173527Z.json
+2026-11-11 10:35:27,531 INFO etl.extract: fetched 10 rows from /users
+2026-11-11 10:35:27,532 INFO etl.extract: saved raw file data/raw/users_20261111T173527Z.json
+2026-11-11 10:35:27,537 INFO etl.transform: clean: 200 rows in, 200 rows out
+2026-11-11 10:35:29,491 INFO etl: wrote 10 rows to data/out/user_summary.parquet
+shape: (3, 5)
+┌─────────┬────────────────────┬───────┬──────┬──────────┐
+│ user_id ┆ name               ┆ todos ┆ done ┆ done_pct │
+│ ---     ┆ ---                ┆ ---   ┆ ---  ┆ ---      │
+│ i64     ┆ str                ┆ i64   ┆ i64  ┆ f64      │
+╞═════════╪════════════════════╪═══════╪══════╪══════════╡
+│ 5       ┆ Chelsey Dietrich   ┆ 20    ┆ 12   ┆ 60.0     │
+│ 10      ┆ Clementina DuBuque ┆ 20    ┆ 12   ┆ 60.0     │
+│ 1       ┆ Leanne Graham      ┆ 20    ┆ 11   ┆ 55.0     │
+└─────────┴────────────────────┴───────┴──────┴──────────┘
+```
+
+Запуск без сети:
+
+```bash
+uv run python -m etl.pipeline --offline
+```
+
+Он напишет `offline mode, using todos_....json` и тот же результат. Сначала нужен один запуск с сетью.
+
+## Шаг 7. Тесты
+
+Тесты не ходят в сеть. Ответ API подменяем объектом `FakeResponse` через `monkeypatch` (урок про [pytest](/practice/python/testing/)).
+
+`tests/test_transform.py`:
+
+```python
+import polars as pl
+
+from etl.transform import clean_todos, user_summary
+
+
+def make_todos() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            "userId": [1, 1, 2, 2],
+            "id": [1, 1, 2, 3],
+            "title": ["  buy milk ", "  buy milk ", "   ", "call bank"],
+            "completed": [True, True, False, False],
+        }
+    )
+
+
+def test_clean_drops_duplicates_and_empty_titles():
+    out = clean_todos(make_todos())
+    assert out["todo_id"].to_list() == [1, 3]
+
+
+def test_clean_strips_title():
+    out = clean_todos(make_todos())
+    assert out["title"].to_list() == ["buy milk", "call bank"]
+    assert out["title_len"].to_list() == [8, 9]
+
+
+def test_user_summary_percent():
+    todos = clean_todos(make_todos())
+    users = pl.DataFrame({"user_id": [1, 2], "name": ["Ann", "Bob"]})
+    res = user_summary(todos, users)
+    assert res["done_pct"].to_list() == [100.0, 0.0]
+```
+
+`tests/test_extract.py`:
+
+```python
+import pytest
+import requests
+
+from etl import extract
+
+
+class FakeResponse:
+    def __init__(self, status_code: int, payload=None):
+        self.status_code = status_code
+        self._payload = payload
+
+    def json(self):
+        return self._payload
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise requests.HTTPError(str(self.status_code))
+
+
+def test_retry_then_success(monkeypatch):
+    answers = [FakeResponse(503), FakeResponse(200, [{"id": 1}])]
+    monkeypatch.setattr(extract.requests, "get", lambda *a, **k: answers.pop(0))
+    monkeypatch.setattr(extract.time, "sleep", lambda s: None)
+    assert extract.get_json("todos") == [{"id": 1}]
+
+
+def test_gives_up_after_attempts(monkeypatch):
+    monkeypatch.setattr(extract.requests, "get", lambda *a, **k: FakeResponse(503))
+    monkeypatch.setattr(extract.time, "sleep", lambda s: None)
+    with pytest.raises(RuntimeError):
+        extract.get_json("todos", attempts=2)
+
+
+def test_404_is_not_retried(monkeypatch):
+    calls = []
+
+    def fake_get(*a, **k):
+        calls.append(1)
+        return FakeResponse(404)
+
+    monkeypatch.setattr(extract.requests, "get", fake_get)
+    with pytest.raises(requests.HTTPError):
+        extract.get_json("nope")
+    assert len(calls) == 1
+
+
+def test_save_and_find_latest_raw(tmp_path):
+    p = extract.save_raw("todos", [{"id": 1}], raw_dir=tmp_path)
+    assert p.exists()
+    assert extract.latest_raw("todos", raw_dir=tmp_path) == p
+```
+
+Запуск:
+
+```bash
+uv run pytest -q
+```
+
+Вывод:
+
+```
+.......                                                                  [100%]
+7 passed in 0.16s
+```
+
+Что покрыто:
+
+| Тест | Что проверяет |
+|---|---|
+| `test_clean_*` | чистка: дубли, пустые заголовки, пробелы |
+| `test_user_summary_percent` | SQL считает проценты верно |
+| `test_retry_then_success` | после 503 запрос повторяется |
+| `test_gives_up_after_attempts` | после лимита попыток бросается ошибка |
+| `test_404_is_not_retried` | 404 не повторяется |
+| `test_save_and_find_latest_raw` | raw-файл записан и находится |
+
+`monkeypatch.setattr(extract.time, "sleep", ...)` убирает ожидание. Тесты идут за доли секунды.
+
+## Шаг 8. Проверяем результат
+
+Откройте Parquet через DuckDB:
+
+```bash
+uv run python -c "import duckdb; print(duckdb.sql(\"select count(*), min(done_pct), max(done_pct) from 'data/out/user_summary.parquet'\"))"
+```
+
+Вывод:
+
+```
+┌──────────────┬───────────────┬───────────────┐
+│ count_star() │ min(done_pct) │ max(done_pct) │
+│    int64     │    double     │    double     │
+├──────────────┼───────────────┼───────────────┤
+│           10 │          30.0 │          60.0 │
+└──────────────┴───────────────┴───────────────┘
+```
+
+Данные jsonplaceholder не меняются, поэтому числа должны совпасть.
+
+## Где это в работе
+
+Это скелет настоящего пайплайна:
+
+- raw-слой, потом очищенный слой, потом витрина;
+- отдельные функции для каждого шага;
+- логи, по которым видно, что случилось ночью;
+- тесты без сети;
+- повтор обработки из raw без нового запроса к источнику.
+
+Дальше всё это запускают по расписанию в Airflow, cron или GitHub Actions.
+
+## Задания
+
+Расширьте проект. Решайте сами, потом сверьтесь с проверкой.
+
+### Задание 1
+
+Запустите пайплайн. Откройте `data/out/user_summary.parquet` через DuckDB. Сколько в нём строк, какое минимальное и максимальное `done_pct`?
+
+**Проверка:** `10`, `30.0`, `60.0`.
+
+<details>
+<summary>Решение</summary>
+
+Команда из шага 8. Или в Python:
+
+```python
+import duckdb
+
+print(duckdb.sql("SELECT count(*), min(done_pct), max(done_pct) FROM 'data/out/user_summary.parquet'"))
+```
+
+</details>
+
+### Задание 2
+
+Напишите тест, что `clean_todos` возвращает колонки в нужном порядке.
+
+**Проверка:** колонки `["user_id", "todo_id", "title", "completed", "title_len"]`. Тест проходит.
+
+<details>
+<summary>Решение</summary>
+
+Добавьте в `tests/test_transform.py`:
+
+```python
+def test_clean_columns():
+    out = clean_todos(make_todos())
+    assert out.columns == ["user_id", "todo_id", "title", "completed", "title_len"]
+```
+
+</details>
+
+### Задание 3
+
+Сколько задач имеют `title_len` больше 30? Посчитайте в Polars по очищенным данным.
+
+**Проверка:** `145`
+
+<details>
+<summary>Решение</summary>
+
+Запустите из корня проекта (после хотя бы одного запуска пайплайна):
+
+```python
+import polars as pl
+from etl import extract, transform
+
+todos = transform.clean_todos(transform.load_raw(extract.latest_raw("todos")))
+print(todos.filter(pl.col("title_len") > 30).height)
+```
+
+Сохраните код в `check.py` и запустите `uv run python check.py`.
+
+</details>
+
+### Задание 4
+
+В каком городе (`city`) самый высокий `done_pct`? Посчитайте SQL-запросом в DuckDB. Если процент одинаковый, берите город первым по алфавиту.
+
+**Проверка:** `Lebsackbury`, `60.0`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import duckdb
+from etl import extract, transform
+
+todos = transform.clean_todos(transform.load_raw(extract.latest_raw("todos")))
+users = transform.clean_users(transform.load_raw(extract.latest_raw("users")))
+
+print(duckdb.sql("""
+    SELECT u.city,
+           round(100.0 * count(*) FILTER (WHERE t.completed) / count(*), 1) AS done_pct
+    FROM todos t JOIN users u USING (user_id)
+    GROUP BY u.city
+    ORDER BY done_pct DESC, u.city
+    LIMIT 1
+"""))
+```
+
+</details>
+
+### Задание 5
+
+Добавьте в `transform.py` функцию `validate_todos(df)`. Она бросает `ValueError`, если в `todo_id` есть `null` или дубли. Напишите два теста: на дубли и на корректные данные.
+
+**Проверка:** `uv run pytest -q` показывает `10 passed` (с заданием 2).
+
+<details>
+<summary>Решение</summary>
+
+В `etl/transform.py`:
+
+```python
+def validate_todos(df: pl.DataFrame) -> None:
+    if df["todo_id"].null_count() > 0:
+        raise ValueError("todo_id has null values")
+    if df["todo_id"].n_unique() != df.height:
+        raise ValueError("todo_id is not unique")
+```
+
+В `tests/test_transform.py` (добавьте `import pytest` и `validate_todos` в импорт):
+
+```python
+def test_validate_rejects_duplicates():
+    df = pl.DataFrame({"todo_id": [1, 1]})
+    with pytest.raises(ValueError):
+        validate_todos(df)
+
+
+def test_validate_ok():
+    validate_todos(pl.DataFrame({"todo_id": [1, 2]}))
+```
+
+Вызовите `transform.validate_todos(todos)` в `pipeline.py` после `clean_todos`. Тогда плохие данные остановят пайплайн, а не попадут в Parquet.
+
+</details>
+
+### Задание 6
+
+Добавьте в `pipeline.py` флаг `--out`, чтобы менять папку для Parquet. Запустите с `--offline --out data/test_out`. Проверьте, что файл появился.
+
+**Проверка:** файл `data/test_out/user_summary.parquet` существует.
+
+<details>
+<summary>Решение</summary>
+
+```python
+parser.add_argument("--out", default=str(OUT_DIR), help="output folder")
+...
+run(offline=args.offline, out_dir=Path(args.out))
+```
+
+Функция `run` принимает `out_dir: Path = OUT_DIR` и пишет в `out_dir / "user_summary.parquet"`. Не забудьте `from pathlib import Path`.
+
+</details>
+
+## Самопроверка
+
+Проект готов, если вы отвечаете «да» на все пункты:
+
+- [ ] `uv run python -m etl.pipeline` работает и создаёт Parquet.
+- [ ] `uv run python -m etl.pipeline --offline` работает без сети.
+- [ ] Raw JSON лежит в `data/raw/` и не изменяется после записи.
+- [ ] У каждого запроса есть `timeout`.
+- [ ] Retry есть только для 429 и 5xx.
+- [ ] Логи показывают число строк на входе и выходе чистки.
+- [ ] `uv run pytest -q` проходит без сети.
+- [ ] Ключей и токенов в коде нет.
+- [ ] `data/` в `.gitignore`.
+- [ ] Каждая функция делает одно дело и не читает глобальных данных.
+
+## Что запомнить
+
+- Структура: config, extract, transform, pipeline. Каждый модуль отвечает за одно.
+- Сначала raw, потом чистка. Тогда обработку можно повторить без источника.
+- Логи и тесты нужны с первого дня, а не «потом».
+- Polars чистит, DuckDB считает SQL, Parquet хранит результат.
+- Ваш следующий шаг: свой API, свои данные, расписание (cron или Airflow).
+
+Это конец курса. Вернитесь на [главную страницу курса](/practice/python/) и повторите слабые темы. Для углубления: Python Crash Course, части II и III (проекты).

@@ -1,0 +1,355 @@
+---
+title: Словари
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Словари Python (dict): примеры и задания | Инжиниринг Данных"
+description: Словари Python для data engineer. Список словарей, вложенные словари, dict comprehension, get, items и множества. Примеры и задания.
+sidebar:
+  order: 8
+  label: Словари
+tags:
+  - python
+  - practice
+---
+import { Aside } from '@astrojs/starlight/components';
+
+`dict` хранит пары «ключ: значение». Это основная форма данных в Python. Одна строка таблицы, один JSON-объект и одна запись лога — это `dict`.
+
+Правило курса: решайте сами, без AI.
+
+## Основы
+
+```python
+order = {"order_id": 1001, "user": "anna", "amount": 49.9, "channel": "web", "device": "mobile"}
+
+print(order["user"])
+print(order.get("country"))
+print(order.get("country", "unknown"))
+```
+
+Ответ:
+
+```
+anna
+None
+unknown
+```
+
+- `order["key"]` берёт значение. Если ключа нет, будет `KeyError`.
+- `order.get("key")` вернёт `None`, если ключа нет. Вторым аргументом можно задать значение по умолчанию.
+- В pipeline данные приходят неполные. Поэтому `.get` нужен очень часто.
+
+### Изменить, добавить, удалить
+
+```python
+order["amount"] = 59.9      # изменить
+order["status"] = "paid"    # добавить
+del order["device"]         # удалить
+print(order)
+print("user" in order)
+```
+
+Ответ:
+
+```
+{'order_id': 1001, 'user': 'anna', 'amount': 59.9, 'channel': 'web', 'status': 'paid'}
+True
+```
+
+`dict` помнит порядок, в котором вы добавляли ключи.
+
+### Ключи, значения, пары
+
+```python
+print(list(order.keys()))
+print(list(order.values()))
+for key, value in order.items():
+    print(key, "=", value)
+```
+
+Ответ:
+
+```
+['order_id', 'user', 'amount', 'channel', 'status']
+[1001, 'anna', 59.9, 'web', 'paid']
+order_id = 1001
+user = anna
+amount = 59.9
+channel = web
+status = paid
+```
+
+`.items()` — самый частый способ обойти `dict`.
+
+## Список словарей
+
+Так выглядят данные из CSV и API: список строк, каждая строка — `dict`.
+
+```python
+orders = [
+    {"order_id": 1001, "user": "anna", "amount": 49.9, "channel": "web"},
+    {"order_id": 1002, "user": "boris", "amount": 120.0, "channel": "app"},
+    {"order_id": 1003, "user": "anna", "amount": 15.5, "channel": "web"},
+    {"order_id": 1004, "user": "dina", "amount": 300.0, "channel": "app"},
+    {"order_id": 1005, "user": "boris", "amount": 80.0, "channel": "email"},
+]
+
+print(len(orders), orders[1]["user"])
+
+total = 0
+for o in orders:
+    total += o["amount"]
+print(total)
+```
+
+Ответ:
+
+```
+5 boris
+565.4
+```
+
+Сначала индекс списка (`orders[1]`), потом ключ (`["user"]`).
+
+## Dict comprehension
+
+Короткая запись для создания `dict` (и списка) в одну строку.
+
+```python
+big = [o["order_id"] for o in orders if o["amount"] > 100]
+print(big)
+
+amount_by_id = {o["order_id"]: o["amount"] for o in orders}
+print(amount_by_id)
+```
+
+Ответ:
+
+```
+[1002, 1004]
+{1001: 49.9, 1002: 120.0, 1003: 15.5, 1004: 300.0, 1005: 80.0}
+```
+
+`amount_by_id` — это словарь для быстрого поиска суммы по `order_id`.
+
+## Подсчёт и агрегация
+
+Главный шаблон: `d[key] = d.get(key, 0) + value`.
+
+```python
+revenue = {}
+for o in orders:
+    ch = o["channel"]
+    revenue[ch] = revenue.get(ch, 0) + o["amount"]
+print(revenue)
+```
+
+Ответ:
+
+```
+{'web': 65.4, 'app': 420.0, 'email': 80.0}
+```
+
+Это `GROUP BY channel` и `SUM(amount)` из SQL. Позже вы сделаете то же самое одной командой в DuckDB.
+
+## Вложенные словари
+
+```python
+users = {
+    "anna": {"city": "Moscow", "orders": [1001, 1003]},
+    "boris": {"city": "Kazan", "orders": [1002, 1005]},
+}
+print(users["anna"]["city"])
+print(users["boris"]["orders"][0])
+
+users["dina"] = {"city": "Perm", "orders": [1004]}
+print(len(users))
+```
+
+Ответ:
+
+```
+Moscow
+1002
+3
+```
+
+Читайте цепочку слева направо: словарь, ключ, словарь, ключ, список, индекс. Так выглядит JSON из API.
+
+## Множества (set)
+
+`set` хранит только уникальные значения. Порядка нет.
+
+```python
+channels = {o["channel"] for o in orders}
+print(sorted(channels))
+print(len(channels))
+print({1, 2, 3} & {2, 3, 4})   # пересечение
+print({1, 2, 3} - {2, 3, 4})   # разность
+```
+
+Ответ:
+
+```
+['app', 'email', 'web']
+3
+{2, 3}
+{1}
+```
+
+- Уникальные значения: `set(values)`.
+- Пересечение `&`, объединение `|`, разность `-`.
+- Проверка `x in my_set` работает очень быстро.
+- Пустое множество — `set()`. Запись `{}` создаёт пустой `dict`.
+
+<Aside type="caution" title="Порядок в set">
+Не рассчитывайте на порядок элементов в `set`. Для вывода используйте `sorted(...)`.
+</Aside>
+
+## Где это в работе
+
+| Задача | Как помогает dict / set |
+|---|---|
+| Чтение CSV через `csv.DictReader` | Каждая строка — `dict` |
+| Ответ API, JSON | Вложенные `dict` и `list` |
+| Агрегация без pandas | Шаблон `d.get(key, 0) + value` |
+| Справочник (код страны -> название) | Быстрый поиск по ключу |
+| Дедупликация, проверка «уже видели» | `set` |
+
+## Практика
+
+Во всех заданиях, где нужен `orders`, возьмите список из примера выше.
+
+### Задание 1
+
+Создайте `dict` пользователя с ключами `user` и `city`. Добавьте ключ `age` со значением 31. Выведите `dict`.
+
+**Проверка:** `{'user': 'anna', 'city': 'Moscow', 'age': 31}`
+
+<details>
+<summary>Решение</summary>
+
+```python
+user = {"user": "anna", "city": "Moscow"}
+user["age"] = 31
+print(user)
+```
+
+</details>
+
+### Задание 2
+
+Посчитайте, сколько заказов у каждого пользователя.
+
+**Проверка:** `{'anna': 2, 'boris': 2, 'dina': 1}`
+
+<details>
+<summary>Решение</summary>
+
+```python
+counts = {}
+for o in orders:
+    counts[o["user"]] = counts.get(o["user"], 0) + 1
+print(counts)
+```
+
+</details>
+
+### Задание 3
+
+Посчитайте выручку по каналам. Выведите по одной строке: канал и сумма. Используйте `.items()`.
+
+**Проверка:**
+
+```
+web 65.4
+app 420.0
+email 80.0
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+rev = {}
+for o in orders:
+    rev[o["channel"]] = rev.get(o["channel"], 0) + o["amount"]
+for ch, s in rev.items():
+    print(ch, s)
+```
+
+</details>
+
+### Задание 4
+
+Одной dict comprehension соберите `{user: amount}` только для заказов дороже 100.
+
+**Проверка:** `{'boris': 120.0, 'dina': 300.0}`
+
+<details>
+<summary>Решение</summary>
+
+```python
+print({o["user"]: o["amount"] for o in orders if o["amount"] > 100})
+```
+
+</details>
+
+### Задание 5
+
+Найдите пользователей, которые покупали через `app` и через `email`. Затем найдите тех, кто покупал через `app`, но не через `email`.
+
+**Проверка:**
+
+```
+['boris'] ['dina']
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+app = {o["user"] for o in orders if o["channel"] == "app"}
+email = {o["user"] for o in orders if o["channel"] == "email"}
+print(sorted(app & email), sorted(app - email))
+```
+
+</details>
+
+### Задание 6
+
+Есть справочник `cities = {"anna": "Moscow", "boris": "Kazan"}`. Для каждого заказа выведите `order_id` и город. Если города нет, выведите `unknown`.
+
+**Проверка:**
+
+```
+1001 Moscow
+1002 Kazan
+1003 Moscow
+1004 unknown
+1005 Kazan
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+cities = {"anna": "Moscow", "boris": "Kazan"}
+for o in orders:
+    print(o["order_id"], cities.get(o["user"], "unknown"))
+```
+
+</details>
+
+## Что запомнить
+
+- `dict` — пары «ключ: значение». Читайте через `d["key"]` или `d.get("key", default)`.
+- `.items()` обходит ключи и значения вместе.
+- Список словарей — стандартная форма табличных данных в Python.
+- Подсчёт: `d[key] = d.get(key, 0) + value`.
+- `set` хранит уникальные значения и поддерживает `&`, `|`, `-`.
+
+Дальше: Python Crash Course, глава 6.
+
+Следующий урок: [Цикл while и ввод пользователя](/practice/python/while-input/).

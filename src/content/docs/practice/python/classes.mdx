@@ -1,0 +1,409 @@
+---
+title: Классы (минимум)
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Классы Python: __init__, методы, dataclass | Инжиниринг Данных"
+description: Минимум о классах Python для data engineer. class, __init__, методы и dataclass на примерах заказов. Где классы нужны в работе с данными.
+sidebar:
+  order: 11
+  label: Классы
+tags:
+  - python
+  - practice
+---
+import { Aside } from '@astrojs/starlight/components';
+
+Класс объединяет данные и функции, которые с ними работают. Это шаблон, а объект — конкретный экземпляр по этому шаблону.
+
+Для data engineer нужен минимум. Вы будете **читать** классы в библиотеках и **писать** простые `dataclass`. ООП, наследование и паттерны сейчас не нужны.
+
+Правило курса: решайте сами, без AI.
+
+## class и __init__
+
+```python
+class Order:
+    def __init__(self, order_id, user, amount, channel="web"):
+        self.order_id = order_id
+        self.user = user
+        self.amount = amount
+        self.channel = channel
+
+    def with_vat(self, rate=0.2):
+        return round(self.amount * (1 + rate), 2)
+
+    def is_big(self):
+        return self.amount > 100
+
+
+o = Order(1001, "anna", 49.9)
+print(o.user, o.amount, o.channel)
+print(o.with_vat())
+print(o.is_big())
+o.amount = 150
+print(o.is_big())
+```
+
+Ответ:
+
+```
+anna 49.9 web
+59.88
+False
+True
+```
+
+| Часть | Что значит |
+|---|---|
+| `class Order` | Объявление класса. Имя пишут с заглавной буквы |
+| `__init__` | Вызывается при создании объекта. Задаёт начальные данные |
+| `self` | Сам объект. Первый параметр каждого метода |
+| `self.amount` | Атрибут: данные объекта |
+| `with_vat`, `is_big` | Методы: функции внутри класса |
+
+- Создать объект: `Order(1001, "anna", 49.9)`. Python сам вызовет `__init__`.
+- Читать и менять атрибут: `o.amount`.
+- Вызвать метод: `o.is_big()`. Аргумент `self` передавать не нужно.
+
+Если вывести объект, вы увидите мало пользы:
+
+```python
+print(o)
+```
+
+Ответ (адрес у вас будет другой):
+
+```
+<__main__.Order object at 0x1052da120>
+```
+
+Писать `__init__` и `self.x = x` для каждого поля скучно. Для этого есть `dataclass`.
+
+## dataclass
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass
+class Order:
+    order_id: int
+    user: str
+    amount: float
+    channel: str = "web"
+
+    def is_big(self) -> bool:
+        return self.amount > 100
+
+
+d = Order(1002, "boris", 120.0, "app")
+print(d)
+print(d.is_big())
+print(d == Order(1002, "boris", 120.0, "app"))
+```
+
+Ответ:
+
+```
+Order(order_id=1002, user='boris', amount=120.0, channel='app')
+True
+True
+```
+
+`@dataclass` сам создаёт:
+
+- `__init__` из списка полей;
+- читаемый вывод (`repr`);
+- сравнение объектов по значениям полей.
+
+Поля описывают типом: `amount: float`. Поле со значением по умолчанию ставьте после обязательных.
+
+<Aside type="note" title="Типы не проверяются">
+`dataclass` не проверяет типы. `Order(1, "a", "oops")` создастся без ошибки. Приводите типы сами: `float(row["amount"])`.
+</Aside>
+
+### Из словаря в dataclass
+
+Данные из CSV приходят как строки. Преобразуйте их при создании объекта.
+
+```python
+rows = [
+    {"order_id": "1001", "user": "anna", "amount": "49.9", "channel": "web"},
+    {"order_id": "1002", "user": "boris", "amount": "120.0", "channel": "app"},
+    {"order_id": "1004", "user": "dina", "amount": "300.0", "channel": "app"},
+]
+
+orders = [
+    Order(int(r["order_id"]), r["user"], float(r["amount"]), r["channel"])
+    for r in rows
+]
+print(round(sum(o.amount for o in orders), 2))
+print([o.order_id for o in orders if o.is_big()])
+```
+
+Ответ:
+
+```
+469.9
+[1002, 1004]
+```
+
+Разница с `dict`: вместо `o["amount"]` пишем `o.amount`. Опечатка в имени поля даст ошибку сразу, а не `None` позже.
+
+### frozen: объект нельзя менять
+
+```python
+@dataclass(frozen=True)
+class Config:
+    path: str
+    limit: int = 10
+
+
+c = Config("orders.csv")
+print(c)
+c.limit = 99
+```
+
+Ответ:
+
+```
+Config(path='orders.csv', limit=10)
+...
+dataclasses.FrozenInstanceError: cannot assign to field 'limit'
+```
+
+Для настроек и записей, которые не должны меняться, ставьте `frozen=True`.
+
+## Класс с состоянием
+
+Иногда объект копит данные между вызовами.
+
+```python
+class OrderStats:
+    def __init__(self):
+        self.count = 0
+        self.total = 0.0
+
+    def add(self, order):
+        self.count += 1
+        self.total += order.amount
+
+    def report(self):
+        return f"{self.count} orders, total {self.total}"
+
+
+st = OrderStats()
+for o in orders:
+    st.add(o)
+print(st.report())
+```
+
+Ответ:
+
+```
+3 orders, total 469.9
+```
+
+`self.count` и `self.total` живут между вызовами `add`. В обычной функции для этого пришлось бы передавать их туда и обратно.
+
+## Где это в работе
+
+| Задача | Как помогают классы |
+|---|---|
+| Запись данных с известными полями | `dataclass`: `Order`, `Event`, `User` |
+| Настройки pipeline | `dataclass(frozen=True)`: путь, лимит, дата |
+| Чужие библиотеки | `client = Client(...)`, `client.get(...)`: это объекты и методы |
+| Коннекторы к БД, S3, API | Класс держит соединение между вызовами |
+| Pydantic, SQLAlchemy | Те же идеи: класс описывает поля |
+
+Простое правило: если хватает функций и `dict`, класс не нужен. Класс нужен, когда данные и поведение связаны, или когда нужна понятная структура записи.
+
+## Практика
+
+### Задание 1
+
+Напишите класс `User` с атрибутами `name` и `city` и методом `greet()`. Метод возвращает строку `Hi, anna from Moscow`. Создайте пользователя и выведите результат `greet()`.
+
+**Проверка:** `Hi, anna from Moscow`
+
+<details>
+<summary>Решение</summary>
+
+```python
+class User:
+    def __init__(self, name, city):
+        self.name = name
+        self.city = city
+
+    def greet(self):
+        return f"Hi, {self.name} from {self.city}"
+
+
+print(User("anna", "Moscow").greet())
+```
+
+</details>
+
+### Задание 2
+
+Возьмите первый класс `Order` из урока (с `__init__`). Создайте `Order(1001, "anna", 49.9)`. Выведите `with_vat()` и `is_big()`. Потом задайте `o.amount = 150` и снова выведите `is_big()`.
+
+**Проверка:**
+
+```
+59.88
+False
+True
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+o = Order(1001, "anna", 49.9)
+print(o.with_vat())
+print(o.is_big())
+o.amount = 150
+print(o.is_big())
+```
+
+</details>
+
+### Задание 3
+
+Перепишите `Order` как `dataclass` с полями `order_id: int`, `user: str`, `amount: float`, `channel: str = "web"`. Выведите объект `Order(1001, "anna", 49.9)`. Сравните его с `Order(1001, "anna", 49.9)` и с `Order(1002, "anna", 49.9)`.
+
+**Проверка:**
+
+```
+Order(order_id=1001, user='anna', amount=49.9, channel='web')
+True False
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass
+class Order:
+    order_id: int
+    user: str
+    amount: float
+    channel: str = "web"
+
+
+a = Order(1001, "anna", 49.9)
+print(a)
+print(a == Order(1001, "anna", 49.9), a == Order(1002, "anna", 49.9))
+```
+
+</details>
+
+### Задание 4
+
+Добавьте в `dataclass` метод `is_big()` (сумма больше 100). Преобразуйте список `rows` из урока в список `Order`. Выведите сумму всех заказов и `order_id` крупных.
+
+**Проверка:**
+
+```
+469.9
+[1002, 1004]
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+@dataclass
+class Order:
+    order_id: int
+    user: str
+    amount: float
+    channel: str = "web"
+
+    def is_big(self) -> bool:
+        return self.amount > 100
+
+
+orders = [
+    Order(int(r["order_id"]), r["user"], float(r["amount"]), r["channel"])
+    for r in rows
+]
+print(round(sum(o.amount for o in orders), 2))
+print([o.order_id for o in orders if o.is_big()])
+```
+
+</details>
+
+### Задание 5
+
+Напишите класс `OrderStats` с методами `add(order)` и `report()`. Добавьте в него все заказы из задания 4. `report()` возвращает `3 orders, total 469.9`.
+
+**Проверка:** `3 orders, total 469.9`
+
+<details>
+<summary>Решение</summary>
+
+```python
+class OrderStats:
+    def __init__(self):
+        self.count = 0
+        self.total = 0.0
+
+    def add(self, order):
+        self.count += 1
+        self.total += order.amount
+
+    def report(self):
+        return f"{self.count} orders, total {self.total}"
+
+
+st = OrderStats()
+for o in orders:
+    st.add(o)
+print(st.report())
+```
+
+</details>
+
+### Задание 6
+
+Создайте `Config` как `dataclass(frozen=True)` с полями `path: str` и `limit: int = 10`. Выведите `Config("orders.csv")`. Попробуйте изменить `limit`. Прочитайте ошибку.
+
+**Проверка:** вывод `Config(path='orders.csv', limit=10)`. Последняя строка ошибки: `dataclasses.FrozenInstanceError: cannot assign to field 'limit'`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Config:
+    path: str
+    limit: int = 10
+
+
+c = Config("orders.csv")
+print(c)
+c.limit = 99
+```
+
+</details>
+
+## Что запомнить
+
+- Класс — шаблон. Объект — экземпляр. `__init__` задаёт начальные данные, `self` — сам объект.
+- Метод — функция внутри класса: `obj.method()`.
+- `@dataclass` убирает шаблонный код и даёт читаемый вывод и сравнение.
+- `frozen=True` защищает объект от случайных изменений.
+- Классы вы чаще читаете в библиотеках, чем пишете. Хватит `dataclass`.
+
+Дальше: Python Crash Course, глава 9.
+
+Следующий урок: [Файлы и исключения](/practice/python/files-exceptions/).

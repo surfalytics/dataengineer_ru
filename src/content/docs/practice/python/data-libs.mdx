@@ -1,0 +1,614 @@
+---
+title: PyArrow, Polars, DuckDB
+head:
+  - tag: title
+    content: "Polars, DuckDB и PyArrow: Parquet на Python | Инжиниринг Данных"
+description: "Библиотеки Python для данных: PyArrow и Parquet, Polars (select, filter, group_by, lazy), DuckDB для SQL по CSV и Parquet. Когда что брать и как они связаны."
+sidebar:
+  order: 16
+  label: PyArrow, Polars, DuckDB
+tags:
+  - python
+  - practice
+---
+import { Aside } from '@astrojs/starlight/components';
+
+Чистого Python хватает для 1000 строк. Для миллионов строк нужны специальные библиотеки. Их три, и они дружат между собой.
+
+| Библиотека | Что это |
+|---|---|
+| PyArrow | колоночный формат в памяти (Arrow) и работа с Parquet |
+| Polars | быстрые DataFrame на Rust |
+| DuckDB | SQL-движок внутри Python |
+
+<Aside type="note">
+Правило курса: решайте задания сами, без AI.
+</Aside>
+
+## Установка через uv
+
+Создайте проект и добавьте библиотеки (см. [урок про uv](/practice/python/environments/)):
+
+```bash
+uv init data-demo --python 3.14
+cd data-demo
+uv add polars pyarrow duckdb
+```
+
+Проверено на Python 3.14: `polars 2.1.0`, `pyarrow 26.0.1`, `duckdb 2.0.0`. У вас версии могут быть новее.
+
+Запуск: `uv run python file.py`.
+
+## Учебные данные
+
+Создайте файл `make_data.py` и запустите его. Он запишет `orders.csv` с 10 заказами.
+
+```python
+from pathlib import Path
+
+Path("orders.csv").write_text("""order_id,user,amount,channel,device,order_date
+1001,anna,25.5,ads,mobile,2024-03-01
+1002,boris,120.0,organic,desktop,2024-03-01
+1003,anna,40.0,email,mobile,2024-03-02
+1004,clara,15.25,ads,mobile,2024-03-02
+1005,dmitry,300.0,organic,desktop,2024-03-03
+1006,boris,60.0,ads,desktop,2024-03-03
+1007,elena,22.0,email,mobile,2024-03-04
+1008,clara,80.0,organic,mobile,2024-03-04
+1009,anna,55.5,organic,desktop,2024-03-05
+1010,dmitry,10.0,ads,mobile,2024-03-05
+""", encoding="utf-8")
+```
+
+Все примеры ниже читают этот файл.
+
+## PyArrow и Parquet
+
+**Arrow** хранит данные по колонкам, у каждой колонки свой тип. Это общий формат для Polars, DuckDB, pandas и Spark. **Parquet** — файл на диске. Он тоже колоночный и сжатый.
+
+```python
+import pyarrow as pa
+import pyarrow.csv as pacsv
+import pyarrow.parquet as pq
+
+table = pa.table({"order_id": [1, 2, 3], "amount": [10.5, 20.0, 7.25], "channel": ["ads", "email", "ads"]})
+print(table.schema)
+print(table.num_rows, table.num_columns)
+print(table.column("amount").to_pylist())
+
+orders = pacsv.read_csv("orders.csv")
+print(orders.schema)
+pq.write_table(orders, "orders.parquet")
+back = pq.read_table("orders.parquet")
+print(back.num_rows, back.schema.names)
+print(pq.read_metadata("orders.parquet").num_rows)
+print(pq.read_table("orders.parquet", columns=["user", "amount"]).num_columns)
+```
+
+Вывод:
+
+```
+order_id: int64
+amount: double
+channel: string
+3 3
+[10.5, 20.0, 7.25]
+order_id: int64
+user: string
+amount: double
+channel: string
+device: string
+order_date: date32[day]
+10 ['order_id', 'user', 'amount', 'channel', 'device', 'order_date']
+10
+2
+```
+
+- `pacsv.read_csv` сам определил типы. Дата стала `date32`.
+- `read_metadata` читает число строк без загрузки данных.
+- `columns=[...]` читает только нужные колонки. Это главное преимущество Parquet: остальные колонки не трогаются.
+
+Почему Parquet лучше CSV:
+
+| | CSV | Parquet |
+|---|---|---|
+| Типы | нет, всё текст | есть |
+| Размер | большой | меньше в разы |
+| Чтение части колонок | нет | да |
+| Читается человеком | да | нет |
+
+## Polars
+
+Polars работает с DataFrame. Код читается как цепочка шагов. Колонки задаются через `pl.col("имя")`.
+
+### Чтение и просмотр
+
+```python
+import polars as pl
+
+df = pl.read_csv("orders.csv", try_parse_dates=True)
+print(df.shape)
+print(df.schema)
+print(df.head(3))
+```
+
+Вывод:
+
+```
+(10, 6)
+Schema({'order_id': Int64, 'user': String, 'amount': Float64, 'channel': String, 'device': String, 'order_date': Date})
+shape: (3, 6)
+┌──────────┬───────┬────────┬─────────┬─────────┬────────────┐
+│ order_id ┆ user  ┆ amount ┆ channel ┆ device  ┆ order_date │
+│ ---      ┆ ---   ┆ ---    ┆ ---     ┆ ---     ┆ ---        │
+│ i64      ┆ str   ┆ f64    ┆ str     ┆ str     ┆ date       │
+╞══════════╪═══════╪════════╪═════════╪═════════╪════════════╡
+│ 1001     ┆ anna  ┆ 25.5   ┆ ads     ┆ mobile  ┆ 2024-03-01 │
+│ 1002     ┆ boris ┆ 120.0  ┆ organic ┆ desktop ┆ 2024-03-01 │
+│ 1003     ┆ anna  ┆ 40.0   ┆ email   ┆ mobile  ┆ 2024-03-02 │
+└──────────┴───────┴────────┴─────────┴─────────┴────────────┘
+```
+
+Polars показывает тип под именем колонки. Без `try_parse_dates=True` дата останется строкой.
+
+### select и filter
+
+```python
+print(df.select("user", "amount").head(2))
+print(df.filter((pl.col("channel") == "ads") & (pl.col("amount") > 20)))
+```
+
+Вывод:
+
+```
+shape: (2, 2)
+┌───────┬────────┐
+│ user  ┆ amount │
+│ ---   ┆ ---    │
+│ str   ┆ f64    │
+╞═══════╪════════╡
+│ anna  ┆ 25.5   │
+│ boris ┆ 120.0  │
+└───────┴────────┘
+shape: (2, 6)
+┌──────────┬───────┬────────┬─────────┬─────────┬────────────┐
+│ order_id ┆ user  ┆ amount ┆ channel ┆ device  ┆ order_date │
+│ ---      ┆ ---   ┆ ---    ┆ ---     ┆ ---     ┆ ---        │
+│ i64      ┆ str   ┆ f64    ┆ str     ┆ str     ┆ date       │
+╞══════════╪═══════╪════════╪═════════╪═════════╪════════════╡
+│ 1001     ┆ anna  ┆ 25.5   ┆ ads     ┆ mobile  ┆ 2024-03-01 │
+│ 1006     ┆ boris ┆ 60.0   ┆ ads     ┆ desktop ┆ 2024-03-03 │
+└──────────┴───────┴────────┴─────────┴─────────┴────────────┘
+```
+
+Условия объединяйте через `&` (и), `|` (или). Каждое условие берите в скобки.
+
+### with_columns
+
+`with_columns` добавляет или заменяет колонки.
+
+```python
+df = df.with_columns(
+    (pl.col("amount") * 1.2).round(2).alias("amount_vat"),
+    pl.col("user").str.to_uppercase().alias("user_up"),
+)
+print(df.select("order_id", "amount", "amount_vat", "user_up").head(3))
+```
+
+Вывод:
+
+```
+┌──────────┬────────┬────────────┬─────────┐
+│ order_id ┆ amount ┆ amount_vat ┆ user_up │
+│ ---      ┆ ---    ┆ ---        ┆ ---     │
+│ i64      ┆ f64    ┆ f64        ┆ str     │
+╞══════════╪════════╪════════════╪═════════╡
+│ 1001     ┆ 25.5   ┆ 30.6       ┆ ANNA    │
+│ 1002     ┆ 120.0  ┆ 144.0      ┆ BORIS   │
+│ 1003     ┆ 40.0   ┆ 48.0       ┆ ANNA    │
+└──────────┴────────┴────────────┴─────────┘
+```
+
+DataFrame в Polars не меняется на месте. Метод возвращает новый DataFrame. Поэтому пишем `df = df.with_columns(...)`.
+
+### group_by
+
+```python
+res = (
+    df.group_by("channel")
+    .agg(
+        pl.len().alias("orders"),
+        pl.col("amount").sum().alias("revenue"),
+        pl.col("amount").mean().round(2).alias("avg"),
+    )
+    .sort("revenue", descending=True)
+)
+print(res)
+```
+
+Вывод:
+
+```
+┌─────────┬────────┬─────────┬────────┐
+│ channel ┆ orders ┆ revenue ┆ avg    │
+│ ---     ┆ ---    ┆ ---     ┆ ---    │
+│ str     ┆ u32    ┆ f64     ┆ f64    │
+╞═════════╪════════╪═════════╪════════╡
+│ organic ┆ 4      ┆ 555.5   ┆ 138.88 │
+│ ads     ┆ 4      ┆ 110.75  ┆ 27.69  │
+│ email   ┆ 2      ┆ 62.0    ┆ 31.0   │
+└─────────┴────────┴─────────┴────────┘
+```
+
+`pl.len()` считает строки в группе. Это как `count(*)` в SQL.
+
+### Lazy API
+
+`read_csv` читает файл сразу. `scan_csv` только строит план. Polars выполняет его при `.collect()` и сам оптимизирует: читает только нужные колонки и строки.
+
+```python
+lf = (
+    pl.scan_csv("orders.csv")
+    .filter(pl.col("device") == "mobile")
+    .group_by("user")
+    .agg(pl.col("amount").sum().alias("total"))
+    .sort("total", descending=True)
+)
+print(type(lf).__name__)
+print(lf.collect())
+```
+
+Вывод:
+
+```
+LazyFrame
+shape: (4, 2)
+┌────────┬───────┐
+│ user   ┆ total │
+│ ---    ┆ ---   │
+│ str    ┆ f64   │
+╞════════╪═══════╡
+│ clara  ┆ 95.25 │
+│ anna   ┆ 65.5  │
+│ elena  ┆ 22.0  │
+│ dmitry ┆ 10.0  │
+└────────┴───────┘
+```
+
+Для файлов больше памяти используйте `scan_*`. Для маленьких данных хватает `read_*`.
+
+## DuckDB
+
+DuckDB запускает SQL прямо в Python. Файлов в базу грузить не нужно.
+
+### SQL по CSV и Parquet
+
+```python
+import duckdb
+
+print(duckdb.sql("SELECT count(*) AS n, sum(amount) AS revenue FROM 'orders.csv'"))
+
+duckdb.sql("COPY (SELECT * FROM 'orders.csv') TO 'orders_d.parquet' (FORMAT parquet)")
+rel = duckdb.sql("SELECT channel, count(*) AS n FROM 'orders_d.parquet' GROUP BY channel ORDER BY n DESC, channel")
+print(rel.fetchall())
+```
+
+Вывод:
+
+```
+┌───────┬─────────┐
+│   n   │ revenue │
+│ int64 │ double  │
+├───────┼─────────┤
+│    10 │  728.25 │
+└───────┴─────────┘
+
+[('ads', 4), ('organic', 4), ('email', 2)]
+```
+
+- Имя файла в кавычках работает как имя таблицы.
+- `COPY ... TO ... (FORMAT parquet)` пишет Parquet.
+- `fetchall()` возвращает список кортежей.
+
+### SQL по Polars DataFrame
+
+DuckDB видит переменные Python по имени. Если в коде есть `df`, пишите `FROM df`.
+
+```python
+import polars as pl
+
+df = pl.read_csv("orders.csv")
+print(duckdb.sql("SELECT user, sum(amount) AS total FROM df GROUP BY user ORDER BY total DESC LIMIT 3").pl())
+```
+
+Вывод:
+
+```
+shape: (3, 2)
+┌────────┬───────┐
+│ user   ┆ total │
+│ ---    ┆ ---   │
+│ str    ┆ f64   │
+╞════════╪═══════╡
+│ dmitry ┆ 310.0 │
+│ boris  ┆ 180.0 │
+│ anna   ┆ 121.0 │
+└────────┴───────┘
+```
+
+`.pl()` возвращает результат как Polars DataFrame.
+
+### Соединение и параметры
+
+Если нужна база с таблицами, откройте соединение. Значения передавайте через `?`, не через f-string.
+
+```python
+con = duckdb.connect()
+con.execute("CREATE TABLE orders AS SELECT * FROM 'orders.csv'")
+print(con.execute("SELECT device, round(avg(amount), 2) FROM orders WHERE amount > ? GROUP BY device ORDER BY device", [20]).fetchall())
+```
+
+Вывод:
+
+```
+[('desktop', 133.88), ('mobile', 41.88)]
+```
+
+`duckdb.connect()` без аргументов создаёт базу в памяти. `duckdb.connect("shop.duckdb")` хранит её в файле.
+
+<Aside type="caution">
+Не вставляйте значения в SQL через f-string. Используйте `?`. Иначе возможна SQL-инъекция.
+</Aside>
+
+## Когда что брать
+
+| Задача | Что взять |
+|---|---|
+| Прочитать или записать Parquet | PyArrow или Polars |
+| Быстро посчитать агрегаты по файлу | DuckDB |
+| Сложный SQL: JOIN, window | DuckDB |
+| Цепочка преобразований колонок в коде | Polars |
+| Данные больше памяти, но один файл | Polars lazy или DuckDB |
+| Передать данные между библиотеками | Arrow |
+| Старый код, scikit-learn, matplotlib | pandas |
+| Маленький объект из API (dict) | чистый Python |
+
+Правило: SQL знаете хорошо, берите DuckDB. Любите код с методами, берите Polars. Можно оба в одном скрипте.
+
+## pandas
+
+pandas — это старый стандарт. Его знают все, его ждут многие библиотеки. Он медленнее и использует больше памяти. Новые проекты чаще начинают с Polars или DuckDB.
+
+Нужен он, когда библиотека принимает только pandas. Тогда конвертируйте. Для этого поставьте `uv add pandas`.
+
+```python
+import polars as pl
+
+df = pl.read_csv("orders.csv")
+pdf = df.to_pandas()
+print(type(pdf).__name__)
+print(pdf.groupby("channel")["amount"].sum())
+print(pl.from_pandas(pdf).shape)
+```
+
+Вывод:
+
+```
+DataFrame
+channel
+ads        110.75
+email       62.00
+organic    555.50
+Name: amount, dtype: float64
+(10, 6)
+```
+
+## Как данные идут между библиотеками
+
+Все три говорят на Arrow. Поэтому данные часто передаются без копирования.
+
+```python
+import duckdb
+import polars as pl
+
+df = pl.read_csv("orders.csv")
+arrow = df.to_arrow()
+print(type(arrow).__name__, arrow.num_rows)
+back = pl.from_arrow(arrow)
+print(back.shape)
+
+rel = duckdb.sql("SELECT user, amount FROM df WHERE amount > 100")
+t = rel.to_arrow_table()
+print(type(t).__name__, t.num_rows)
+print(rel.pl())
+print(duckdb.sql("SELECT sum(amount) AS s FROM t").fetchall())
+```
+
+Вывод:
+
+```
+Table 10
+(10, 6)
+Table 2
+shape: (2, 2)
+┌────────┬────────┐
+│ user   ┆ amount │
+│ ---    ┆ ---    │
+│ str    ┆ f64    │
+╞════════╪════════╡
+│ boris  ┆ 120.0  │
+│ dmitry ┆ 300.0  │
+└────────┴────────┘
+[(420.0,)]
+```
+
+Схема потока:
+
+```
+CSV / JSON  ->  Polars  ->  Arrow table  ->  DuckDB (SQL)  ->  Polars  ->  Parquet
+```
+
+<Aside type="note">
+В DuckDB 2.0 у Relation нет метода `fetchone()`. Используйте `fetchall()` или `.limit(1).fetchall()`.
+</Aside>
+
+## Где это в работе
+
+- Parquet — основной формат файлов в data lake (S3, GCS).
+- Polars и DuckDB заменяют pandas в небольших и средних ETL.
+- DuckDB удобен для быстрой проверки качества данных SQL-запросом.
+- Arrow связывает эти инструменты, Spark и базы данных.
+
+## Задания
+
+Все задания используют `orders.csv` из начала урока.
+
+### Задание 1
+
+Посчитайте в Polars сумму `amount` по заказам с устройства `desktop`.
+
+**Проверка:** `535.5`
+
+<details>
+<summary>Решение</summary>
+
+```python
+import polars as pl
+
+df = pl.read_csv("orders.csv")
+print(df.filter(pl.col("device") == "desktop")["amount"].sum())
+```
+
+</details>
+
+### Задание 2
+
+Добавьте колонку `size`: `big`, если `amount >= 100`, иначе `small`. Посчитайте заказы в каждой группе. Подсказка: `pl.when(...).then(...).otherwise(...)`.
+
+**Проверка:**
+
+```
+┌───────┬─────┐
+│ size  ┆ n   │
+│ ---   ┆ --- │
+│ str   ┆ u32 │
+╞═══════╪═════╡
+│ big   ┆ 2   │
+│ small ┆ 8   │
+└───────┴─────┘
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+import polars as pl
+
+df = pl.read_csv("orders.csv").with_columns(
+    pl.when(pl.col("amount") >= 100).then(pl.lit("big")).otherwise(pl.lit("small")).alias("size")
+)
+print(df.group_by("size").agg(pl.len().alias("n")).sort("size"))
+```
+
+</details>
+
+### Задание 3
+
+Найдите пользователя с самым большим числом заказов.
+
+**Проверка:** `anna`, 3 заказа.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import polars as pl
+
+df = pl.read_csv("orders.csv")
+top = df.group_by("user").agg(pl.len().alias("orders")).sort("orders", "user", descending=[True, False]).head(1)
+print(top)
+```
+
+Второй ключ сортировки `user` нужен, чтобы порядок при равенстве был всегда одинаковым.
+
+</details>
+
+### Задание 4
+
+Напишите SQL в DuckDB по `orders.csv`. Найдите день с самой большой выручкой.
+
+**Проверка:** `2024-03-03`, выручка `360.0`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import duckdb
+
+print(duckdb.sql("""
+    SELECT order_date, sum(amount) AS revenue
+    FROM 'orders.csv'
+    GROUP BY order_date
+    ORDER BY revenue DESC
+    LIMIT 1
+"""))
+```
+
+</details>
+
+### Задание 5
+
+Запишите заказы в `orders_x.parquet` через Polars (`write_parquet`). Затем посчитайте строки и первый день заказа через DuckDB.
+
+**Проверка:** `10` строк, первый день `2024-03-01`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import duckdb
+import polars as pl
+
+pl.read_csv("orders.csv", try_parse_dates=True).write_parquet("orders_x.parquet")
+print(duckdb.sql("SELECT count(*) AS n, min(order_date) AS first_day FROM 'orders_x.parquet'"))
+```
+
+</details>
+
+### Задание 6
+
+Прочитайте CSV в Polars. Передайте DataFrame в DuckDB. Посчитайте долю заказов по устройствам в процентах. Верните результат как Polars DataFrame.
+
+**Проверка:** `desktop` 40.0, `mobile` 60.0. Тип результата: `DataFrame`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import duckdb
+import polars as pl
+
+df = pl.read_csv("orders.csv")
+res = duckdb.sql("""
+    SELECT device, round(100.0 * count(*) / sum(count(*)) OVER (), 1) AS share_pct
+    FROM df
+    GROUP BY device
+    ORDER BY device
+""").pl()
+print(res)
+print(type(res).__name__)
+```
+
+`sum(count(*)) OVER ()` — оконная функция. Она даёт общее число заказов.
+
+</details>
+
+## Что запомнить
+
+- Arrow — формат в памяти, Parquet — файл на диске. Оба колоночные.
+- Polars: `select`, `filter`, `with_columns`, `group_by().agg()`. Метод возвращает новый DataFrame.
+- `scan_csv` и `.collect()` дают lazy-режим.
+- DuckDB читает `'file.csv'`, `'file.parquet'` и переменные-DataFrame прямо в SQL.
+- pandas нужен только для старого кода и библиотек, которые его требуют.
+
+Дальше: [Итоговая практика](/practice/python/final/). Для углубления: Python Crash Course, глава 10.

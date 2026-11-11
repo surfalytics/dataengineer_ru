@@ -1,0 +1,605 @@
+---
+title: "Окружения: venv, Poetry, uv"
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "venv, Poetry, uv: виртуальные окружения Python | Инжиниринг Данных"
+description: Зачем нужны виртуальные окружения Python. Практика с pip, venv, Poetry и uv на macOS, Linux и Windows. Сравнение и совет, что выбрать.
+sidebar:
+  order: 3
+  label: Окружения
+tags:
+  - python
+  - practice
+---
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Окружение это отдельная папка с Python и пакетами для одного проекта. После урока вы создадите окружение тремя способами: `venv`, Poetry и `uv`. Потом выберете один.
+
+<Aside type="caution">
+Правило курса: решайте задания сами, без AI.
+</Aside>
+
+## Зачем нужны окружения
+
+Без окружения все пакеты лежат в одном месте. Это ломается так:
+
+- Проект A нужен `pandas 1.5`. Проекту B нужен `pandas 2.2`. Вместе они не живут.
+- Вы поставили пакет, забыли записать. Коллега не может запустить код.
+- Установка в системный Python может сломать системные утилиты.
+
+Окружение решает это. У каждого проекта своя папка `.venv` со своими версиями. Список пакетов записан в файл. Любой человек повторит окружение одной командой.
+
+| Термин | Что это |
+|---|---|
+| **pip** | Ставит пакеты из PyPI |
+| **venv** | Создаёт окружение (встроен в Python) |
+| **requirements.txt** | Список пакетов с версиями |
+| **lock-файл** | Точные версии всех пакетов, включая вложенные |
+| **pyproject.toml** | Описание проекта и его зависимостей |
+
+Во всех примерах ниже мы ставим `requests` и запускаем скрипт `app.py`:
+
+```python
+import requests
+
+print("requests", requests.__version__)
+```
+
+Версии у вас могут отличаться. Это нормально.
+
+## Способ 1. pip и venv
+
+Встроено в Python. Ничего ставить не нужно.
+
+<Tabs syncKey="os">
+<TabItem label="macOS / Linux">
+
+Проверка:
+
+```bash
+python3 -m venv --help
+python3 -m pip --version
+```
+
+На Ubuntu, если `venv` нет: `sudo apt install python3.14-venv`.
+
+</TabItem>
+<TabItem label="Windows">
+
+Проверка:
+
+```powershell
+python -m venv --help
+python -m pip --version
+```
+
+</TabItem>
+</Tabs>
+
+### Практика: venv
+
+Создайте папку проекта и файл `app.py` (код выше).
+
+<Tabs syncKey="os">
+<TabItem label="macOS / Linux">
+
+```bash
+mkdir venv-demo && cd venv-demo
+python3 -m venv .venv
+source .venv/bin/activate
+which python
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+mkdir venv-demo; cd venv-demo
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+where python
+```
+
+Если PowerShell запрещает скрипты: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`. В `cmd` используйте `.venv\Scripts\activate.bat`.
+
+</TabItem>
+</Tabs>
+
+**Проверка:** в начале строки терминала есть `(.venv)`, а `which python` показывает путь внутри `.venv`:
+
+```
+/.../venv-demo/.venv/bin/python
+```
+
+Установите пакет и запишите версии:
+
+```bash
+pip install requests
+pip freeze
+pip freeze > requirements.txt
+python app.py
+```
+
+```
+certifi==2026.10.23
+charset-normalizer==3.5.2
+idna==3.20
+requests==2.34.2
+urllib3==2.8.0
+requests 2.34.2
+```
+
+`pip freeze` показывает все установленные пакеты, и ваши, и вложенные.
+
+Выйдите и удалите окружение:
+
+```bash
+deactivate
+rm -rf .venv          # Windows: rmdir /s /q .venv
+```
+
+Восстановите по файлу:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt     # Windows: .venv\Scripts\pip
+.venv/bin/python app.py
+```
+
+```
+requests 2.34.2
+```
+
+<Aside type="tip">
+Можно запускать `.venv/bin/python app.py` без `activate`. В скриптах и cron так надёжнее.
+</Aside>
+
+Минусы связки: нет lock-файла для вложенных пакетов, нет разделения на dev и prod, `requirements.txt` ведёте вручную.
+
+## Способ 2. Poetry
+
+Poetry ведёт зависимости, lock-файл и окружение вместе.
+
+### Установка Poetry
+
+Рекомендуемый способ: `pipx`. Он ставит утилиты в свои изолированные окружения.
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+```bash
+brew install pipx
+pipx ensurepath
+pipx install poetry
+poetry --version
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash
+sudo apt install pipx      # Fedora: sudo dnf install pipx
+pipx ensurepath
+pipx install poetry
+poetry --version
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+python -m pip install --user pipx
+python -m pipx ensurepath
+pipx install poetry
+poetry --version
+```
+
+Откройте новый терминал после `ensurepath`.
+
+</TabItem>
+</Tabs>
+
+Нужен Poetry 2.x. Он хранит зависимости в стандартной секции `[project]`.
+
+<Aside type="note">
+Вывод ниже получен на Poetry 1.6.1. В Poetry 2.x вывод команд почти такой же, но `pyproject.toml` выглядит иначе. Мы показываем 2.x-вариант отдельно.
+</Aside>
+
+### Практика: Poetry
+
+Создайте проект и положите в него `app.py`:
+
+```bash
+poetry new poetry-demo
+cd poetry-demo
+```
+
+Poetry создаёт структуру:
+
+```
+README.md
+poetry_demo/
+pyproject.toml
+tests/
+```
+
+Укажите Python 3.14 и добавьте `requests`:
+
+```bash
+poetry env use 3.14
+poetry add requests
+```
+
+```
+Creating virtualenv poetry-demo in .../poetry-demo/.venv
+Resolving dependencies...
+
+Package operations: 5 installs, 0 updates, 0 removals
+
+  • Installing certifi (2026.10.23)
+  • Installing charset-normalizer (3.5.2)
+  • Installing idna (3.20)
+  • Installing urllib3 (2.8.0)
+  • Installing requests (2.34.2)
+
+Writing lock file
+```
+
+Poetry записал зависимость в `pyproject.toml`. В Poetry 2.x это выглядит так:
+
+```toml
+[project]
+name = "poetry-demo"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "requests (>=2.34.2,<3.0.0)"
+]
+```
+
+И создал `poetry.lock`. Это lock-файл. Коммитьте его в git.
+
+<Aside type="note">
+Окружение внутри проекта (`.venv`) включается настройкой: `poetry config virtualenvs.in-project true`. По умолчанию Poetry хранит окружения в общей папке.
+</Aside>
+
+Запустите скрипт и посмотрите дерево зависимостей:
+
+```bash
+poetry run python app.py
+poetry show --tree
+```
+
+```
+requests 2.34.2
+requests 2.34.2 Python HTTP for Humans.
+├── certifi >=2023.5.7
+├── charset-normalizer >=2,<4
+├── idna >=2.5,<4
+└── urllib3 >=1.26,<3
+```
+
+Lock-файл и повтор установки:
+
+```bash
+poetry lock
+poetry install
+```
+
+Если зависимости не менялись, `poetry install` ничего не делает. На новой машине он создаст окружение по `poetry.lock`.
+
+Удалите окружение:
+
+```bash
+poetry env remove --all
+```
+
+```
+Deleted virtualenv: .../poetry-demo/.venv
+```
+
+Команда `poetry shell` в Poetry 2.x вынесена в плагин. Проще всего использовать `poetry run ...`.
+
+Минусы: медленнее `uv`. Сам Poetry надо ставить отдельно. Poetry не управляет версиями Python: он берёт установленный.
+
+## Способ 3. uv
+
+`uv` это быстрый менеджер проектов и пакетов на Rust. Он заменяет `pip`, `venv`, `pip-tools` и во многом Poetry. Он умеет сам скачать нужную версию Python.
+
+### Установка uv
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+```bash
+brew install uv
+uv --version
+```
+
+Или: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv --version
+```
+
+Откройте новый терминал после установки.
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+winget install --id=astral-sh.uv -e
+uv --version
+```
+
+Или: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+
+</TabItem>
+</Tabs>
+
+### Практика: uv
+
+Создайте проект:
+
+```bash
+uv init uv-demo
+cd uv-demo
+ls -a
+```
+
+```
+.git  .gitignore  .python-version  README.md  main.py  pyproject.toml
+```
+
+Закрепите Python 3.14:
+
+```bash
+uv python pin 3.14
+```
+
+```
+Updated `.python-version` from `3.12` -> `3.14`
+```
+
+Если 3.14 нет на машине, `uv` скачает его сам при первом запуске.
+
+Добавьте `requests`:
+
+```bash
+uv add requests
+```
+
+```
+Using CPython 3.14.0 interpreter at: /opt/homebrew/opt/python@3.14/bin/python3.14
+Creating virtual environment at: .venv
+Resolved 6 packages in 2ms
+Prepared 4 packages in 3.03s
+Installed 5 packages in 5ms
+ + certifi==2026.10.23
+ + charset-normalizer==3.5.2
+ + idna==3.20
+ + requests==2.34.2
+ + urllib3==2.8.0
+```
+
+В `pyproject.toml` появилась строка:
+
+```toml
+dependencies = [
+    "requests>=2.34.2",
+]
+```
+
+А ещё файл `uv.lock` с точными версиями и хешами. Коммитьте его в git.
+
+Положите `app.py` в папку и запустите:
+
+```bash
+uv run app.py
+uv tree
+```
+
+```
+requests 2.34.2
+uv-demo v0.1.0
+└── requests v2.34.2
+    ├── certifi v2026.10.23
+    ├── charset-normalizer v3.5.2
+    ├── idna v3.20
+    └── urllib3 v2.8.0
+```
+
+`uv run` сам создаёт окружение, если его нет, и синхронизирует пакеты. Активировать ничего не нужно.
+
+Lock и sync:
+
+```bash
+uv lock
+uv sync
+```
+
+```
+Resolved 6 packages in 0.52ms
+Audited 5 packages in 0.00ms
+```
+
+Удалите зависимость и верните её:
+
+```bash
+uv remove requests
+uv add requests
+```
+
+Удалите окружение. Оно пересоздаётся командой `uv sync`:
+
+```bash
+rm -rf .venv          # Windows: rmdir /s /q .venv
+uv sync
+```
+
+Если нужен pip-подобный режим внутри проекта: `uv pip install ...`, `uv pip list`. Но для проектов лучше `uv add`.
+
+## Сравнение
+
+| | pip + venv | Poetry | uv |
+|---|---|---|---|
+| Установка | Встроен | Отдельно (`pipx`) | Один бинарный файл |
+| Lock-файл | Нет (`pip freeze`) | `poetry.lock` | `uv.lock` |
+| Файл зависимостей | `requirements.txt` | `pyproject.toml` | `pyproject.toml` |
+| Скачивает Python | Нет | Нет | Да |
+| Скорость | Обычная | Средняя | Очень высокая |
+| Запуск без activate | Нет | `poetry run` | `uv run` |
+| Публикация пакета | Нет | Да | Да (`uv build`, `uv publish`) |
+
+Когда что выбрать:
+
+- **venv + pip**: быстрый скрипт на чужой машине, где больше ничего нет. Или в Docker-образе, где просто нужен `requirements.txt`.
+- **Poetry**: в команде уже есть Poetry-проекты. Тогда не меняйте инструмент.
+- **uv**: новый проект, учёба, ETL, ноутбуки. Выбор по умолчанию.
+
+## Рекомендация: uv
+
+Используйте `uv` в этом курсе и в новых проектах.
+
+- Одна утилита вместо трёх.
+- Сам ставит нужный Python.
+- Быстрый: установка занимает секунды.
+- Стандартный `pyproject.toml`, как у Poetry 2.x. Миграция проста.
+
+В следующих уроках пишите `uv run file.py`. Если вы выбрали другой инструмент, запускайте так, как показано выше.
+
+## Где это в работе
+
+- Каждый ETL-проект имеет свой lock-файл. Так пайплайн на сервере ставит те же версии, что у вас.
+- В CI делают `uv sync` или `poetry install`, а потом запускают тесты.
+- В Docker копируют `pyproject.toml` и lock-файл, затем ставят зависимости. Это даёт повторяемую сборку.
+- `.venv` не коммитят в git. Коммитят `pyproject.toml` и lock-файл.
+
+## Задания
+
+### Задание 1. venv с нуля
+
+Создайте `venv`, поставьте `requests`, запишите `requirements.txt`, удалите `.venv` и восстановите.
+
+<details>
+<summary>Решение</summary>
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install requests
+pip freeze > requirements.txt
+deactivate
+rm -rf .venv
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python app.py
+```
+
+**Проверка:** последняя команда печатает `requests 2.34.2` (ваша версия может быть другой).
+
+</details>
+
+### Задание 2. Какой Python работает?
+
+Активируйте `.venv` и найдите путь к `python`. Выйдите и проверьте ещё раз.
+
+<details>
+<summary>Решение</summary>
+
+```bash
+source .venv/bin/activate
+which python
+deactivate
+which python
+```
+
+**Проверка:** в первом случае путь заканчивается на `.venv/bin/python`. Во втором путь ведёт в системный или pyenv Python.
+
+</details>
+
+### Задание 3. Проект на uv
+
+Создайте проект `shop-uv`, закрепите Python 3.14, добавьте `requests`, запустите `app.py`.
+
+<details>
+<summary>Решение</summary>
+
+```bash
+uv init shop-uv
+cd shop-uv
+uv python pin 3.14
+uv add requests
+# создайте app.py из урока
+uv run app.py
+```
+
+**Проверка:** `requests 2.34.2`. В папке есть `uv.lock`, а в `pyproject.toml` строка `"requests>=..."`.
+
+</details>
+
+### Задание 4. Проект на Poetry
+
+То же самое на Poetry. Затем покажите дерево зависимостей.
+
+<details>
+<summary>Решение</summary>
+
+```bash
+poetry new shop-poetry
+cd shop-poetry
+poetry env use 3.14
+poetry add requests
+# создайте app.py из урока
+poetry run python app.py
+poetry show --tree
+```
+
+**Проверка:** `requests 2.34.2`, затем дерево с `certifi`, `charset-normalizer`, `idna`, `urllib3`. В папке есть `poetry.lock`.
+
+</details>
+
+### Задание 5. Повторите окружение на «новой машине»
+
+Удалите `.venv` в проекте `uv` и восстановите по lock-файлу. Затем запустите скрипт.
+
+<details>
+<summary>Решение</summary>
+
+```bash
+rm -rf .venv
+uv sync
+uv run app.py
+```
+
+**Проверка:** `uv sync` создаёт `.venv` и ставит те же версии. Скрипт печатает ту же версию `requests`.
+
+</details>
+
+### Задание 6. Выберите инструмент
+
+Для каждой ситуации выберите инструмент и объясните в одном предложении: (а) новый ETL-проект, (б) команда уже на Poetry, (в) одноразовый скрипт на сервере без доступа к установке программ.
+
+<details>
+<summary>Решение</summary>
+
+- (а) `uv`: быстрый, lock-файл, сам ставит Python.
+- (б) Poetry: не смешивайте инструменты без причины.
+- (в) `venv` + `pip`: уже встроены в Python.
+
+</details>
+
+## Что запомнить
+
+- Один проект, одно окружение. Папку `.venv` не коммитят.
+- Версии фиксируют в lock-файле (`uv.lock`, `poetry.lock`) или в `requirements.txt`.
+- `uv run file.py` и `poetry run python file.py` работают без activate.
+- `uv` лучший выбор для новых проектов.
+- Не ставьте пакеты в системный Python.
+
+Дальше: [Переменные и типы данных](/practice/python/basics/). Теория: Python Crash Course, глава 1 и приложение B.
