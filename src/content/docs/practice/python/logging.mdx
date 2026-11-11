@@ -1,0 +1,716 @@
+---
+title: Логирование
+head:
+  - tag: title
+    content: "Логирование в Python: best practices для ETL | Инжиниринг Данных"
+description: "Как правильно логировать в Python: logging вместо print, уровни, getLogger, форматы, файлы, ротация, JSON-логи и секреты. Примеры для ETL и API."
+sidebar:
+  order: 14
+  label: Логирование
+tags:
+  - python
+  - practice
+---
+
+Ночью ваш скрипт упал. Вас рядом не было. Единственное, что вы получите, — лог. Хороший лог отвечает на вопросы: что запускалось, сколько строк обработали, где упало и почему.
+
+## logging, а не print
+
+`print` годится для быстрого опыта. В работе нужен модуль `logging`.
+
+| | `print` | `logging` |
+|---|---|---|
+| Время и уровень | Нет | Есть |
+| Отключить отладку | Удалять строки | Сменить уровень |
+| Писать в файл | Перенаправлять вручную | Handler |
+| Traceback ошибки | Вручную | `logger.exception` |
+| Источник сообщения | Нет | Имя модуля |
+
+`logging` — часть стандартной библиотеки. Ставить ничего не нужно.
+
+## Уровни
+
+У каждого сообщения есть уровень. Logger показывает сообщения этого уровня и выше.
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%H:%M:%S")
+logger = logging.getLogger(__name__)
+
+logger.debug("не видно: уровень выше")
+logger.info("старт загрузки")
+logger.warning("пустая сумма в заказе %s", 4)
+logger.error("не удалось прочитать файл")
+logger.critical("база недоступна")
+```
+
+Ответ:
+
+```
+10:33:00 INFO __main__: старт загрузки
+10:33:00 WARNING __main__: пустая сумма в заказе 4
+10:33:00 ERROR __main__: не удалось прочитать файл
+10:33:00 CRITICAL __main__: база недоступна
+```
+
+`DEBUG` не показан: мы поставили уровень `INFO`. Время у вас будет своё.
+
+| Уровень | Число | Когда использовать |
+|---|---|---|
+| `DEBUG` | 10 | Детали для отладки. В проде выключен |
+| `INFO` | 20 | Нормальный ход работы |
+| `WARNING` | 30 | Что-то не так, но работа идёт дальше |
+| `ERROR` | 40 | Операция не удалась |
+| `CRITICAL` | 50 | Вся программа не может работать |
+
+## Что логировать в ETL: уровни по случаям
+
+| Случай | Уровень | Пример сообщения |
+|---|---|---|
+| Старт и конец job | `INFO` | `start job file=orders.csv` |
+| Число строк: прочитали, записали, отбросили | `INFO` | `rows read=5 rows_ok=4 rows_bad=1` |
+| Вызов API успешный | `INFO` | `api ok attempt=1 rows=3` |
+| Детали запроса: URL без секретов, размер страницы | `DEBUG` | `GET /orders page=2` |
+| Повтор после сбоя (retry) | `WARNING` | `api failed attempt=1/3 error=timeout` |
+| Проверка качества данных не пройдена | `WARNING` | `empty amount rows=1 of 5` |
+| Пропущена плохая строка | `WARNING` или `DEBUG` | `skip order_id=4 reason=empty amount` |
+| Не получилось после всех retry | `ERROR` | `api gave up after 3 attempts` |
+| Исключение в обработке | `ERROR` через `logger.exception` | `cannot parse amount` + traceback |
+| База недоступна, job не может идти | `CRITICAL` | `warehouse connection failed` |
+
+Правило: `WARNING` — «посмотрите утром», `ERROR` — «что-то не загрузилось».
+
+## getLogger(__name__)
+
+В каждом модуле создайте logger одной строкой:
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+```
+
+- `__name__` — имя модуля. Оно попадает в лог.
+- Так видно, какой файл написал сообщение.
+- Если запустить файл как скрипт, имя будет `__main__`. Это нормально.
+- Не используйте корневой `logging.info(...)` в модулях. Берите свой `logger`.
+
+## Настройка один раз, в точке входа
+
+`basicConfig` вызывают **один раз**: в `main()` или в начале скрипта. Не в каждом модуле.
+
+Минимальный ETL-скрипт `etl.py`:
+
+```python
+import csv
+import logging
+import sys
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+
+def load(path: Path) -> list[dict]:
+    with open(path, encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def run(path: Path) -> None:
+    logger.info("start job file=%s", path)
+    try:
+        rows = load(path)
+    except FileNotFoundError:
+        logger.exception("file not found file=%s", path)
+        raise
+    bad = [r for r in rows if not r["amount"]]
+    logger.info("rows read=%d", len(rows))
+    if bad:
+        logger.warning("data quality: empty amount rows=%d of %d", len(bad), len(rows))
+    logger.info("end job rows_ok=%d rows_bad=%d", len(rows) - len(bad), len(bad))
+
+
+def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
+    run(Path(sys.argv[1]))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Файл `data/orders.csv` — из урока [Файлы и исключения](/practice/python/files-exceptions/).
+
+```bash
+python etl.py data/orders.csv
+```
+
+Ответ:
+
+```
+10:33:00 INFO    __main__: start job file=data/orders.csv
+10:33:00 INFO    __main__: rows read=5
+10:33:00 WARNING __main__: data quality: empty amount rows=1 of 5
+10:33:00 INFO    __main__: end job rows_ok=4 rows_bad=1
+```
+
+По такому логу видно всё: файл, число строк, проблему с данными. Ставьте в сообщения пары `key=value`. Их легко искать.
+
+## Формат
+
+Основные поля `format`:
+
+| Поле | Что даёт |
+|---|---|
+| `%(asctime)s` | Время |
+| `%(levelname)s` | Уровень. `%(levelname)-7s` выравнивает по ширине |
+| `%(name)s` | Имя logger (модуль) |
+| `%(message)s` | Сообщение |
+| `%(funcName)s`, `%(lineno)d` | Функция и номер строки. Полезно для отладки |
+
+Время всегда должно быть в логе. Без него логи по расписанию бесполезны.
+
+## logger.exception: ошибка с traceback
+
+Внутри `except` используйте `logger.exception`. Он пишет уровень `ERROR` и полный traceback.
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+
+def parse_amount(raw: str) -> float | None:
+    try:
+        return float(raw)
+    except ValueError:
+        logger.exception("cannot parse amount raw=%r", raw)
+        return None
+
+
+print(parse_amount("12.5"))
+print(parse_amount("abc"))
+```
+
+Ответ:
+
+```
+12.5
+ERROR cannot parse amount raw='abc'
+Traceback (most recent call last):
+  File ".../x4.py", line 9, in parse_amount
+    return float(raw)
+ValueError: could not convert string to float: 'abc'
+None
+```
+
+Не пишите `logger.error(str(e))` вместо этого. Вы потеряете traceback.
+
+Если нужно записать ошибку и остановиться, после `logger.exception` вызовите `raise`. Так сделано в `etl.py` выше.
+
+## Ленивое форматирование: %s, а не f-string
+
+Передавайте значения аргументами: `logger.info("rows=%d", n)`. Не делайте `logger.info(f"rows={n}")`.
+
+Почему:
+
+- Logger собирает строку, только если сообщение будет выведено.
+- f-string собирается всегда, даже для отключённого `DEBUG`.
+- Для тяжёлых объектов это лишняя работа.
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class Big:
+    def __str__(self) -> str:
+        print("  (строка собрана)")
+        return "big"
+
+
+print("f-string:")
+logger.debug(f"данные {Big()}")
+print("lazy %s:")
+logger.debug("данные %s", Big())
+```
+
+Ответ:
+
+```
+f-string:
+  (строка собрана)
+lazy %s:
+```
+
+В режиме `INFO` сообщение `DEBUG` не выводится. Но f-string уже потратил время. Ленивый вариант ничего не делает.
+
+## Файл и ротация
+
+Консоль нужна для запуска руками. Для job по расписанию пишите ещё и в файл. Файл растёт, поэтому используйте `RotatingFileHandler`: при размере `maxBytes` он начинает новый файл и хранит `backupCount` старых.
+
+```python
+import logging
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+
+
+def setup_logging() -> None:
+    Path("logs").mkdir(exist_ok=True)
+    fmt = logging.Formatter("%(asctime)s %(levelname)-7s %(name)s: %(message)s")
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    console.setFormatter(fmt)
+
+    file = RotatingFileHandler(
+        "logs/etl.log", maxBytes=1_000_000, backupCount=3, encoding="utf-8"
+    )
+    file.setLevel(logging.DEBUG)
+    file.setFormatter(fmt)
+
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+    root.addHandler(console)
+    root.addHandler(file)
+
+
+logger = logging.getLogger(__name__)
+
+if __name__ == "__main__":
+    setup_logging()
+    logger.debug("только в файл")
+    logger.info("и в консоль, и в файл")
+```
+
+В консоль попадёт только `INFO`. В файл `logs/etl.log` — `DEBUG` и выше:
+
+```
+2026-11-11 10:33:10,001 INFO    __main__: и в консоль, и в файл
+```
+
+```
+2026-11-11 10:33:10,001 DEBUG   __main__: только в файл
+2026-11-11 10:33:10,001 INFO    __main__: и в консоль, и в файл
+```
+
+Первый блок — консоль. Второй — файл.
+
+Добавьте `logs/` в `.gitignore`. Логи не коммитят.
+
+## Структурные логи (JSON)
+
+Когда логи собирает система (Datadog, Loki, Elasticsearch), удобнее JSON. Одна строка — один объект. По полям легко искать и фильтровать.
+
+```python
+import json
+import logging
+
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        data = {
+            "time": self.formatTime(record, "%Y-%m-%dT%H:%M:%S"),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            data["exception"] = self.formatException(record.exc_info)
+        return json.dumps(data, ensure_ascii=False)
+
+
+handler = logging.StreamHandler()
+handler.setFormatter(JsonFormatter())
+logging.basicConfig(level=logging.INFO, handlers=[handler])
+
+logger = logging.getLogger("etl")
+logger.info("rows read=%d", 5)
+```
+
+Ответ:
+
+```
+{"time": "2026-11-11T10:33:10", "level": "INFO", "logger": "etl", "message": "rows read=5"}
+```
+
+Для начала хватит обычного текста. Идея на будущее: логи для машин — JSON, логи для людей — текст. Готовые библиотеки: `structlog`, `python-json-logger`.
+
+## Retry с логами
+
+Сбой API — обычное дело. Логируйте каждую попытку.
+
+```python
+import logging
+import time
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+calls = {"n": 0}
+
+
+def fetch_orders() -> list[int]:
+    calls["n"] += 1
+    if calls["n"] < 3:
+        raise ConnectionError("timeout")
+    return [1, 2, 3]
+
+
+def fetch_with_retry(max_attempts: int = 3) -> list[int]:
+    for attempt in range(1, max_attempts + 1):
+        try:
+            result = fetch_orders()
+        except ConnectionError as e:
+            logger.warning("api failed attempt=%d/%d error=%s", attempt, max_attempts, e)
+            if attempt == max_attempts:
+                logger.error("api gave up after %d attempts", max_attempts)
+                raise
+            time.sleep(0.1 * attempt)
+        else:
+            logger.info("api ok attempt=%d rows=%d", attempt, len(result))
+            return result
+
+
+fetch_with_retry()
+```
+
+Ответ:
+
+```
+WARNING api failed attempt=1/3 error=timeout
+WARNING api failed attempt=2/3 error=timeout
+INFO api ok attempt=3 rows=3
+```
+
+Каждая неудачная попытка — `WARNING`. Финальный отказ — `ERROR`. Тема API подробнее — в уроке [API и JSON](/practice/python/api-json/).
+
+## Библиотеки не настраивают logging
+
+Если вы пишете модуль, который импортируют другие, **не вызывайте** в нём `basicConfig`. Не добавляйте handler с выводом. Решает тот, кто запускает программу.
+
+В модуле достаточно:
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+```
+
+`NullHandler` нужен, чтобы без настройки не появлялись лишние сообщения.
+
+Модуль `shop_lib.py`:
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+
+
+def total(amounts: list[float]) -> float:
+    logger.debug("total items=%d", len(amounts))
+    return sum(amounts)
+```
+
+Запуск без настройки молчит. Результат работы видно, лога нет:
+
+```
+>>> import shop_lib; shop_lib.total([1.0])
+1.0
+```
+
+А скрипт `app.py` настраивает logging в одном месте и видит сообщения библиотеки:
+
+```python
+import logging
+
+import shop_lib
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(name)s %(message)s")
+    print(shop_lib.total([10.0, 20.5]))
+
+
+main()
+```
+
+Ответ:
+
+```
+DEBUG shop_lib total items=2
+30.5
+```
+
+## Не логируйте секреты и PII
+
+В лог не должны попадать:
+
+- пароли, токены, API-ключи, строки подключения;
+- номера карт;
+- email, телефоны, адреса (PII, персональные данные).
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+token = "sk-live-123456"
+url = f"https://api.shop.example/orders?token={token}"
+
+logger.info("bad: %s", url)
+
+
+def mask(value: str) -> str:
+    return value[:3] + "***"
+
+
+logger.info("good: token=%s", mask(token))
+```
+
+Ответ:
+
+```
+INFO bad: https://api.shop.example/orders?token=sk-live-123456
+INFO good: token=sk-***
+```
+
+Правила:
+
+- Логи читают много людей и системы. Попавший ключ придётся менять.
+- Логируйте `user_id`, а не email.
+- Не логируйте URL целиком, если в нём токен.
+- Не логируйте строки данных целиком. Хватит `order_id` и причины.
+- Токены берите из переменных окружения, не из кода.
+
+## Где это в работе
+
+- Каждый ETL job пишет старт, конец и числа строк. По ним видно, что загрузка неполная.
+- Планировщики (cron, Airflow) сохраняют stdout и stderr задачи. Ваш лог — главный след при отладке.
+- Предупреждения о качестве данных (`WARNING`) можно считать и показывать на дашборде.
+- Retry и вызовы API логируют, чтобы понять, кто виноват при сбое: вы или внешний сервис.
+
+## Задания
+
+Решайте сами, без AI. Во всех заданиях используйте формат `"%(levelname)s %(message)s"`, чтобы ответ не зависел от времени.
+
+### Задание 1. Уровни
+
+Настройте `basicConfig` с уровнем `WARNING`. Напишите по одному сообщению каждого из пяти уровней. Посмотрите, какие вышли.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import logging
+
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+logger.debug("debug")
+logger.info("info")
+logger.warning("warning")
+logger.error("error")
+logger.critical("critical")
+```
+
+</details>
+
+**Проверка:**
+
+```
+WARNING warning
+ERROR error
+CRITICAL critical
+```
+
+### Задание 2. Старт, конец, число строк
+
+Напишите `process(rows)`. Она логирует `start rows=N`, затем отбрасывает строки с пустым `amount` и логирует `end rows_ok=X rows_bad=Y`. Вызовите её для трёх строк, одна из них с пустой суммой. Уровень `INFO`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+
+def process(rows: list[dict]) -> list[dict]:
+    logger.info("start rows=%d", len(rows))
+    good = [r for r in rows if r["amount"]]
+    logger.info("end rows_ok=%d rows_bad=%d", len(good), len(rows) - len(good))
+    return good
+
+
+rows = [
+    {"order_id": 1, "amount": "10"},
+    {"order_id": 2, "amount": ""},
+    {"order_id": 3, "amount": "5"},
+]
+process(rows)
+```
+
+</details>
+
+**Проверка:**
+
+```
+INFO start rows=3
+INFO end rows_ok=2 rows_bad=1
+```
+
+### Задание 3. Предупреждение о качестве
+
+Напишите `check_quality(total, bad)`. Если доля плохих строк больше 20%, пишет `WARNING` с долей и лимитом. Иначе пишет `INFO`. Проверьте на `(10, 1)` и `(10, 3)`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+MAX_BAD_SHARE = 0.2
+
+
+def check_quality(total: int, bad: int) -> None:
+    share = bad / total
+    if share > MAX_BAD_SHARE:
+        logger.warning("bad share too high: %.0f%% (limit %.0f%%)", share * 100, MAX_BAD_SHARE * 100)
+    else:
+        logger.info("quality ok: bad share %.0f%%", share * 100)
+
+
+check_quality(10, 1)
+check_quality(10, 3)
+```
+
+</details>
+
+**Проверка:**
+
+```
+INFO quality ok: bad share 10%
+WARNING bad share too high: 30% (limit 20%)
+```
+
+### Задание 4. logger.exception
+
+Напишите `parse_amount(raw)`. При ошибке она вызывает `logger.exception("cannot parse amount raw=%r", raw)` и возвращает `None`. Вызовите для `"12.5"` и `"abc"`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+
+def parse_amount(raw: str) -> float | None:
+    try:
+        return float(raw)
+    except ValueError:
+        logger.exception("cannot parse amount raw=%r", raw)
+        return None
+
+
+print(parse_amount("12.5"))
+print(parse_amount("abc"))
+```
+
+</details>
+
+**Проверка:** есть строка `ERROR cannot parse amount raw='abc'`, под ней traceback с `ValueError: could not convert string to float: 'abc'`. Значения: `12.5` и `None`.
+
+### Задание 5. Лог в файл
+
+Настройте `FileHandler` для файла `job.log` (`mode="w"`, `encoding="utf-8"`) с форматом `"%(levelname)s %(name)s %(message)s"`. Logger с именем `"etl"` пишет `start` (`INFO`) и `empty amount rows=1` (`WARNING`). После этого закройте handler и выведите содержимое файла.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import logging
+from pathlib import Path
+
+handler = logging.FileHandler("job.log", mode="w", encoding="utf-8")
+handler.setFormatter(logging.Formatter("%(levelname)s %(name)s %(message)s"))
+logging.basicConfig(level=logging.INFO, handlers=[handler])
+
+logger = logging.getLogger("etl")
+logger.info("start")
+logger.warning("empty amount rows=1")
+handler.close()
+
+print(Path("job.log").read_text(encoding="utf-8"))
+```
+
+</details>
+
+**Проверка:**
+
+```
+INFO etl start
+WARNING etl empty amount rows=1
+```
+
+### Задание 6. Секреты
+
+У вас есть `user = {"email": "anna@example.com", "api_key": "sk-live-123456"}`. Напишите `mask(value)`: первые 3 символа и `***`. Залогируйте email и ключ только в маскированном виде.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import logging
+
+
+def mask(value: str) -> str:
+    return value[:3] + "***"
+
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+user = {"email": "anna@example.com", "api_key": "sk-live-123456"}
+logger.info("user email=%s", mask(user["email"]))
+logger.info("api_key=%s", mask(user["api_key"]))
+```
+
+</details>
+
+**Проверка:**
+
+```
+INFO user email=ann***
+INFO api_key=sk-***
+```
+
+## Что запомнить
+
+- Используйте `logging`, не `print`. В модуле: `logger = logging.getLogger(__name__)`.
+- Настраивайте logging один раз, в точке входа. Библиотеки не настраивают его.
+- Выбирайте уровень по смыслу: `INFO` — ход работы, `WARNING` — проблема с данными, `ERROR` — сбой.
+- В `except` пишите `logger.exception`. Значения передавайте через `%s`, не через f-string.
+- Никогда не пишите в лог секреты и PII.
+
+Этой темы нет в Python Crash Course. Читайте [документацию logging](https://docs.python.org/3/howto/logging.html).
+
+Следующий урок: [API и JSON](/practice/python/api-json/).

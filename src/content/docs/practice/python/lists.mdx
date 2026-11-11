@@ -1,0 +1,272 @@
+---
+title: Списки
+head:
+  - tag: title
+    content: "Списки в Python: append, sort, copy на примерах | Инжиниринг Данных"
+description: Что такое list в Python, как добавлять, удалять и сортировать элементы, как копировать список. Задания на данных заказов.
+sidebar:
+  order: 5
+  label: Списки
+tags:
+  - python
+  - practice
+---
+import { Aside } from '@astrojs/starlight/components';
+
+`list` — это упорядоченный набор значений. Его можно менять. Это главная структура для колонки данных или набора строк.
+
+Список пишут в квадратных скобках: `[a, b, c]`.
+
+## Создание и доступ
+
+```python
+channels = ["web", "app", "email"]
+print(channels, len(channels))
+print(channels[0], channels[-1])
+```
+
+Ответ:
+
+```
+['web', 'app', 'email'] 3
+web email
+```
+
+- Индексы идут с `0`. Первый элемент: `[0]`.
+- `[-1]` — последний элемент. `[-2]` — предпоследний.
+- `len(x)` — число элементов.
+- Выход за границу даёт `IndexError`.
+
+## Изменение списка
+
+```python
+channels.append("ads")        # в конец
+channels.insert(1, "push")    # на позицию 1
+print(channels)
+channels[0] = "site"          # заменить
+print(channels)
+last = channels.pop()         # забрать последний
+print(last, channels)
+channels.remove("push")       # удалить по значению
+print(channels)
+del channels[0]               # удалить по индексу
+print(channels)
+```
+
+Ответ:
+
+```
+['web', 'push', 'app', 'email', 'ads']
+['site', 'push', 'app', 'email', 'ads']
+ads ['site', 'push', 'app', 'email']
+['site', 'app', 'email']
+['app', 'email']
+```
+
+| Метод | Что делает |
+|---|---|
+| `append(x)` | Добавляет в конец |
+| `insert(i, x)` | Вставляет на позицию `i` |
+| `pop()` / `pop(i)` | Удаляет и возвращает элемент |
+| `remove(x)` | Удаляет первое значение `x` |
+| `del a[i]` | Удаляет по индексу |
+
+## Полезные операции
+
+```python
+amounts = [30, 10, 20]
+print(sum(amounts), min(amounts), max(amounts), len(amounts))
+print(sorted(amounts), amounts)
+amounts.sort(reverse=True)
+print(amounts)
+print("app" in channels, "tv" in channels)
+print([1, 2] + [3], [0] * 3)
+print(channels.index("email"), ["a", "b", "a"].count("a"))
+```
+
+Ответ:
+
+```
+60 10 30 3
+[10, 20, 30] [30, 10, 20]
+[30, 20, 10]
+True False
+[1, 2, 3] [0, 0, 0]
+1 2
+```
+
+- `sorted(x)` возвращает **новый** список. Старый не меняется.
+- `x.sort()` сортирует **на месте** и возвращает `None`.
+- `in` проверяет, есть ли значение в списке.
+
+## Копирование
+
+<Aside type="caution" title="Присваивание не копирует">
+`b = a` не создаёт новый список. Обе переменные смотрят на один и тот же список.
+</Aside>
+
+```python
+a = [1, 2]
+b = a
+b.append(3)
+print(a)
+c = a.copy()
+c.append(4)
+print(a, c)
+```
+
+Ответ:
+
+```
+[1, 2, 3]
+[1, 2, 3] [1, 2, 3, 4]
+```
+
+Используйте `a.copy()` или `a[:]`, чтобы получить копию.
+
+## Список списков
+
+Таблица в простом виде — это список строк.
+
+```python
+rows = [[1001, "anna", 49.9], [1002, "bob", 15.0]]
+print(rows[1][1])
+```
+
+Ответ:
+
+```
+bob
+```
+
+Первый индекс — строка. Второй — колонка. Позже строки будут словарями (урок про [словари](/practice/python/dicts/)).
+
+## Где это в работе
+
+- Колонка таблицы или список значений из API — это `list`.
+- Строка CSV через `split(",")` превращается в список полей.
+- Список id для фильтра: `WHERE id IN (...)`.
+- Список строк-файлов для обработки в цикле.
+
+## Практика
+
+### Задание 1
+
+Создайте список `users` с именами `anna`, `bob`, `carl`. Добавьте `dina` в конец. Выведите список и его длину.
+
+**Проверка:** `['anna', 'bob', 'carl', 'dina'] 4`
+
+<details>
+<summary>Решение</summary>
+
+```python
+users = ["anna", "bob", "carl"]
+users.append("dina")
+print(users, len(users))
+```
+
+</details>
+
+### Задание 2
+
+Суммы заказов: `[49.9, 15.0, 120.0, 35.5]`. Выведите сумму, максимум и среднее (округлите до 2 знаков).
+
+**Проверка:** `220.4 120.0 55.1`
+
+<details>
+<summary>Решение</summary>
+
+```python
+amounts = [49.9, 15.0, 120.0, 35.5]
+print(sum(amounts), max(amounts), round(sum(amounts) / len(amounts), 2))
+```
+
+</details>
+
+### Задание 3
+
+Уберите `bob` из списка `users` из задания 1.
+
+**Проверка:** `['anna', 'carl', 'dina']`
+
+<details>
+<summary>Решение</summary>
+
+```python
+users.remove("bob")
+print(users)
+```
+
+</details>
+
+### Задание 4
+
+Выведите суммы из задания 2 по убыванию. Исходный список должен остаться как был.
+
+**Проверка:**
+
+```
+[120.0, 49.9, 35.5, 15.0]
+[49.9, 15.0, 120.0, 35.5]
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+print(sorted(amounts, reverse=True))
+print(amounts)
+```
+
+</details>
+
+### Задание 5
+
+Строка CSV: `"1001,anna,49.9,web"`. Разрежьте её на поля. Выведите список, потом имя и сумму как число.
+
+**Проверка:**
+
+```
+['1001', 'anna', '49.9', 'web']
+anna 49.9
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+line = "1001,anna,49.9,web"
+parts = line.split(",")
+print(parts)
+print(parts[1], float(parts[2]))
+```
+
+</details>
+
+### Задание 6
+
+Склейте список `["a@x.com", "b@y.com"]` в одну строку через запятую и пробел.
+
+**Проверка:** `a@x.com, b@y.com`
+
+<details>
+<summary>Решение</summary>
+
+```python
+emails = ["a@x.com", "b@y.com"]
+print(", ".join(emails))
+```
+
+</details>
+
+## Что запомнить
+
+- `list` хранит значения по порядку. Индекс начинается с `0`.
+- `append`, `insert`, `pop`, `remove` меняют список на месте.
+- `sorted()` возвращает новый список. `.sort()` меняет старый.
+- `b = a` не копирует. Для копии пишите `a.copy()`.
+- `"x".split(",")` и `",".join(list)` нужны почти в каждом скрипте.
+
+Дальше: Python Crash Course, глава 3.
+
+Следующий урок: [Цикл for и срезы](/practice/python/loops/).

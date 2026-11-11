@@ -1,0 +1,296 @@
+---
+title: Переменные и типы данных
+head:
+  - tag: title
+    content: "Переменные и типы данных в Python: числа, строки | Инжиниринг Данных"
+description: Переменные, int, float, str, bool, None и f-string в Python 3.14. Короткая теория и задания на данных интернет-магазина.
+sidebar:
+  order: 4
+  label: Переменные и типы
+tags:
+  - python
+  - practice
+---
+import { Aside } from '@astrojs/starlight/components';
+
+Переменная — это имя для значения. Тип — это то, что за значение. От типа зависит, что с ним можно делать.
+
+Правило курса: **решайте сами, без AI**. Сначала попробуйте, потом смотрите решение.
+
+## Переменные и основные типы
+
+Создайте файл `basics.py`. Запускайте его так: `python basics.py`.
+
+```python
+order_id = 1001
+user = "anna"
+amount = 49.90
+is_paid = True
+coupon = None
+print(order_id, user, amount, is_paid, coupon)
+print(type(order_id), type(user), type(amount), type(is_paid), type(coupon))
+```
+
+Ответ:
+
+```
+1001 anna 49.9 True None
+<class 'int'> <class 'str'> <class 'float'> <class 'bool'> <class 'NoneType'>
+```
+
+| Тип | Что это | Пример в данных |
+|---|---|---|
+| `int` | Целое число | `order_id`, количество |
+| `float` | Дробное число | `amount`, цена |
+| `str` | Строка | `user`, `channel` |
+| `bool` | `True` или `False` | `is_paid` |
+| `None` | «Значения нет» | пустой `coupon` |
+
+Правила имён:
+
+- Только латиница, цифры и `_`. Не начинайте с цифры.
+- Стиль `snake_case`: `order_id`, не `OrderId`.
+- Имя должно говорить, что внутри: `amount`, не `a`.
+
+## Числа
+
+```python
+print(7 / 2, 7 // 2, 7 % 2, 2 ** 10)
+print(0.1 + 0.2)
+print(round(0.1 + 0.2, 2))
+print(1_000_000)
+```
+
+Ответ:
+
+```
+3.5 3 1 1024
+0.30000000000000004
+0.3
+1000000
+```
+
+- `/` — обычное деление. Всегда даёт `float`.
+- `//` — целая часть. `%` — остаток.
+- `**` — степень.
+- `_` в числе — для читаемости.
+
+<Aside type="caution" title="float неточный">
+`0.1 + 0.2` не равно `0.3`. Так работают дробные числа в компьютере. Для денег в учёте используют `Decimal` или целые копейки. Для отчётов хватает `round()`.
+</Aside>
+
+## Строки
+
+```python
+s = "  Anna.Smith@Example.com "
+print(s.strip().lower())
+print(s.strip().lower().split("@"))
+print("a,b,c".replace(",", ";"))
+print(len("hello"), "hello"[0], "hello"[-1])
+```
+
+Ответ:
+
+```
+anna.smith@example.com
+['anna.smith', 'example.com']
+a;b;c
+5 h o
+```
+
+- `strip()` убирает пробелы по краям. `lower()` делает буквы маленькими.
+- `split(sep)` режет строку на список. `replace(a, b)` заменяет.
+- `s[0]` — первый символ. `s[-1]` — последний.
+- Строки нельзя менять на месте. Методы возвращают новую строку.
+
+## Преобразование типов
+
+Данные из CSV и API часто приходят строками. Приводите тип явно.
+
+```python
+print(int("42") + 1, float("3.5"), str(10) + "%")
+```
+
+Ответ:
+
+```
+43 3.5 10%
+```
+
+Если значение не подходит, будет ошибка:
+
+```python
+int("12.5")   # ValueError: invalid literal for int() with base 10: '12.5'
+"a" + 1       # TypeError: can only concatenate str (not "int") to str
+```
+
+## f-string
+
+f-string вставляет значения в текст. Перед кавычкой ставьте `f`.
+
+```python
+price = 1234.5678
+print(f"{user} paid {amount} USD")
+print(f"{price:.2f}")
+print(f"{price:,.1f}")
+print(f"{0.256:.1%}")
+print(f"{order_id:08d}")
+print(f"{user=}")
+```
+
+Ответ:
+
+```
+anna paid 49.9 USD
+1234.57
+1,234.6
+25.6%
+00001001
+user='anna'
+```
+
+| Формат | Что делает |
+|---|---|
+| `:.2f` | 2 знака после точки |
+| `:,.1f` | разделитель тысяч и 1 знак |
+| `:.1%` | доля в процентах |
+| `:08d` | целое, ширина 8, нули слева |
+| `{x=}` | печатает имя и значение (удобно для отладки) |
+
+## bool и None
+
+```python
+print(5 > 3, 5 == 3, bool(0), bool("x"))
+coupon = None
+print(coupon is None)
+```
+
+Ответ:
+
+```
+True False False True
+True
+```
+
+- Сравнивайте с `None` через `is None`, не через `==`.
+- `bool(0)`, `bool("")`, `bool(None)` дают `False`. Остальное чаще `True`. Подробнее в уроке про [условия](/practice/python/conditions/).
+
+## Где это в работе
+
+- Типы колонок в CSV, Parquet и таблицах: `int`, `float`, `str`, `bool`.
+- Чистка строк: `strip()`, `lower()`, `replace()` перед загрузкой.
+- `None` — это `NULL` из SQL.
+- f-string — для логов и сообщений: `f"loaded {n} rows"`.
+
+## Практика
+
+### Задание 1
+
+Цена товара `20.0`, количество `3`. Посчитайте стоимость заказа и выведите её.
+
+**Проверка:** `60.0`
+
+<details>
+<summary>Решение</summary>
+
+```python
+price = 20.0
+qty = 3
+print(price * qty)
+```
+
+</details>
+
+### Задание 2
+
+Сумма заказа `100`, скидка `15` процентов. Выведите итог в формате `Итого: 85.00`.
+
+**Проверка:** `Итого: 85.00`
+
+<details>
+<summary>Решение</summary>
+
+```python
+total = 100
+discount = 15
+print(f"Итого: {total * (1 - discount / 100):.2f}")
+```
+
+</details>
+
+### Задание 3
+
+Email пришёл в виде `"  ANNA@Mail.RU  "`. Уберите пробелы и приведите к нижнему регистру.
+
+**Проверка:** `anna@mail.ru`
+
+<details>
+<summary>Решение</summary>
+
+```python
+raw = "  ANNA@Mail.RU  "
+print(raw.strip().lower())
+```
+
+</details>
+
+### Задание 4
+
+Из CSV пришли две строки: `"12"` и `"30"`. Сложите их как числа.
+
+**Проверка:** `42` (а не `1230`)
+
+<details>
+<summary>Решение</summary>
+
+```python
+x = "12"
+y = "30"
+print(int(x) + int(y))
+```
+
+</details>
+
+### Задание 5
+
+Оплачено 3 заказа из 8. Выведите долю оплаченных в процентах с одним знаком.
+
+**Проверка:** `37.5%`
+
+<details>
+<summary>Решение</summary>
+
+```python
+paid = 3
+all_orders = 8
+print(f"{paid / all_orders:.1%}")
+```
+
+</details>
+
+### Задание 6
+
+Выведите число `1234567.891` с разделителем тысяч и двумя знаками после точки.
+
+**Проверка:** `1,234,567.89`
+
+<details>
+<summary>Решение</summary>
+
+```python
+print(f"{1234567.891:,.2f}")
+```
+
+</details>
+
+## Что запомнить
+
+- Основные типы: `int`, `float`, `str`, `bool`, `None`.
+- Данные из файлов приходят строками. Приводите тип через `int()` и `float()`.
+- `float` неточный. Округляйте через `round()` или формат `:.2f`.
+- f-string — основной способ собрать текст из значений.
+- `None` проверяют через `is None`.
+
+Дальше: Python Crash Course, глава 2.
+
+Следующий урок: [Списки](/practice/python/lists/).

@@ -1,0 +1,504 @@
+---
+title: Файлы и исключения
+head:
+  - tag: title
+    content: "Python: чтение файлов, CSV, try/except | Инжиниринг Данных"
+description: Как читать и писать файлы в Python, работать с CSV через csv.DictReader и pathlib, ловить ошибки с try/except и поднимать свои. С заданиями.
+sidebar:
+  order: 12
+  label: Файлы и исключения
+tags:
+  - python
+  - practice
+---
+
+Данные почти всегда лежат в файлах. Скрипт должен их читать, писать и не падать от одной плохой строки. Для этого нужны три вещи: `pathlib`, модуль `csv` и `try/except`.
+
+## Подготовка
+
+Создайте папку `data/` и файл `data/orders.csv`:
+
+```csv
+order_id,user,amount,channel,device
+1,anna,120.50,web,mobile
+2,boris,35.00,app,mobile
+3,anna,89.90,web,desktop
+4,clara,,app,mobile
+5,boris,210.00,web,desktop
+```
+
+В заказе 4 нет суммы. Это сделано специально.
+
+## pathlib: пути к файлам
+
+Не склеивайте пути строками. Используйте `Path`. Он работает одинаково на macOS, Linux и Windows.
+
+```python
+from pathlib import Path
+
+path = Path("data") / "orders.csv"
+print(path)
+print(path.name)
+print(path.suffix)
+print(path.parent)
+print(path.exists())
+```
+
+Ответ:
+
+```
+data/orders.csv
+orders.csv
+.csv
+data
+True
+```
+
+| Что нужно | Код |
+|---|---|
+| Склеить путь | `Path("data") / "orders.csv"` |
+| Имя, расширение | `path.name`, `path.suffix`, `path.stem` |
+| Файл есть? | `path.exists()` |
+| Создать папку | `path.mkdir(parents=True, exist_ok=True)` |
+| Найти файлы | `Path("data").glob("*.csv")` |
+
+## Читать и писать текст
+
+Для маленьких файлов хватает двух методов.
+
+```python
+from pathlib import Path
+
+text = Path("data/orders.csv").read_text(encoding="utf-8")
+print(text.splitlines()[0])
+print(len(text.splitlines()))
+
+out = Path("out")
+out.mkdir(exist_ok=True)
+(out / "note.txt").write_text("ok\n", encoding="utf-8")
+```
+
+Ответ:
+
+```
+order_id,user,amount,channel,device
+6
+```
+
+Большой файл не читайте целиком. Читайте его по строкам через `with open(...)`.
+
+## Кодировка
+
+Всегда пишите `encoding="utf-8"`. Если не написать, Python возьмёт кодировку системы. На другой машине файл может прочитаться неверно.
+
+```python
+from pathlib import Path
+
+Path("out").mkdir(exist_ok=True)
+Path("out/ru.txt").write_text("Привет, данные\n", encoding="utf-8")
+print(Path("out/ru.txt").read_bytes())
+try:
+    Path("out/ru.txt").read_text(encoding="ascii")
+except UnicodeDecodeError as e:
+    print("ошибка:", type(e).__name__)
+```
+
+Ответ:
+
+```
+b'\xd0\x9f\xd1\x80\xd0\xb8\xd0\xb2\xd0\xb5\xd1\x82, \xd0\xb4\xd0\xb0\xd0\xbd\xd0\xbd\xd1\x8b\xd0\xb5\n'
+ошибка: UnicodeDecodeError
+```
+
+Файл из Excel часто в `cp1251` или `utf-8-sig`. Если видите «кракозябры», попробуйте другую кодировку.
+
+## with: файл закроется сам
+
+`with open(...)` закрывает файл, даже если внутри была ошибка. Не используйте `open` без `with`.
+
+```python
+with open("data/orders.csv", encoding="utf-8", newline="") as f:
+    first = f.readline()
+```
+
+Для CSV всегда добавляйте `newline=""`. Так модуль `csv` сам правильно обрабатывает переводы строк.
+
+## csv: DictReader и DictWriter
+
+`csv.DictReader` читает каждую строку как dict. Ключи берутся из заголовка.
+
+```python
+import csv
+from pathlib import Path
+
+with open("data/orders.csv", encoding="utf-8", newline="") as f:
+    rows = list(csv.DictReader(f))
+
+print(rows[0])
+print(type(rows[0]["amount"]))
+
+good = [r for r in rows if r["amount"] != ""]
+for r in good:
+    r["amount"] = float(r["amount"])
+
+Path("out").mkdir(exist_ok=True)
+with open("out/clean.csv", "w", encoding="utf-8", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=["order_id", "user", "amount"], extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(good)
+
+print(Path("out/clean.csv").read_text(encoding="utf-8"))
+```
+
+Ответ:
+
+```
+{'order_id': '1', 'user': 'anna', 'amount': '120.50', 'channel': 'web', 'device': 'mobile'}
+<class 'str'>
+order_id,user,amount
+1,anna,120.5
+2,boris,35.0
+3,anna,89.9
+5,boris,210.0
+
+```
+
+Важно:
+
+- `DictReader` отдаёт **всё как строки**. Числа нужно привести к `float` или `int` самим.
+- Пустая ячейка — это пустая строка `""`, не `None`.
+- `extrasaction="ignore"` в `DictWriter` пропускает лишние колонки.
+- `writeheader()` пишет первую строку с названиями.
+
+## try / except / else / finally
+
+Ошибка без `try` останавливает весь скрипт. С `try` вы решаете, что делать.
+
+```python
+def parse_amount(raw: str) -> float:
+    try:
+        value = float(raw)
+    except ValueError:
+        print(f"плохое число: {raw!r}")
+        return 0.0
+    else:
+        print(f"число ок: {value}")
+        return value
+    finally:
+        print("разбор закончен")
+
+parse_amount("12.5")
+parse_amount("abc")
+```
+
+Ответ:
+
+```
+число ок: 12.5
+разбор закончен
+плохое число: 'abc'
+разбор закончен
+```
+
+| Блок | Когда выполняется |
+|---|---|
+| `try` | Код, который может упасть |
+| `except` | Если случилась ошибка этого типа |
+| `else` | Если ошибки не было |
+| `finally` | Всегда. Подходит для очистки |
+
+Частые ошибки в данных:
+
+```python
+try:
+    open("data/missing.csv", encoding="utf-8")
+except FileNotFoundError as e:
+    print(e)
+
+try:
+    print(10 / 0)
+except ZeroDivisionError:
+    print("деление на ноль")
+
+try:
+    {"a": 1}["b"]
+except KeyError as e:
+    print("нет ключа", e)
+```
+
+Ответ:
+
+```
+[Errno 2] No such file or directory: 'data/missing.csv'
+деление на ноль
+нет ключа 'b'
+```
+
+Правила:
+
+- Ловите **конкретную** ошибку: `ValueError`, а не просто `Exception`.
+- Не пишите пустой `except: pass`. Вы потеряете ошибку и не узнаете об этом.
+- В `try` кладите минимум кода.
+
+## raise: свои ошибки
+
+Если данные плохие, остановите обработку явно. Используйте `raise`.
+
+```python
+def check_amount(amount: float) -> float:
+    if amount < 0:
+        raise ValueError(f"amount < 0: {amount}")
+    return amount
+
+print(check_amount(5))
+try:
+    check_amount(-3)
+except ValueError as e:
+    print("поймали:", e)
+
+class BadRowError(Exception):
+    pass
+
+def read_row(row):
+    if not row.get("user"):
+        raise BadRowError(f"нет user в заказе {row['order_id']}")
+    return row
+
+try:
+    read_row({"order_id": "7", "user": ""})
+except BadRowError as e:
+    print(e)
+```
+
+Ответ:
+
+```
+5
+поймали: amount < 0: -3
+нет user в заказе 7
+```
+
+Если ошибку никто не поймал, Python печатает traceback. В Python 3.14 он цветной и подсказывает, где искать причину. Читайте его снизу вверх: последняя строка говорит, что случилось.
+
+## Где это в работе
+
+- Загрузка CSV от партнёров: файл может быть пустым, в другой кодировке или без колонки.
+- ETL-скрипт: одна плохая строка не должна ронять всю загрузку. Её пропускают и считают.
+- `finally` закрывает соединения и удаляет временные файлы.
+- Свои ошибки (`raise`) останавливают пайплайн, когда данные явно неверные.
+
+## Задания
+
+Файл `data/orders.csv` из начала урока. Решайте сами, без AI.
+
+### Задание 1. Путь
+
+Соберите путь `reports/2026/sales.csv` через `Path`. Выведите `stem`, `suffix` и путь с расширением `.parquet`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+from pathlib import Path
+
+p = Path("reports") / "2026" / "sales.csv"
+print(p)
+print(p.stem)
+print(p.suffix)
+print(p.with_suffix(".parquet"))
+```
+
+</details>
+
+**Проверка:**
+
+```
+reports/2026/sales.csv
+sales
+.csv
+reports/2026/sales.parquet
+```
+
+### Задание 2. Сумма заказов
+
+Прочитайте `orders.csv`. Выведите число заказов и общую сумму. Пустые суммы пропустите.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import csv
+
+with open("data/orders.csv", encoding="utf-8", newline="") as f:
+    rows = list(csv.DictReader(f))
+
+total = 0.0
+for row in rows:
+    if row["amount"]:
+        total += float(row["amount"])
+
+print(len(rows))
+print(total)
+```
+
+</details>
+
+**Проверка:**
+
+```
+5
+455.4
+```
+
+### Задание 3. safe_float
+
+Напишите `safe_float(raw, default=0.0)`. Она возвращает число или `default`, если строку нельзя преобразовать.
+
+<details>
+<summary>Решение</summary>
+
+```python
+def safe_float(raw: str, default: float = 0.0) -> float:
+    try:
+        return float(raw)
+    except ValueError:
+        return default
+
+print(safe_float("12.5"))
+print(safe_float(""))
+print(safe_float("n/a", -1.0))
+```
+
+</details>
+
+**Проверка:**
+
+```
+12.5
+0.0
+-1.0
+```
+
+### Задание 4. Итог по пользователям
+
+Посчитайте сумму заказов по каждому `user`. Запишите результат в `out/user_totals.csv` через `DictWriter` с колонками `user,total`. Выведите файл.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import csv
+from collections import defaultdict
+from pathlib import Path
+
+totals = defaultdict(float)
+with open("data/orders.csv", encoding="utf-8", newline="") as f:
+    for row in csv.DictReader(f):
+        if row["amount"]:
+            totals[row["user"]] += float(row["amount"])
+
+Path("out").mkdir(exist_ok=True)
+with open("out/user_totals.csv", "w", encoding="utf-8", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=["user", "total"])
+    writer.writeheader()
+    for user, total in totals.items():
+        writer.writerow({"user": user, "total": round(total, 2)})
+
+print(Path("out/user_totals.csv").read_text(encoding="utf-8"))
+```
+
+</details>
+
+**Проверка:** у `clara` нет суммы, поэтому её в файле нет.
+
+```
+user,total
+anna,210.4
+boris,245.0
+```
+
+### Задание 5. Файла нет
+
+Напишите `load_orders(path)`. Если файла нет, она печатает `файл не найден: <путь>` и возвращает пустой список. Вызовите её для `data/orders.csv` и `data/nope.csv`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import csv
+from pathlib import Path
+
+def load_orders(path: Path) -> list[dict]:
+    try:
+        with open(path, encoding="utf-8", newline="") as f:
+            return list(csv.DictReader(f))
+    except FileNotFoundError:
+        print(f"файл не найден: {path}")
+        return []
+
+print(len(load_orders(Path("data/orders.csv"))))
+print(len(load_orders(Path("data/nope.csv"))))
+```
+
+</details>
+
+**Проверка:**
+
+```
+5
+файл не найден: data/nope.csv
+0
+```
+
+### Задание 6. Валидация со счётчиком
+
+Напишите `validate(row)`. Она вызывает `ValueError`, если сумма пустая или меньше нуля. В цикле по файлу поймайте ошибку, выведите `пропуск: <текст>` и посчитайте хорошие и плохие строки.
+
+<details>
+<summary>Решение</summary>
+
+```python
+import csv
+
+def validate(row: dict) -> float:
+    if not row["amount"]:
+        raise ValueError(f"пустая сумма в заказе {row['order_id']}")
+    amount = float(row["amount"])
+    if amount < 0:
+        raise ValueError(f"отрицательная сумма в заказе {row['order_id']}")
+    return amount
+
+good, bad = 0, 0
+with open("data/orders.csv", encoding="utf-8", newline="") as f:
+    for row in csv.DictReader(f):
+        try:
+            validate(row)
+        except ValueError as e:
+            bad += 1
+            print("пропуск:", e)
+        else:
+            good += 1
+
+print(good, bad)
+```
+
+</details>
+
+**Проверка:**
+
+```
+пропуск: пустая сумма в заказе 4
+4 1
+```
+
+## Что запомнить
+
+- Пути собирайте через `Path`, а не строками.
+- Всегда пишите `encoding="utf-8"` и используйте `with open(...)`.
+- `csv.DictReader` отдаёт строки. Типы приводите сами.
+- Ловите конкретные ошибки. Не прячьте их через `except: pass`.
+- `raise` останавливает обработку, когда данные неверные.
+
+Дальше: Python Crash Course, глава 10.
+
+Следующий урок: [Тесты с pytest](/practice/python/testing/).

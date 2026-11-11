@@ -3,42 +3,73 @@ title: Базовый минимум Python
 # SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
 head:
   - tag: title
-    content: "Python для инженера и аналитика данных | Инжиниринг Данных"
-description: "Зачем инженеру и аналитику данных Python, как его используют в работе и что нужно знать на старте."
+    content: "Python для начинающих: базовый минимум, 3.14 | Инжиниринг Данных"
+description: Бесплатный курс по основам Python 3.14 для инженера и аналитика данных. venv, uv, Poetry, логирование, API, JSON, Polars, PyArrow, DuckDB. Много практики.
 sidebar:
   order: 1
-  label: Зачем это нужно
+  label: О курсе
+tags:
+  - python
+  - practice
 ---
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-## Что это
+**Python** — главный язык данных после SQL. Для работы не нужно знать весь язык. Нужен **базовый минимум**. Его мы и разбираем.
 
-**Python** — язык программирования. Это второй главный язык данных после SQL.
+## Зачем знать Python
 
-## Зачем это знать
-
-- SQL работает только внутри базы. Python может всё остальное: скачать данные из API, прочитать файл, отправить письмо.
-- Большинство инструментов данных написаны на Python или управляются из Python: Airflow, dbt, Spark (PySpark), pandas.
+- SQL работает только внутри базы. Python делает всё остальное: берёт данные из API, читает файлы, чистит, грузит в базу.
+- Airflow, dbt, Spark (PySpark), Polars, DuckDB управляются из Python.
 - Python легко читать. Это хороший первый язык.
 
 ## Как используют
 
 | Кто | Задачи |
 |---|---|
-| Инженер данных | Пишет ETL, забирает данные из API, пишет DAG для Airflow, тесты, работает с PySpark |
-| Аналитик данных | Чистит данные в pandas, считает статистику, строит графики, работает в Jupyter |
+| Инженер данных | Пишет ETL, забирает данные из API, пишет DAG для Airflow, тесты, логирование |
+| Аналитик данных | Чистит данные, считает статистику, работает с файлами и API |
 
-## Что будет в практике
+## Как устроен курс
 
-- Типы данных, переменные, списки и словари
-- Условия и циклы
-- Функции
-- Работа с файлами: CSV и JSON
-- Запросы к API с `requests`
-- Основы pandas
+- **Python 3.14.** Это текущая версия. Всё в курсе проверено на ней.
+- **Основы** — по структуре первой части книги [Python Crash Course](https://nostarch.com/python-crash-course-3rd-edition) Эрика Маттеса. Теорию и примеры мы пересказали коротко и адаптировали под данные: заказы, пользователи, CSV.
+- **Практика** — в каждом уроке 4–6 заданий с решением и блоком «Проверка».
+- **Работа с данными** — окружения, логирование, API, JSON, PyArrow, Polars, DuckDB. Этого нет в обычных книгах для начинающих, а в работе нужно сразу.
+
+| Урок | Что внутри |
+|---|---|
+| [Установка Python 3.14](/practice/python/setup/) | Python, REPL, первый скрипт |
+| [Окружения: venv, Poetry, uv](/practice/python/environments/) | Изолированные окружения и зависимости. Установка и упражнения |
+| [Переменные и типы данных](/practice/python/basics/) | Числа, строки, f-string, bool, None |
+| [Списки](/practice/python/lists/) | Создание, изменение, методы |
+| [Цикл for и срезы](/practice/python/loops/) | Перебор, `range`, срезы, comprehension |
+| [Условия if](/practice/python/conditions/) | `if`, `elif`, `else`, `and`, `or`, `in` |
+| [Словари](/practice/python/dicts/) | Ключ-значение, список словарей, множества |
+| [Цикл while и ввод](/practice/python/while-input/) | `while`, `input`, `sys.argv`, `argparse` |
+| [Функции](/practice/python/functions/) | Аргументы, `return`, модули, импорт |
+| [Классы](/practice/python/classes/) | Минимум: класс, методы, `dataclass` |
+| [Файлы и исключения](/practice/python/files-exceptions/) | `pathlib`, CSV, `try/except` |
+| [Тесты с pytest](/practice/python/testing/) | `assert`, `parametrize`, тест функции очистки |
+| [Логирование](/practice/python/logging/) | Лучшие практики и случаи использования |
+| [API и JSON](/practice/python/api-json/) | `requests`, `json`, пагинация, ключи API |
+| [PyArrow, Polars, DuckDB](/practice/python/data-libs/) | Современный стек для данных |
+| [Итоговая практика](/practice/python/final/) | Мини-ETL: API → JSON → Polars → DuckDB → Parquet |
+
+## Как заниматься
+
+Идите по порядку. Каждый урок: короткое объяснение, код, задания.
+
+Главное правило: **решайте сами, без AI**. Сначала напишите код, потом открывайте решение. Сравните свой результат с блоком «Проверка».
+
+Если вы уже умеете программировать, пропустите уроки 4–11. Начните с [окружений](/practice/python/environments/).
+
+<Aside type="note" title="Что нужно знать заранее">
+Умение открыть терминал. Если оно незнакомо, пройдите [курс CLI](/practice/cli/setup/).
+</Aside>
+
+<CardGrid>
+  <LinkCard title="Начать: установка" description="Python 3.14 и первый скрипт." href="/practice/python/setup/" />
+  <LinkCard title="Курс CLI" description="Терминал: нужен для всех уроков." href="/practice/cli/" />
+</CardGrid>
 
 Справочник: [Языки программирования](/tools/coding/).
-
-<Aside type="note" title="Упражнения скоро">
-Мы готовим практику для этого раздела. Пока начните с [базового минимума SQL](/practice/sql/).
-</Aside>

@@ -1,0 +1,485 @@
+---
+title: Функции
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Функции Python: аргументы, return, модули | Инжиниринг Данных"
+description: Функции Python для data engineer. Аргументы, значения по умолчанию, return, type hints, args и kwargs, import и __main__. Примеры и задания.
+sidebar:
+  order: 10
+  label: Функции
+tags:
+  - python
+  - practice
+---
+import { Aside } from '@astrojs/starlight/components';
+
+Функция — это именованный кусок кода. Вы пишете его один раз и вызываете сколько угодно. Pipeline состоит из функций: прочитать, очистить, посчитать, записать.
+
+Правило курса: решайте сами, без AI.
+
+## Первая функция
+
+```python
+def add_vat(amount, rate=0.2):
+    return round(amount * (1 + rate), 2)
+
+print(add_vat(100))
+print(add_vat(100, 0.1))
+print(add_vat(rate=0.5, amount=10))
+```
+
+Ответ:
+
+```
+120.0
+110.0
+15.0
+```
+
+| Часть | Что значит |
+|---|---|
+| `def add_vat(...)` | Объявление функции |
+| `amount` | Обязательный параметр |
+| `rate=0.2` | Параметр со значением по умолчанию |
+| `return` | Что функция отдаёт наружу |
+
+- Аргументы можно передавать по позиции: `add_vat(100, 0.1)`.
+- Или по имени: `add_vat(rate=0.5, amount=10)`. Так код легче читать.
+- Параметры со значением по умолчанию ставьте после обязательных.
+
+## return
+
+Функция без `return` отдаёт `None`.
+
+```python
+def hello(name):
+    print("hi", name)
+
+r = hello("x")
+print(r)
+```
+
+Ответ:
+
+```
+hi x
+None
+```
+
+`print` показывает значение. `return` отдаёт его вызывающему коду. В pipeline почти всегда нужен `return`.
+
+Можно вернуть несколько значений. Это `tuple`, его можно распаковать:
+
+```python
+def min_max(values):
+    return min(values), max(values)
+
+lo, hi = min_max([49.9, 120.0, 15.5])
+print(lo, hi)
+```
+
+Ответ:
+
+```
+15.5 120.0
+```
+
+## Type hints
+
+Подсказки типов говорят читателю и редактору, что ждёт функция и что вернёт.
+
+```python
+def total(amounts: list[float], skip_negative: bool = True) -> float:
+    if skip_negative:
+        return sum(a for a in amounts if a > 0)
+    return sum(amounts)
+
+print(total([10, -5, 20]))
+print(total([10, -5, 20], skip_negative=False))
+```
+
+Ответ:
+
+```
+30
+25
+```
+
+- `amounts: list[float]` — параметр. `-> float` — тип результата.
+- Для «или `None`» пишите `str | None`.
+- Python **не проверяет** типы при запуске. Проверяет их внешний инструмент, например `mypy` или редактор.
+
+Проверьте сами:
+
+```python
+def add(a: int, b: int) -> int:
+    return a + b
+
+print(add("x", "y"))
+```
+
+Ответ:
+
+```
+xy
+```
+
+Код работает, хотя типы неверные. Подсказки нужны для людей и инструментов.
+
+## *args и **kwargs
+
+Коротко. Это способ принять «любое число аргументов».
+
+```python
+def count_args(*args, **kwargs):
+    print(args, kwargs)
+
+count_args(1, 2, sep=";", header=True)
+```
+
+Ответ:
+
+```
+(1, 2) {'sep': ';', 'header': True}
+```
+
+- `*args` — все позиционные аргументы в `tuple`.
+- `**kwargs` — все именованные аргументы в `dict`.
+- Обратная операция: распаковка при вызове.
+
+```python
+def add(a, b):
+    return a + b
+
+nums = [3, 4]
+opts = {"a": 1, "b": 2}
+print(add(*nums))
+print(add(**opts))
+```
+
+Ответ:
+
+```
+7
+3
+```
+
+Вы часто увидите `**kwargs` в чужом коде и библиотеках. Писать их самому нужно редко.
+
+## Ловушки
+
+### Изменяемое значение по умолчанию
+
+```python
+def bad(items=[]):
+    items.append(1)
+    return items
+
+print(bad(), bad())
+```
+
+Ответ:
+
+```
+[1, 1] [1, 1]
+```
+
+Оба вызова вернули один и тот же список. Он создаётся один раз при объявлении функции. Правильно так:
+
+```python
+def good(items=None):
+    if items is None:
+        items = []
+    items.append(1)
+    return items
+
+print(good(), good())
+```
+
+Ответ:
+
+```
+[1] [1]
+```
+
+Правило: не ставьте `[]` и `{}` как значение по умолчанию. Ставьте `None`.
+
+### Область видимости
+
+Переменные внутри функции живут только в ней.
+
+```python
+x = 10
+
+def scope():
+    x = 5
+    return x
+
+print(scope(), x)
+```
+
+Ответ:
+
+```
+5 10
+```
+
+Внутренний `x` — другая переменная. Передавайте данные через аргументы и `return`. Не меняйте глобальные переменные из функции.
+
+## Модули и import
+
+Файл `.py` — это модуль. Из одного файла можно подключить функции другого.
+
+Файл `helpers.py`:
+
+```python
+def clean_amount(raw: str) -> float:
+    return float(raw.replace(",", ".").strip())
+
+
+print("helpers loaded")
+
+if __name__ == "__main__":
+    print("self-test:", clean_amount(" 12,5 "))
+```
+
+Файл `main.py` в той же папке:
+
+```python
+from helpers import clean_amount
+
+print(clean_amount("49,90"))
+```
+
+Запуск:
+
+```bash
+python3 main.py
+python3 helpers.py
+```
+
+Ответ:
+
+```
+helpers loaded
+49.9
+helpers loaded
+self-test: 12.5
+```
+
+- `import` выполняет весь код модуля. Поэтому `helpers loaded` появилось и при импорте.
+- Формы импорта: `import helpers` (вызов `helpers.clean_amount(...)`) или `from helpers import clean_amount`.
+- В модуле Python есть переменная `__name__`. Если файл запущен напрямую, она равна `"__main__"`. Если его импортировали — имени модуля.
+- Блок `if __name__ == "__main__":` выполняется только при прямом запуске. Там держат запуск скрипта или самопроверку.
+
+Типичная структура скрипта:
+
+```python
+def main() -> None:
+    ...  # прочитать, обработать, записать
+
+
+if __name__ == "__main__":
+    main()
+```
+
+<Aside type="tip" title="Стандартная библиотека">
+`import csv`, `import pathlib`, `import argparse` — это тоже модули. Сначала ищите нужное в стандартной библиотеке, потом ставьте пакеты через `uv`.
+</Aside>
+
+## Где это в работе
+
+| Задача | Как помогают функции |
+|---|---|
+| Очистка поля (`"10,5"` -> `10.5`) | Маленькая функция, которую легко проверить |
+| ETL: extract, transform, load | Три функции и `main()` |
+| Тесты pytest | Тестируют именно функции (урок 13) |
+| Общий код между скриптами | Модуль `helpers.py` и `import` |
+| Запуск из cron или Airflow | `if __name__ == "__main__":` |
+
+## Практика
+
+Для заданий 2 и 4 возьмите этот список:
+
+```python
+orders = [
+    {"order_id": 1001, "user": "anna", "amount": 49.9, "channel": "web"},
+    {"order_id": 1002, "user": "boris", "amount": 120.0, "channel": "app"},
+    {"order_id": 1003, "user": "anna", "amount": 15.5, "channel": "web"},
+    {"order_id": 1004, "user": "dina", "amount": 300.0, "channel": "app"},
+    {"order_id": 1005, "user": "boris", "amount": 80.0, "channel": "email"},
+]
+```
+
+### Задание 1
+
+Напишите `add_vat(amount, rate=0.2)`. Вызовите с `100`, с `100, 0.1` и по именам `rate=0.5, amount=10`.
+
+**Проверка:** `120.0`, `110.0`, `15.0`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+def add_vat(amount, rate=0.2):
+    return round(amount * (1 + rate), 2)
+
+print(add_vat(100))
+print(add_vat(100, 0.1))
+print(add_vat(rate=0.5, amount=10))
+```
+
+</details>
+
+### Задание 2
+
+Напишите `summarize(amounts: list[float]) -> dict`. Она возвращает `count`, `total` и `avg` (среднее, округлить до 2 знаков). Вызовите для сумм всех заказов.
+
+**Проверка:** `{'count': 5, 'total': 565.4, 'avg': 113.08}`
+
+<details>
+<summary>Решение</summary>
+
+```python
+def summarize(amounts: list[float]) -> dict:
+    return {
+        "count": len(amounts),
+        "total": sum(amounts),
+        "avg": round(sum(amounts) / len(amounts), 2),
+    }
+
+print(summarize([o["amount"] for o in orders]))
+```
+
+</details>
+
+### Задание 3
+
+Напишите `format_order(order: dict, currency: str = "RUB") -> str`. Она возвращает строку вида `1001: 49.9 RUB`. Вызовите для первого заказа и для второго с `currency="USD"`.
+
+**Проверка:**
+
+```
+1001: 49.9 RUB
+1002: 120.0 USD
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+def format_order(order: dict, currency: str = "RUB") -> str:
+    return f"{order['order_id']}: {order['amount']} {currency}"
+
+print(format_order(orders[0]))
+print(format_order(orders[1], currency="USD"))
+```
+
+Внутри f-string с двойными кавычками снаружи используйте одинарные кавычки для ключей.
+
+</details>
+
+### Задание 4
+
+Напишите `filter_orders(orders, min_amount=0.0, channel=None)`. Она возвращает список заказов с суммой не меньше `min_amount`. Если `channel` задан, то только этого канала. Выведите `order_id` для трёх вызовов: `min_amount=50`; `channel="web"`; `100, "app"`.
+
+**Проверка:**
+
+```
+[1002, 1004, 1005]
+[1001, 1003]
+[1002, 1004]
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+def filter_orders(
+    orders: list[dict],
+    min_amount: float = 0.0,
+    channel: str | None = None,
+) -> list[dict]:
+    result = []
+    for o in orders:
+        if o["amount"] < min_amount:
+            continue
+        if channel is not None and o["channel"] != channel:
+            continue
+        result.append(o)
+    return result
+
+print([o["order_id"] for o in filter_orders(orders, min_amount=50)])
+print([o["order_id"] for o in filter_orders(orders, channel="web")])
+print([o["order_id"] for o in filter_orders(orders, 100, "app")])
+```
+
+</details>
+
+### Задание 5
+
+Напишите `sum_all(*args)`, которая суммирует любое число аргументов. Вызовите `sum_all(1, 2, 3)` и `sum_all()`.
+
+**Проверка:** `6 0`
+
+<details>
+<summary>Решение</summary>
+
+```python
+def sum_all(*args):
+    return sum(args)
+
+print(sum_all(1, 2, 3), sum_all())
+```
+
+</details>
+
+### Задание 6
+
+Создайте два файла в одной папке. В `helpers.py` — функция `clean_amount(raw: str) -> float` (меняет запятую на точку, убирает пробелы, делает `float`), строка `print("helpers loaded")` и блок `if __name__ == "__main__":` с самопроверкой `clean_amount(" 12,5 ")`. В `main.py` импортируйте функцию и выведите `clean_amount("49,90")`.
+
+**Проверка:**
+
+```bash
+python3 main.py     # helpers loaded, потом 49.9
+python3 helpers.py  # helpers loaded, потом self-test: 12.5
+```
+
+<details>
+<summary>Решение</summary>
+
+`helpers.py`:
+
+```python
+def clean_amount(raw: str) -> float:
+    return float(raw.replace(",", ".").strip())
+
+
+print("helpers loaded")
+
+if __name__ == "__main__":
+    print("self-test:", clean_amount(" 12,5 "))
+```
+
+`main.py`:
+
+```python
+from helpers import clean_amount
+
+print(clean_amount("49,90"))
+```
+
+</details>
+
+## Что запомнить
+
+- `def name(params): ... return value`. Без `return` функция отдаёт `None`.
+- Аргументы бывают позиционные и именованные. Значения по умолчанию ставьте после обязательных.
+- Type hints помогают людям и инструментам. Python их не проверяет.
+- Не используйте `[]` и `{}` как значение по умолчанию. Берите `None`.
+- `if __name__ == "__main__":` запускает код только при прямом запуске файла.
+
+Дальше: Python Crash Course, глава 8.
+
+Следующий урок: [Классы (минимум)](/practice/python/classes/).

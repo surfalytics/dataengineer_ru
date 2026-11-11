@@ -1,0 +1,493 @@
+---
+title: Тесты с pytest
+head:
+  - tag: title
+    content: "pytest для начинающих: тесты очистки данных | Инжиниринг Данных"
+description: Как писать тесты на pytest в проекте uv. assert, parametrize, fixture, tmp_path и тест функции очистки данных. С заданиями и решениями.
+sidebar:
+  order: 13
+  label: Тесты с pytest
+tags:
+  - python
+  - practice
+---
+
+Тест — это маленькая функция, которая проверяет вашу функцию. Вы меняете код, запускаете тесты и сразу видите, что сломалось. В пайплайнах данных это важно: ошибка в очистке тихо портит отчёты.
+
+## Подготовка
+
+Создайте проект через `uv` (см. [Окружения](/practice/python/environments/)).
+
+```bash
+uv init --python 3.14 shop-tests
+cd shop-tests
+uv add --dev pytest
+```
+
+`--dev` значит: pytest нужен для разработки, не для работы программы.
+
+Удалите `main.py`. Создайте файл `cleaning.py`:
+
+```python
+def clean_amount(raw: str) -> float:
+    """'1 200,50' -> 1200.5. Пустая строка -> ValueError."""
+    text = raw.strip().replace(" ", "").replace(",", ".")
+    if not text:
+        raise ValueError("пустая сумма")
+    return float(text)
+
+
+def clean_user(raw: str) -> str:
+    return raw.strip().lower()
+```
+
+Это функции очистки сырых данных из CSV. Мы будем их тестировать.
+
+## Первый тест
+
+Правила pytest простые:
+
+- Файл называется `test_*.py`.
+- Функция называется `test_*`.
+- Проверка делается словом `assert`.
+
+Создайте `test_cleaning.py`:
+
+```python
+from cleaning import clean_amount, clean_user
+
+
+def test_clean_amount_simple():
+    assert clean_amount("120.50") == 120.5
+
+
+def test_clean_user_strips_and_lowers():
+    assert clean_user("  Anna ") == "anna"
+```
+
+Запуск:
+
+```bash
+uv run pytest
+```
+
+Ответ:
+
+```
+collected 2 items
+
+test_cleaning.py ..                                                      [100%]
+
+============================== 2 passed in 0.01s ==============================
+```
+
+Каждая точка — один пройденный тест.
+
+## Когда тест падает
+
+Если `assert` ложный, pytest покажет, что ожидали и что получили.
+
+```python
+def test_wrong():
+    assert clean_amount("10,5") == 105
+```
+
+Ответ:
+
+```
+    def test_wrong():
+>       assert clean_amount("10,5") == 105
+E       AssertionError: assert 10.5 == 105
+E        +  where 10.5 = clean_amount('10,5')
+
+FAILED test_fail.py::test_wrong - AssertionError: assert 10.5 == 105
+```
+
+Читайте строки с `E`. Они говорят, в чём разница. Здесь ошибка в самом тесте, не в функции.
+
+## parametrize: много случаев, один тест
+
+Не копируйте тест пять раз. Дайте pytest таблицу случаев.
+
+```python
+import pytest
+
+from cleaning import clean_amount
+
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("120.50", 120.5),
+        (" 35 ", 35.0),
+        ("89,90", 89.9),
+        ("1 200,50", 1200.5),
+    ],
+)
+def test_clean_amount_formats(raw, expected):
+    assert clean_amount(raw) == expected
+```
+
+Запуск с `-v` показывает каждый случай:
+
+```
+test_cleaning.py::test_clean_amount_formats[120.50-120.5] PASSED         [ 42%]
+test_cleaning.py::test_clean_amount_formats[ 35 -35.0] PASSED            [ 57%]
+test_cleaning.py::test_clean_amount_formats[89,90-89.9] PASSED           [ 71%]
+test_cleaning.py::test_clean_amount_formats[1 200,50-1200.5] PASSED      [ 85%]
+```
+
+Нашли новый плохой формат в данных? Добавьте одну строку в таблицу.
+
+## Проверка ошибок: pytest.raises
+
+Функция должна падать на пустой сумме. Это тоже поведение, его нужно проверить.
+
+```python
+def test_clean_amount_empty():
+    with pytest.raises(ValueError):
+        clean_amount("")
+```
+
+Тест проходит, если внутри блока случился `ValueError`. Если ошибки нет, тест падает.
+
+Можно проверить текст ошибки: `pytest.raises(ValueError, match="пустая")`.
+
+## Тестируем функцию очистки строки
+
+Добавьте в `cleaning.py` функцию. Она чистит одну строку заказа. Плохую строку она возвращает как `None`.
+
+```python
+def clean_order(row: dict) -> dict | None:
+    """Чистит одну строку заказа. Возвращает None, если строка плохая."""
+    try:
+        amount = clean_amount(row["amount"])
+    except ValueError:
+        return None
+    if amount < 0:
+        return None
+    return {
+        "order_id": int(row["order_id"]),
+        "user": clean_user(row["user"]),
+        "amount": amount,
+    }
+```
+
+## fixture: общие данные для тестов
+
+Если несколько тестов начинают с одних данных, вынесите их в `fixture`. Pytest сам передаст результат в тест по имени аргумента.
+
+Создайте `test_orders.py`:
+
+```python
+import pytest
+
+from cleaning import clean_order
+
+
+@pytest.fixture
+def raw_row():
+    return {"order_id": "1", "user": " Anna ", "amount": "1 200,50"}
+
+
+def test_clean_order_ok(raw_row):
+    assert clean_order(raw_row) == {"order_id": 1, "user": "anna", "amount": 1200.5}
+
+
+def test_clean_order_empty_amount_returns_none(raw_row):
+    raw_row["amount"] = ""
+    assert clean_order(raw_row) is None
+
+
+def test_clean_order_negative_returns_none(raw_row):
+    raw_row["amount"] = "-5"
+    assert clean_order(raw_row) is None
+```
+
+Каждый тест получает **свежую** копию `raw_row`. Изменение в одном тесте не влияет на другой.
+
+## tmp_path: тесты с файлами
+
+Тест не должен трогать реальные файлы. Pytest даёт `tmp_path` — временную папку для каждого теста. Она удаляется сама.
+
+Создайте `io_utils.py`:
+
+```python
+import csv
+from pathlib import Path
+
+from cleaning import clean_order
+
+
+def load_clean_orders(path: Path) -> list[dict]:
+    with open(path, encoding="utf-8", newline="") as f:
+        cleaned = (clean_order(row) for row in csv.DictReader(f))
+        return [order for order in cleaned if order is not None]
+```
+
+Добавьте тест в `test_orders.py`:
+
+```python
+from io_utils import load_clean_orders
+
+
+def test_load_clean_orders(tmp_path):
+    csv_file = tmp_path / "orders.csv"
+    csv_file.write_text(
+        "order_id,user,amount\n"
+        "1,Anna,120.50\n"
+        "2,Boris,\n"
+        "3,Clara,89 90\n",
+        encoding="utf-8",
+    )
+
+    result = load_clean_orders(csv_file)
+
+    assert [o["order_id"] for o in result] == [1, 3]
+```
+
+Запустите все тесты:
+
+```bash
+uv run pytest
+```
+
+Ответ:
+
+```
+test_cleaning.py .......                                                 [ 63%]
+test_orders.py ....                                                      [100%]
+
+============================== 11 passed in 0.02s ==============================
+```
+
+Полезные команды:
+
+| Команда | Что делает |
+|---|---|
+| `uv run pytest -v` | Показывает каждый тест |
+| `uv run pytest -k empty` | Запускает тесты с `empty` в имени |
+| `uv run pytest -x` | Останавливается на первой ошибке |
+| `uv run pytest test_orders.py` | Запускает один файл |
+
+## Как писать хорошие тесты
+
+- Один тест проверяет одну вещь.
+- Имя теста говорит, что проверяется: `test_clean_order_negative_returns_none`.
+- Проверяйте края: пустая строка, пробелы, `None`, отрицательное число.
+- Каждый баг в данных — новый тест. Баг не вернётся.
+- Тестируйте функции без побочных эффектов. Чистую функцию тестировать проще всего.
+
+## Где это в работе
+
+- Функции очистки и трансформации данных (`clean_*`, `parse_*`) — главная цель тестов.
+- Тесты запускаются в CI при каждом pull request.
+- `tmp_path` нужен для проверки чтения и записи файлов без реальных данных.
+- Перед рефакторингом пайплайна тесты показывают, что результат не изменился.
+
+## Задания
+
+Все тесты ниже пишите в файл `test_exercises.py`. Решайте сами, без AI.
+
+В начале файла нужны импорты:
+
+```python
+import csv
+
+import pytest
+
+from cleaning import clean_amount, clean_order, clean_user, normalize_channel
+from io_utils import write_clean_csv
+```
+
+Функции `normalize_channel` и `write_clean_csv` появятся в заданиях 4 и 6. Пока их нет, уберите их из импорта.
+
+### Задание 1. Простой assert
+
+Напишите два теста для `clean_user`: `" BORIS "` даёт `"boris"`, пустая строка даёт пустую строку.
+
+<details>
+<summary>Решение</summary>
+
+```python
+def test_clean_user_upper():
+    assert clean_user(" BORIS ") == "boris"
+
+
+def test_clean_user_empty():
+    assert clean_user("") == ""
+```
+
+</details>
+
+**Проверка:** запустите `uv run pytest -k clean_user_upper`.
+
+```
+1 passed, 11 deselected in 0.00s
+```
+
+В этом ответе число `deselected` зависит от того, сколько тестов уже в файле. Главное: `1 passed`.
+
+### Задание 2. parametrize
+
+Перепишите проверки `clean_user` в один параметризованный тест с тремя случаями: `" BORIS "`, `"Anna"`, `""`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+@pytest.mark.parametrize(
+    "raw, expected",
+    [(" BORIS ", "boris"), ("Anna", "anna"), ("", "")],
+)
+def test_clean_user_param(raw, expected):
+    assert clean_user(raw) == expected
+```
+
+</details>
+
+**Проверка:** `uv run pytest -k clean_user_param`.
+
+```
+3 passed
+```
+
+### Задание 3. Ошибка в тесте
+
+Проверьте, что `clean_amount("abc")` вызывает `ValueError` с текстом `could not convert`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+def test_clean_amount_text():
+    with pytest.raises(ValueError, match="could not convert"):
+        clean_amount("abc")
+```
+
+</details>
+
+**Проверка:** `uv run pytest -k clean_amount_text`.
+
+```
+1 passed
+```
+
+### Задание 4. Новая функция и тесты
+
+Добавьте в `cleaning.py` функцию `normalize_channel(raw)`. Она убирает пробелы, делает нижний регистр. Значения `web` и `app` оставляет, всё остальное заменяет на `"other"`. Напишите параметризованный тест на 4 случая: `web`, `" APP "`, `email`, пустая строка.
+
+<details>
+<summary>Решение</summary>
+
+В `cleaning.py`:
+
+```python
+def normalize_channel(raw: str) -> str:
+    value = raw.strip().lower()
+    return value if value in {"web", "app"} else "other"
+```
+
+В `test_exercises.py`:
+
+```python
+@pytest.mark.parametrize(
+    "raw, expected",
+    [("web", "web"), (" APP ", "app"), ("email", "other"), ("", "other")],
+)
+def test_normalize_channel(raw, expected):
+    assert normalize_channel(raw) == expected
+```
+
+</details>
+
+**Проверка:** `uv run pytest -k normalize_channel`.
+
+```
+4 passed
+```
+
+### Задание 5. Fixture со списком
+
+Сделайте fixture `sample_rows` с тремя строками: хорошая (`Anna`, `100`), с пустой суммой, с суммой `-1`. Напишите тест: после `clean_order` остаётся одна строка и её `user` равен `"anna"`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+@pytest.fixture
+def sample_rows():
+    return [
+        {"order_id": "1", "user": "Anna", "amount": "100"},
+        {"order_id": "2", "user": "Boris", "amount": ""},
+        {"order_id": "3", "user": "Clara", "amount": "-1"},
+    ]
+
+
+def test_bad_rows_are_dropped(sample_rows):
+    cleaned = [clean_order(r) for r in sample_rows]
+    good = [o for o in cleaned if o is not None]
+    assert len(good) == 1
+    assert good[0]["user"] == "anna"
+```
+
+</details>
+
+**Проверка:** `uv run pytest -k bad_rows`.
+
+```
+1 passed
+```
+
+### Задание 6. tmp_path
+
+Добавьте в `io_utils.py` функцию `write_clean_csv(orders, path)`. Она пишет заказы в CSV с колонками `order_id,user,amount`. Напишите тест: запишите один заказ во временный файл, прочитайте его через `DictReader` и сравните.
+
+<details>
+<summary>Решение</summary>
+
+В `io_utils.py`:
+
+```python
+def write_clean_csv(orders: list[dict], path: Path) -> None:
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["order_id", "user", "amount"])
+        writer.writeheader()
+        writer.writerows(orders)
+```
+
+В `test_exercises.py`:
+
+```python
+def test_write_clean_csv(tmp_path):
+    orders = [{"order_id": 1, "user": "anna", "amount": 100.0}]
+    path = tmp_path / "clean.csv"
+
+    write_clean_csv(orders, path)
+
+    with open(path, encoding="utf-8", newline="") as f:
+        rows = list(csv.DictReader(f))
+    assert rows == [{"order_id": "1", "user": "anna", "amount": "100.0"}]
+```
+
+</details>
+
+**Проверка:** `uv run pytest -k write_clean_csv`.
+
+```
+1 passed
+```
+
+Когда все задания готовы, `uv run pytest` показывает `23 passed`, если вы сохранили все тесты урока.
+
+## Что запомнить
+
+- Тест — функция `test_*` с `assert`. Запуск: `uv run pytest`.
+- `parametrize` заменяет копирование тестов таблицей случаев.
+- `pytest.raises` проверяет, что функция падает там, где должна.
+- `fixture` даёт общие данные, `tmp_path` — временные файлы.
+- Каждый найденный баг в данных превращайте в тест.
+
+Дальше: Python Crash Course, глава 11.
+
+Следующий урок: [Логирование](/practice/python/logging/).

@@ -1,0 +1,418 @@
+---
+title: Цикл while и ввод пользователя
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Цикл while, input, argv и argparse в Python | Инжиниринг Данных"
+description: Цикл while, break и continue, функция input, а также sys.argv и argparse для скриптов и pipeline. Примеры на данных заказов и задания.
+sidebar:
+  order: 9
+  label: while и input
+tags:
+  - python
+  - practice
+---
+import { Aside } from '@astrojs/starlight/components';
+
+`for` идёт по готовому набору данных. `while` работает, пока условие истинно. Его используют, когда число шагов заранее неизвестно: повторные попытки, очередь задач, ожидание.
+
+Правило курса: решайте сами, без AI.
+
+## Цикл while
+
+```python
+n = 0
+while n < 3:
+    print("n =", n)
+    n += 1
+```
+
+Ответ:
+
+```
+n = 0
+n = 1
+n = 2
+```
+
+- Условие проверяется перед каждым шагом.
+- Меняйте переменную внутри цикла. Иначе цикл не закончится.
+- Если цикл завис, нажмите `Ctrl+C`.
+
+## break и continue
+
+| Команда | Что делает |
+|---|---|
+| `break` | Выходит из цикла сразу |
+| `continue` | Пропускает остаток шага и идёт к следующему |
+
+```python
+amounts = [49.9, -5, 120.0, 0, 300.0, 80.0]
+i = 0
+total = 0
+while i < len(amounts):
+    a = amounts[i]
+    i += 1
+    if a <= 0:
+        continue        # плохая сумма: пропускаем
+    if total > 400:
+        break           # лимит набран: выходим
+    total += a
+print(total)
+```
+
+Ответ:
+
+```
+469.9
+```
+
+Обратите внимание: `i += 1` стоит до `continue`. Иначе цикл зациклится на плохом значении.
+
+### while True
+
+Цикл «до события». Выход только через `break`.
+
+```python
+attempts = 0
+while True:
+    attempts += 1
+    ok = attempts == 3          # имитация: успех на третьей попытке
+    print("attempt", attempts, "ok" if ok else "fail")
+    if ok or attempts >= 5:
+        break
+```
+
+Ответ:
+
+```
+attempt 1 fail
+attempt 2 fail
+attempt 3 ok
+```
+
+Всегда ставьте лимит попыток. Бесконечный retry может держать pipeline часами.
+
+### Очередь: while со списком
+
+Пустой список — это `False`. Поэтому `while queue:` работает, пока в списке есть элементы.
+
+```python
+queue = ["a.csv", "b.csv", "c.csv"]
+while queue:
+    f = queue.pop(0)
+    print("process", f)
+print("done")
+```
+
+Ответ:
+
+```
+process a.csv
+process b.csv
+process c.csv
+done
+```
+
+## input()
+
+`input()` ждёт, пока пользователь введёт строку и нажмёт Enter. Результат всегда `str`.
+
+```python
+while True:
+    raw = input("Сумма: ")
+    if not raw.lstrip("-").isdigit():
+        print("Нужно число")
+        continue
+    value = int(raw)
+    if value <= 0:
+        print("Нужно больше нуля")
+        continue
+    break
+print("Принято:", value)
+```
+
+Пример диалога (то, что вводит человек, идёт после `Сумма: `):
+
+```
+Сумма: abc
+Нужно число
+Сумма: -3
+Нужно больше нуля
+Сумма: 42
+Принято: 42
+```
+
+Это шаблон проверки ввода: спросить, проверить, повторить или выйти.
+
+<Aside type="note" title="Строка и число">
+`input()` возвращает `"42"`, а не `42`. Преобразуйте сами: `int(raw)` или `float(raw)`.
+</Aside>
+
+## Почему в pipeline нет input()
+
+- Pipeline запускает планировщик (cron, Airflow) или CI. Рядом нет человека.
+- `input()` будет ждать вечно. Задача зависнет.
+- Параметры передают снаружи: аргументами командной строки, переменными окружения или файлом конфигурации.
+
+Для аргументов есть два инструмента: `sys.argv` и `argparse`.
+
+### sys.argv
+
+`sys.argv` — список строк. Первый элемент — имя скрипта. Остальные — аргументы.
+
+Файл `argv_demo.py`:
+
+```python
+import sys
+
+print(sys.argv)
+path = sys.argv[1]
+print("file:", path)
+```
+
+Запуск:
+
+```bash
+python3 argv_demo.py data/orders.csv
+```
+
+Ответ:
+
+```
+['argv_demo.py', 'data/orders.csv']
+file: data/orders.csv
+```
+
+Это просто, но у `sys.argv` нет проверок, подсказок и типов. Для реальных скриптов берите `argparse`.
+
+### argparse
+
+`argparse` из стандартной библиотеки разбирает аргументы, проверяет типы и строит `--help`.
+
+Файл `ap_demo.py`:
+
+```python
+import argparse
+
+parser = argparse.ArgumentParser(description="Load orders from CSV")
+parser.add_argument("path", help="path to CSV file")
+parser.add_argument("--min-amount", type=float, default=0.0, help="skip small orders")
+parser.add_argument("--dry-run", action="store_true", help="do not write anything")
+args = parser.parse_args()
+
+print(args.path, args.min_amount, args.dry_run)
+```
+
+Запуск:
+
+```bash
+python3 ap_demo.py orders.csv --min-amount 50 --dry-run
+python3 ap_demo.py orders.csv
+python3 ap_demo.py --help
+```
+
+Ответ:
+
+```
+orders.csv 50.0 True
+orders.csv 0.0 False
+usage: ap_demo.py [-h] [--min-amount MIN_AMOUNT] [--dry-run] path
+
+Load orders from CSV
+
+positional arguments:
+  path                  path to CSV file
+
+options:
+  -h, --help            show this help message and exit
+  --min-amount MIN_AMOUNT
+                        skip small orders
+  --dry-run             do not write anything
+```
+
+| Вид аргумента | Пример | Значение |
+|---|---|---|
+| Позиционный | `path` | Обязательный |
+| Опция | `--min-amount 50` | Необязательный, есть default |
+| Флаг | `--dry-run` | `True`, если указан |
+
+Если не указать `path`, `argparse` остановит скрипт и напишет понятную ошибку. Это лучше, чем `IndexError` от `sys.argv[1]`.
+
+## Где это в работе
+
+| Задача | Что используют |
+|---|---|
+| Повторные попытки при сбое API или БД | `while` с лимитом и `break` |
+| Обработка очереди файлов или задач | `while queue:` |
+| Скрипт для cron или Airflow | `argparse`: путь, дата, `--dry-run` |
+| Разовая интерактивная утилита | `input()` |
+| Запуск за дату: `python etl.py --date 2026-01-15` | `argparse` |
+
+## Практика
+
+### Задание 1
+
+Баланс 1000. Каждый месяц он растёт на 10%. За сколько месяцев баланс станет больше 2000? Выведите число месяцев и баланс с округлением до 2 знаков.
+
+**Проверка:** `8 2143.59`
+
+<details>
+<summary>Решение</summary>
+
+```python
+balance = 1000
+months = 0
+while balance <= 2000:
+    balance *= 1.1
+    months += 1
+print(months, round(balance, 2))
+```
+
+</details>
+
+### Задание 2
+
+Дан список `amounts = [49.9, 120.0, 15.5, 300.0, 80.0]`. Достаньте элементы через `pop()` в цикле `while amounts:`. Посчитайте их число и сумму.
+
+**Проверка:** `5 565.4`
+
+<details>
+<summary>Решение</summary>
+
+```python
+amounts = [49.9, 120.0, 15.5, 300.0, 80.0]
+count = 0
+total = 0
+while amounts:
+    a = amounts.pop()
+    count += 1
+    total += a
+print(count, total)
+```
+
+</details>
+
+### Задание 3
+
+Есть строки файла. Оставьте только непустые строки, которые не начинаются с `#`. Используйте `while` и `continue`.
+
+```python
+lines = ["order_id,amount", "", "# comment", "1001,49.9", "", "1002,120.0"]
+```
+
+**Проверка:** `['order_id,amount', '1001,49.9', '1002,120.0']`
+
+<details>
+<summary>Решение</summary>
+
+```python
+lines = ["order_id,amount", "", "# comment", "1001,49.9", "", "1002,120.0"]
+i = 0
+rows = []
+while i < len(lines):
+    line = lines[i]
+    i += 1
+    if not line or line.startswith("#"):
+        continue
+    rows.append(line)
+print(rows)
+```
+
+</details>
+
+### Задание 4
+
+Функция `load()` возвращает `True` с третьего вызова. Вызывайте её до 5 раз. При успехе выведите номер попытки и выйдите через `break`.
+
+```python
+calls = 0
+
+def load():
+    global calls
+    calls += 1
+    return calls >= 3
+```
+
+**Проверка:** `ok on attempt 3`
+
+<details>
+<summary>Решение</summary>
+
+```python
+attempt = 0
+while attempt < 5:
+    attempt += 1
+    if load():
+        print("ok on attempt", attempt)
+        break
+else:
+    print("failed")
+```
+
+`else` у цикла срабатывает, только если не было `break`.
+
+</details>
+
+### Задание 5
+
+Напишите скрипт `sum_input.py`. Он спрашивает суммы заказов через `input()`. Пустая строка завершает ввод. Если ввод не число, скрипт пишет `Не число` и спрашивает снова. В конце печатает итог.
+
+**Проверка:** ввод `10`, `abc`, `20.5`, пустая строка. Итог: `Итого: 30.5`. Между вводами выводится `Не число`.
+
+<details>
+<summary>Решение</summary>
+
+```python
+total = 0
+while True:
+    raw = input("Сумма заказа (пусто = конец): ")
+    if raw == "":
+        break
+    if not raw.replace(".", "", 1).isdigit():
+        print("Не число")
+        continue
+    total += float(raw)
+print("Итого:", total)
+```
+
+</details>
+
+### Задание 6
+
+Напишите скрипт `read_orders.py` с `argparse`. Позиционный аргумент `path`. Опция `--limit` типа `int`, по умолчанию 10. Скрипт печатает `read <path>, limit <N>`.
+
+**Проверка:**
+
+```bash
+python3 read_orders.py orders.csv --limit 5   # read orders.csv, limit 5
+python3 read_orders.py orders.csv             # read orders.csv, limit 10
+python3 read_orders.py orders.csv --limit abc # read_orders.py: error: argument --limit: invalid int value: 'abc'
+```
+
+<details>
+<summary>Решение</summary>
+
+```python
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("path")
+parser.add_argument("--limit", type=int, default=10)
+args = parser.parse_args()
+print(f"read {args.path}, limit {args.limit}")
+```
+
+</details>
+
+## Что запомнить
+
+- `while` повторяет шаги, пока условие истинно. Меняйте переменную в цикле.
+- `break` выходит из цикла. `continue` переходит к следующему шагу.
+- Для retry ставьте лимит попыток.
+- В pipeline нет `input()`. Параметры берут из `sys.argv` или `argparse`.
+- `argparse` проверяет типы и пишет `--help` сам.
+
+Дальше: Python Crash Course, глава 7.
+
+Следующий урок: [Функции](/practice/python/functions/).
