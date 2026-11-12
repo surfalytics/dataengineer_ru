@@ -21,7 +21,7 @@ tags:
 ```bash
 docker run -d --name db --network shop-net \
   -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=shop \
-  -v pgdata:/var/lib/postgresql/data -p 5432:5432 \
+  -v pgdata:/var/lib/postgresql/data -p 127.0.0.1:5432:5432 \
   postgres:17
 ```
 
@@ -49,7 +49,7 @@ services:
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: shop
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -80,10 +80,10 @@ volumes:
 
 Имя службы — это и имя в сети. Adminer найдёт базу по имени `db`.
 
-Порты в кавычках: `"5432:5432"`. YAML может неверно прочитать число с двоеточием.
+Порты в кавычках: `"127.0.0.1:5432:5432"`. `127.0.0.1` открывает базу только для вашего компьютера, как в уроке [Порты](/practice/docker/ports-env/). YAML может неверно прочитать число с двоеточием.
 
 :::caution
-Порт `8080` часто занят другими программами. Если Docker пишет `port is already allocated`, замените левое число: `"8081:8080"`.
+Порт `8080` часто занят другими программами. Если Docker пишет `port is already allocated`, замените левое число: `"8081:8080"`. То же для `5432`, если у вас уже стоит Postgres: `"127.0.0.1:5433:5432"`.
 :::
 
 ## Запуск
@@ -110,7 +110,7 @@ docker compose ps
 ```
 NAME                        IMAGE         SERVICE   STATUS         PORTS
 docker-practice-adminer-1   adminer:5     adminer   Up 4 seconds   0.0.0.0:8080->8080/tcp
-docker-practice-db-1        postgres:17   db        Up 4 seconds   0.0.0.0:5432->5432/tcp
+docker-practice-db-1        postgres:17   db        Up 4 seconds   127.0.0.1:5432->5432/tcp
 ```
 
 Колонки `CREATED` и `COMMAND` мы убрали, чтобы строки были короче.

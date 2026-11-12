@@ -48,7 +48,7 @@ Docker Desktop бесплатен для личного использовани
    brew install --cask docker-desktop
    ```
 
-2. Откройте Docker Desktop из «Программ». Дождитесь, пока значок кита в верхнем меню перестанет мигать.
+2. Откройте Docker Desktop из «Программ». Примите условия лицензии. Вход в аккаунт можно пропустить. Дождитесь, пока значок кита в верхнем меню перестанет мигать.
 
 3. Проверьте установку (ниже).
 
@@ -71,7 +71,7 @@ Docker Desktop бесплатен для личного использовани
 
 2. Скачайте **Docker Desktop** с [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/) и установите. Оставьте галочку **Use WSL 2 instead of Hyper-V**.
 
-3. Запустите Docker Desktop. Дождитесь статуса **Engine running** в левом нижнем углу.
+3. Запустите Docker Desktop. Примите условия лицензии. Вход в аккаунт можно пропустить. Дождитесь статуса **Engine running** в левом нижнем углу.
 
 4. Откройте терминал **Ubuntu** (WSL) из меню «Пуск». Все команды курса пишите там, а не в PowerShell.
 
@@ -187,7 +187,11 @@ tar xzf docker-practice.tar.gz
 
 Docker Desktop использует часть памяти и процессора вашего компьютера. Для курса хватит **4 ГБ памяти**. Metabase в итоговой практике любит больше. Поставьте 6–8 ГБ, если можно.
 
-Где менять: Docker Desktop → **Settings → Resources**.
+Где менять:
+
+- **macOS:** Docker Desktop → **Settings → Resources**.
+- **Windows (WSL 2):** в файле `%UserProfile%\.wslconfig`. Напишите в нём две строки: `[wsl2]` и `memory=6GB`. Потом выполните в PowerShell `wsl --shutdown` и запустите Docker Desktop снова.
+- **Linux:** настраивать не нужно. Docker берёт память системы.
 
 ## Альтернативы Docker Desktop
 
@@ -195,7 +199,7 @@ Docker Desktop использует часть памяти и процессо�
 
 | Вариант | Для чего |
 |---|---|
-| **Colima** | macOS и Linux. Лёгкая виртуальная машина и Docker Engine. `brew install colima docker` |
+| **Colima** | macOS и Linux. Лёгкая виртуальная машина и Docker Engine. `brew install colima docker docker-compose`, затем `colima start`. Для `docker compose` подключите плагин по инструкции Colima |
 | **Rancher Desktop** | macOS, Windows, Linux. Бесплатное приложение с окном, как Docker Desktop |
 | **Podman** | Linux, macOS, Windows. Своя программа. Команды почти те же: `podman run` |
 
@@ -204,7 +208,7 @@ Docker Desktop использует часть памяти и процессо�
 ## Если что-то не работает
 
 - **`Cannot connect to the Docker daemon ... Is the docker daemon running?`** Docker Desktop не запущен. Откройте его и подождите, пока Engine запустится. На Linux: `sudo systemctl start docker`.
-- **`permission denied while trying to connect to the Docker daemon socket`** (Linux). Вы не в группе `docker`. Выполните шаг 2 установки и войдите в систему заново.
+- **`permission denied while trying to connect to the Docker daemon socket`** (Linux). Вы не в группе `docker`. Выполните `sudo usermod -aG docker $USER` и войдите в систему заново.
 - **`docker: command not found` в WSL.** В Docker Desktop откройте Settings → Resources → WSL integration и включите вашу Ubuntu.
 - **Docker на Windows просит включить виртуализацию.** Включите её в BIOS (Intel VT-x или AMD-V).
 - **`curl: command not found`.** Поставьте curl: `sudo apt install -y curl`.
