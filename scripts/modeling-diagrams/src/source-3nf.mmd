@@ -1,0 +1,59 @@
+erDiagram
+  CATEGORIES ||--o{ PRODUCTS : "category_id"
+  PRODUCTS ||--o{ ORDER_ITEMS : "product_id"
+  ORDERS ||--|{ ORDER_ITEMS : "order_id"
+  CUSTOMERS |o--o{ ORDERS : "customer_id"
+  STORES ||--o{ ORDERS : "store_id"
+  CUSTOMERS ||--o{ CUSTOMER_CHANGES : "customer_id"
+  CATEGORIES {
+    int category_id PK
+    string category_name
+  }
+  PRODUCTS {
+    int product_id PK
+    string sku
+    string product_name
+    int category_id FK
+    string brand
+    int list_price
+  }
+  ORDERS {
+    int order_id PK
+    int customer_id FK "пусто = гость"
+    int store_id FK
+    date order_date
+    string status
+    date shipped_date
+    date delivered_date
+    int shipping_cost
+  }
+  ORDER_ITEMS {
+    int order_id PK,FK
+    int line_number PK
+    int product_id FK
+    int quantity
+    int unit_price
+    int discount_amount
+  }
+  CUSTOMERS {
+    int customer_id PK
+    string customer_name
+    string email
+    string city
+    string segment
+    date signup_date
+  }
+  CUSTOMER_CHANGES {
+    int change_id PK
+    int customer_id FK
+    date changed_at
+    string city
+    string segment
+  }
+  STORES {
+    int store_id PK
+    string store_name
+    string city
+    string region
+    string store_type
+  }
