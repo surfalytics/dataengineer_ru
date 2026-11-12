@@ -1,11 +1,12 @@
 erDiagram
-  FACT_BILLING }o--|| DIM_DATE : "bill_date_key"
+  FACT_BILLING }o--|| DIM_DATE : "bill_date_key, due_date_key"
   FACT_BILLING }o--|| DIM_CUSTOMER : "customer_key"
   FACT_BILLING }o--|| DIM_SERVICE_LINE : "service_line_key"
   FACT_BILLING }o--|| DIM_SALES_ORG : "sales_org_key"
   FACT_BILLING }o--|| DIM_RATE_PLAN : "rate_plan_key"
   FACT_BILLING {
     int bill_date_key FK
+    int due_date_key FK
     int customer_key FK
     int service_line_key FK
     int sales_org_key FK
@@ -16,6 +17,8 @@ erDiagram
     int message_count
     decimal data_mb
     decimal month_service_charge
+    decimal message_charge
+    decimal data_charge
     decimal roaming_charge
     decimal taxes
   }
@@ -24,6 +27,7 @@ erDiagram
     string phone_number "natural key"
     string area_code
     string city
+    string region
     date activation_date
   }
   DIM_RATE_PLAN {
@@ -31,6 +35,8 @@ erDiagram
     string plan_name
     string plan_type_code
     string plan_type_description
+    int plan_minutes_allowed
+    decimal monthly_fee
   }
   DIM_SALES_ORG {
     int sales_org_key PK
@@ -46,4 +52,5 @@ erDiagram
     int date_key PK
     date full_date
     int month_number
+    int year_number
   }

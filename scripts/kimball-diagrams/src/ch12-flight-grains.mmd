@@ -1,7 +1,0 @@
-flowchart TB
-  I["Itinerary<br/>весь билет или reservation"] --> T["Trip<br/>поездка от A до B"]
-  T --> S["Segment<br/>один flight number, один самолёт"]
-  S --> L["Leg<br/>один взлёт и одна посадка"]
-  S -.-> F1["fact_segment_flight<br/>выручка и мили"]
-  L -.-> F2["fact_leg_flight<br/>задержки и загрузка"]
-  T -.-> F3["trip summary<br/>aggregate, по желанию"]

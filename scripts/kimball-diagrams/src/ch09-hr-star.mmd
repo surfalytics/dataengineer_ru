@@ -21,10 +21,12 @@ erDiagram
   DIM_EMPLOYEE {
     int employee_key PK
     int employee_id "durable key"
+    string employee_name
     string job_title
     string department
     date effective_date
     date expiration_date
+    string change_reason
   }
   BRIDGE_MANAGEMENT {
     int manager_id

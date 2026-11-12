@@ -3,6 +3,7 @@ erDiagram
   FACT_ORDER_LINE }o--|| DIM_DATE : "requested_ship_date_key"
   FACT_ORDER_LINE }o--|| DIM_PRODUCT : "product_key"
   FACT_ORDER_LINE }o--|| DIM_CUSTOMER : "customer_key"
+  FACT_ORDER_LINE }o--|| DIM_SALES_REP : "sales_rep_key"
   FACT_ORDER_LINE }o--|| DIM_DEAL : "deal_key"
   FACT_ORDER_LINE }o--|| DIM_ORDER_PROFILE : "order_profile_key"
   FACT_ORDER_LINE {
@@ -10,6 +11,7 @@ erDiagram
     int requested_ship_date_key FK
     int product_key FK
     int customer_key FK
+    int sales_rep_key FK
     int deal_key FK
     int order_profile_key FK
     string order_number "DD"
@@ -26,6 +28,10 @@ erDiagram
   DIM_CUSTOMER {
     int customer_key PK
     string customer_name
+  }
+  DIM_SALES_REP {
+    int sales_rep_key PK
+    string sales_rep_name
   }
   DIM_DEAL {
     int deal_key PK
