@@ -3,7 +3,7 @@
 Each diagram is a small spec (nodes at x/y, edges). Output: public/assets/data-warehouse-toolkit/<name>.png
 Scenes are saved as dataengineer_ru/dwt-<name> in ~/dev/excalidraw/diagrams.
 Usage: excalidraw_build.py [name ...]   (no args = all)"""
-import base64, json, subprocess, sys, urllib.error, urllib.request
+import base64, json, subprocess, sys, time, urllib.error, urllib.request
 from pathlib import Path
 
 API = "http://127.0.0.1:3456"
@@ -15,8 +15,27 @@ STYLE = {  # fill, stroke
 }
 W, H, FONT = 250, 100, 20
 
+LOCK = Path.home() / "dev/excalidraw/.canvas.lock"  # shared by every build script that draws on the canvas
+
+class canvas_lock:
+    """Cross-process lock: only one script draws on the shared canvas at a time."""
+    def __enter__(self):
+        import fcntl
+        LOCK.parent.mkdir(parents=True, exist_ok=True)
+        self.f = open(LOCK, "w")
+        t0 = time.time()
+        while True:
+            try:
+                fcntl.flock(self.f, fcntl.LOCK_EX | fcntl.LOCK_NB); break
+            except BlockingIOError:
+                if time.time() - t0 > 300: raise SystemExit("canvas lock busy for 5 min")
+                time.sleep(1)
+        return self
+    def __exit__(self, *a):
+        self.f.close()
+
 def call(path, payload=None, method="POST"):
-    req = urllib.request.Request(API + path, data=json.dumps(payload or {}).encode(),
+    req = urllib.request.Request(API + path, data=None if method == "GET" else json.dumps(payload or {}).encode(),
                                  headers={"content-type": "application/json"}, method=method)
     return json.load(urllib.request.urlopen(req, timeout=60))
 
@@ -60,17 +79,20 @@ def build(spec):
 
 def run(name, spec):
     scene = f"dataengineer_ru/dwt-{name}"
-    try:
-        call("/api/scenes", {"name": scene})
-    except urllib.error.HTTPError as e:  # scene exists (re-run): reopen and clear it
-        if e.code != 409: raise
-        call("/api/scenes/open", {"name": scene})
-        call("/api/elements/clear", method="DELETE")
-    call("/api/elements/batch", {"elements": build(spec)})
-    r = call("/api/export/image", {"format": "png", "scale": 2, "padding": 30})
-    raw = OUT / f"{name}.png"
-    raw.write_bytes(base64.b64decode(r["data"]))
-    call("/api/scenes/save")
+    with canvas_lock():
+        prev = call("/api/scenes", method="GET").get("current")
+        try:
+            call("/api/scenes", {"name": scene})
+        except urllib.error.HTTPError as e:  # scene exists (re-run): reopen and clear it
+            if e.code != 409: raise
+            call("/api/scenes/open", {"name": scene})
+            call("/api/elements/clear", method="DELETE")
+        call("/api/elements/batch", {"elements": build(spec)})
+        r = call("/api/export/image", {"format": "png", "scale": 2, "padding": 30})
+        raw = OUT / f"{name}.png"
+        raw.write_bytes(base64.b64decode(r["data"]))
+        call("/api/scenes/save")
+        if prev and prev != scene: call("/api/scenes/open", {"name": prev})
     subprocess.run(["node", "-e",
         "const s=require('sharp'),fs=require('fs');const p=process.argv[1];"
         "s(p).resize({width:1600,withoutEnlargement:true}).png({palette:true,quality:90,compressionLevel:9})"

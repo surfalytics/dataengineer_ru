@@ -91,6 +91,26 @@ export const topics = [
           },
         ],
       },
+      {
+        label: 'Предпринимательство',
+        items: [
+          {
+            label: "The Startup Owner's Manual",
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/entrepreneurship/startup-owners-manual' } }],
+          },
+          {
+            label: 'The Mom Test',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/entrepreneurship/mom-test' } }],
+          },
+          {
+            label: 'The Diary of a CEO',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/entrepreneurship/diary-of-a-ceo' } }],
+          },
+        ],
+      },
       // AI: добавить группу, когда появится первая книга (папка book-summaries/ai/).
       {
         label: 'Бизнес и Soft Skills',
