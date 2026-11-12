@@ -1,0 +1,28 @@
+erDiagram
+  HUB_CUSTOMER ||--o{ SAT_CUSTOMER : "customer_hk"
+  HUB_CUSTOMER ||--o{ LINK_ORDER_CUSTOMER : "customer_hk"
+  HUB_ORDER ||--o{ LINK_ORDER_CUSTOMER : "order_hk"
+  HUB_CUSTOMER {
+    string customer_hk PK "hash ключа"
+    int customer_id "business key"
+    timestamp load_ts
+    string record_source
+  }
+  SAT_CUSTOMER {
+    string customer_hk PK,FK
+    timestamp load_ts PK
+    string city
+    string segment
+    string hash_diff
+  }
+  HUB_ORDER {
+    string order_hk PK
+    int order_id "business key"
+    timestamp load_ts
+  }
+  LINK_ORDER_CUSTOMER {
+    string link_hk PK
+    string order_hk FK
+    string customer_hk FK
+    timestamp load_ts
+  }

@@ -48,6 +48,7 @@ export const topics = [
       { label: 'Базовый минимум статистики', items: [{ autogenerate: { directory: 'practice/stats' } }] },
       { label: 'Базовый минимум Git', items: [{ autogenerate: { directory: 'practice/git' } }] },
       { label: 'Базовый минимум Docker', items: [{ autogenerate: { directory: 'practice/docker' } }] },
+      { label: 'Базовый минимум Dimensional Modeling', items: [{ autogenerate: { directory: 'practice/modeling' } }] },
     ],
   },
   {
@@ -89,6 +90,36 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/designing-data-intensive-applications' } }],
           },
+          {
+            label: 'DuckDB: Up and Running',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/duckdb-up-and-running' } }],
+          },
+          {
+            label: 'Data Pipelines with Apache Airflow',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/data-pipelines-with-apache-airflow' } }],
+          },
+          {
+            label: 'Data Engineering Design Patterns',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/data-engineering-design-patterns' } }],
+          },
+        ],
+      },
+      {
+        label: 'AI и ML',
+        items: [
+          {
+            label: 'AI Engineering',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/ai/ai-engineering' } }],
+          },
+          {
+            label: 'Machines that Think',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/ai/machines-that-think' } }],
+          },
         ],
       },
       {
@@ -111,7 +142,6 @@ export const topics = [
           },
         ],
       },
-      // AI: добавить группу, когда появится первая книга (папка book-summaries/ai/).
       {
         label: 'Бизнес и Soft Skills',
         items: [
@@ -119,6 +149,11 @@ export const topics = [
             label: 'Lean Analytics',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/business/lean-analytics' } }],
+          },
+          {
+            label: 'Escaping the Build Trap',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/escaping-the-build-trap' } }],
           },
         ],
       },

@@ -35,6 +35,7 @@ tags:
 ## Бизнес-книги
 
 - [Alistair Croll, Ben Yoskovitz / Lean Analytics](/book-summaries/business/lean-analytics/) 🇬🇧 ⭐ - конспект на русском с разбором по главам: как измерять стартап, метрики по бизнес-моделям и стадиям
+- [Melissa Perri / Escaping the Build Trap](/book-summaries/business/escaping-the-build-trap/) 🇬🇧 ⭐ - конспект на русском: как строится продукт, роль PM, стратегия, Product Kata и product-led компания
 
 ## Инструменты
 
