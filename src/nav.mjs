@@ -79,6 +79,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/fundamentals-of-data-engineering' } }],
           },
+          {
+            label: 'The Data Warehouse Toolkit',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/data-warehouse-toolkit' } }],
+          },
         ],
       },
       // AI: добавить группу, когда появится первая книга (папка book-summaries/ai/).

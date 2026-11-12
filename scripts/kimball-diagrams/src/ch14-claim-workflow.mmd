@@ -1,0 +1,10 @@
+flowchart LR
+  A["Treatment<br/>лечение"] --> B["Bill primary insurance<br/>счёт страховой"]
+  B --> C["Primary payment<br/>оплата страховой"]
+  C --> D["Bill responsible party<br/>счёт пациенту"]
+  D --> E["Patient payment<br/>оплата пациентом"]
+  E --> F["Zero balance<br/>долг закрыт"]
+  R[("fact_claim_line<br/>одна строка на строку счёта<br/>роль даты на каждый этап<br/>строка обновляется")]
+  A -.-> R
+  C -.-> R
+  F -.-> R

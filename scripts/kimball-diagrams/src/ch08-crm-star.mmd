@@ -1,0 +1,42 @@
+erDiagram
+  FACT_ORDERS }o--|| DIM_CUSTOMER : "customer_key"
+  FACT_ORDERS }o--|| DIM_DEMOGRAPHICS : "demo_key"
+  FACT_ORDERS }o--|| DIM_DATE : "date_key"
+  DIM_CUSTOMER ||--o{ BRIDGE_CUSTOMER_TAG : "customer_id"
+  BRIDGE_CUSTOMER_TAG }o--|| DIM_TAG : "tag_key"
+  FACT_ORDERS {
+    int customer_key FK
+    int demo_key FK
+    int date_key FK
+    string order_number "degenerate dimension"
+    decimal order_amount
+  }
+  DIM_CUSTOMER {
+    int customer_key PK
+    int customer_id "durable key"
+    string customer_name
+    string city
+    string segment
+    date effective_date
+    date expiration_date
+    boolean is_current
+  }
+  DIM_DEMOGRAPHICS {
+    int demo_key PK
+    string income_band
+    string age_band
+    string purchase_frequency_band
+  }
+  BRIDGE_CUSTOMER_TAG {
+    int customer_id
+    int tag_key FK
+    decimal weighting_factor
+  }
+  DIM_TAG {
+    int tag_key PK
+    string tag_name
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+  }

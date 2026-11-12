@@ -1,0 +1,41 @@
+erDiagram
+  FACT_INVENTORY_SNAPSHOT }o--|| DIM_DATE : "date_key"
+  FACT_INVENTORY_SNAPSHOT }o--|| DIM_PRODUCT : "product_key"
+  FACT_INVENTORY_SNAPSHOT }o--|| DIM_WAREHOUSE : "warehouse_key"
+  FACT_INVENTORY_TXN }o--|| DIM_DATE : "date_key"
+  FACT_INVENTORY_TXN }o--|| DIM_PRODUCT : "product_key"
+  FACT_INVENTORY_TXN }o--|| DIM_WAREHOUSE : "warehouse_key"
+  FACT_INVENTORY_TXN }o--|| DIM_TXN_TYPE : "txn_type_key"
+  FACT_INVENTORY_SNAPSHOT {
+    int date_key FK
+    int product_key FK
+    int warehouse_key FK
+    int quantity_on_hand "semi-additive"
+    int quantity_sold "additive"
+    decimal inventory_value
+  }
+  FACT_INVENTORY_TXN {
+    int date_key FK
+    int product_key FK
+    int warehouse_key FK
+    int txn_type_key FK
+    int quantity_change
+  }
+  DIM_PRODUCT {
+    int product_key PK
+    string sku
+    string product_name
+  }
+  DIM_WAREHOUSE {
+    int warehouse_key PK
+    string warehouse_name
+    string region
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+  }
+  DIM_TXN_TYPE {
+    int txn_type_key PK
+    string txn_type
+  }

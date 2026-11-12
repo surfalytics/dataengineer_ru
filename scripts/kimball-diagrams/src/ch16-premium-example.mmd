@@ -1,0 +1,8 @@
+flowchart LR
+  T1["Январь: полис на год<br/>transaction +600"] --> W1["written premium<br/>январь 600"]
+  T2["31 марта: отмена<br/>transaction -450"] --> W2["written premium<br/>март -450"]
+  T1 --> E["earned premium<br/>50 в месяц<br/>январь, февраль, март"]
+  T2 --> E
+  E --> S[("fact_premium_snapshot<br/>полис × покрытие × объект × месяц")]
+  W1 --> S
+  W2 --> S

@@ -1,0 +1,51 @@
+erDiagram
+  FACT_GL_JOURNAL }o--|| DIM_DATE : "date_key"
+  FACT_GL_JOURNAL }o--|| DIM_ACCOUNT : "account_key"
+  FACT_GL_JOURNAL }o--|| DIM_ORG : "org_key"
+  FACT_GL_SNAPSHOT }o--|| DIM_DATE : "month_key"
+  FACT_GL_SNAPSHOT }o--|| DIM_ACCOUNT : "account_key"
+  FACT_GL_SNAPSHOT }o--|| DIM_ORG : "org_key"
+  FACT_BUDGET }o--|| DIM_DATE : "month_key"
+  FACT_BUDGET }o--|| DIM_ACCOUNT : "account_key"
+  FACT_BUDGET }o--|| DIM_DEPARTMENT : "department_key"
+  FACT_GL_JOURNAL {
+    string journal_entry_id "degenerate dimension"
+    int date_key FK
+    int account_key FK
+    int org_key FK
+    decimal debit_amount
+    decimal credit_amount
+  }
+  FACT_GL_SNAPSHOT {
+    int month_key FK
+    int account_key FK
+    int org_key FK
+    decimal period_net_amount
+    decimal ending_balance
+  }
+  FACT_BUDGET {
+    int month_key FK
+    int department_key FK
+    int account_key FK
+    decimal budget_amount
+  }
+  DIM_ACCOUNT {
+    int account_key PK
+    string account_number "natural key"
+    string account_type
+    string account_group
+  }
+  DIM_ORG {
+    int org_key PK
+    string org_name
+    string department
+  }
+  DIM_DEPARTMENT {
+    int department_key PK
+    string department_name
+  }
+  DIM_DATE {
+    int date_key PK
+    int fiscal_year
+    int fiscal_period
+  }

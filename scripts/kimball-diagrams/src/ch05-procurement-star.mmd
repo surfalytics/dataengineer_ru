@@ -1,0 +1,43 @@
+erDiagram
+  FACT_PURCHASE_ORDER_LINE }o--|| DIM_DATE : "po_date_key"
+  FACT_PURCHASE_ORDER_LINE }o--|| DIM_PRODUCT : "product_key"
+  FACT_PURCHASE_ORDER_LINE }o--|| DIM_VENDOR : "vendor_key"
+  FACT_PURCHASE_ORDER_LINE }o--|| DIM_WAREHOUSE : "warehouse_key"
+  FACT_PURCHASE_ORDER_LINE }o--|| DIM_CONTRACT : "contract_key"
+  FACT_PURCHASE_ORDER_LINE {
+    int po_date_key FK
+    int product_key FK
+    int vendor_key FK
+    int warehouse_key FK
+    int contract_key FK
+    string po_number "DD"
+    int po_line_number "DD"
+    int ordered_qty
+    decimal ordered_amount
+  }
+  DIM_VENDOR {
+    int vendor_key PK
+    string vendor_id "natural key"
+    string vendor_name
+    string vendor_tier
+    date row_effective_date
+    date row_expiration_date
+    boolean is_current
+  }
+  DIM_PRODUCT {
+    int product_key PK
+    string sku
+    string product_name
+  }
+  DIM_WAREHOUSE {
+    int warehouse_key PK
+    string warehouse_name
+  }
+  DIM_CONTRACT {
+    int contract_key PK
+    string contract_terms
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+  }

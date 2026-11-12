@@ -1,0 +1,10 @@
+flowchart LR
+  R["Raw source<br/>сразу"] --> RT["Real time cache<br/>секунды"]
+  RT --> BA["Business activity<br/>cache: минуты"]
+  BA --> TL["Top line cache<br/>24 часа"]
+  TL --> DW[("DW<br/>и long time series")]
+  DW -.->|"backflow:<br/>durable keys,<br/>итоги"| TL
+  DW -.-> BA
+  DW -.-> RT
+  style R fill:#f8d7da,stroke:#b02a37
+  style DW fill:#d1e7dd,stroke:#2f7d5b

@@ -1,0 +1,12 @@
+flowchart LR
+  S[("Source")] -->|"modified_at > HWM"| ST["Staging<br/>копия сырых данных"]
+  ST --> Q{"Quality<br/>screens"}
+  Q -->|"плохие строки"| ERR["Error event<br/>таблица"]
+  Q -->|"хорошие"| DIM["Dimensions:<br/>SCD 1 и 2"]
+  DIM --> SK["Surrogate key<br/>pipeline"]
+  SK --> F[("Fact table<br/>delete + insert")]
+  SK -->|"нет ключа"| UNK["Unknown или<br/>inferred member"]
+  F --> AUD["Audit и<br/>reconciliation"]
+  AUD --> HWM["Обновить HWM"]
+  style ERR fill:#f8d7da,stroke:#b02a37
+  style HWM fill:#d1e7dd,stroke:#2f7d5b

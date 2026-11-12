@@ -1,0 +1,24 @@
+flowchart LR
+  subgraph SRC["Источники"]
+    S1["ERP / POS"]
+    S2["CRM"]
+    S3["Файлы и API"]
+  end
+  subgraph BACK["Back room: ETL system"]
+    E1["Extract"] --> E2["Clean и conform"] --> E3["Deliver"]
+  end
+  subgraph PRES["Presentation area"]
+    P1["Star schemas по бизнес-процессам"]
+    P2["Atomic grain + conformed dimensions"]
+  end
+  subgraph BI["Front room: BI"]
+    B1["Отчёты и дашборды"]
+    B2["Ad hoc SQL"]
+  end
+  S1 --> E1
+  S2 --> E1
+  S3 --> E1
+  E3 --> P1
+  P1 --- P2
+  P1 --> B1
+  P1 --> B2

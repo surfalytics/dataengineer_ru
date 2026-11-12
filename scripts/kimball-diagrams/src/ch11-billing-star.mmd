@@ -1,0 +1,49 @@
+erDiagram
+  FACT_BILLING }o--|| DIM_DATE : "bill_date_key"
+  FACT_BILLING }o--|| DIM_CUSTOMER : "customer_key"
+  FACT_BILLING }o--|| DIM_SERVICE_LINE : "service_line_key"
+  FACT_BILLING }o--|| DIM_SALES_ORG : "sales_org_key"
+  FACT_BILLING }o--|| DIM_RATE_PLAN : "rate_plan_key"
+  FACT_BILLING {
+    int bill_date_key FK
+    int customer_key FK
+    int service_line_key FK
+    int sales_org_key FK
+    int rate_plan_key FK
+    string bill_number "degenerate dimension"
+    int total_minutes
+    int roam_minutes
+    int message_count
+    decimal data_mb
+    decimal month_service_charge
+    decimal roaming_charge
+    decimal taxes
+  }
+  DIM_SERVICE_LINE {
+    int service_line_key PK
+    string phone_number "natural key"
+    string area_code
+    string city
+    date activation_date
+  }
+  DIM_RATE_PLAN {
+    int rate_plan_key PK
+    string plan_name
+    string plan_type_code
+    string plan_type_description
+  }
+  DIM_SALES_ORG {
+    int sales_org_key PK
+    string sales_org_name
+    string sales_channel_name
+  }
+  DIM_CUSTOMER {
+    int customer_key PK
+    string customer_name
+    string city
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+    int month_number
+  }
