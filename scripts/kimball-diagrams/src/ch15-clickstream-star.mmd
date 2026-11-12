@@ -1,0 +1,54 @@
+erDiagram
+  FACT_PAGE_EVENT }o--|| DIM_DATE : "event_date_key"
+  FACT_PAGE_EVENT }o--|| DIM_PAGE : "page_key"
+  FACT_PAGE_EVENT }o--|| DIM_PRODUCT : "product_key"
+  FACT_PAGE_EVENT }o--|| DIM_REFERRER : "referrer_key"
+  FACT_PAGE_EVENT }o--|| DIM_SESSION_OUTCOME : "session_outcome_key"
+  FACT_SESSION }o--|| DIM_DATE : "session start"
+  FACT_SESSION }o--|| DIM_PAGE : "entry page"
+  FACT_SESSION }o--|| DIM_REFERRER : "entry referrer"
+  FACT_SESSION }o--|| DIM_SESSION_OUTCOME : "outcome"
+  FACT_PAGE_EVENT {
+    int event_date_key FK
+    int page_key FK
+    int product_key FK
+    int referrer_key FK
+    int session_outcome_key FK
+    string session_id "degenerate dimension"
+    timestamp event_ts_utc
+    int step_number
+    int steps_until_end
+    int page_seconds
+    decimal order_amount
+  }
+  FACT_SESSION {
+    int start_date_key FK
+    int entry_page_key FK
+    int referrer_key FK
+    int session_outcome_key FK
+    string session_id "degenerate dimension"
+    int session_seconds
+    int pages_visited
+    decimal order_amount
+  }
+  DIM_PAGE {
+    int page_key PK
+    string page_function
+    string page_source
+  }
+  DIM_REFERRER {
+    int referrer_key PK
+    string referral_type
+  }
+  DIM_SESSION_OUTCOME {
+    int session_outcome_key PK
+    string outcome
+  }
+  DIM_PRODUCT {
+    int product_key PK
+    string product_name
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+  }

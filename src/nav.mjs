@@ -80,6 +80,11 @@ export const topics = [
             items: [{ autogenerate: { directory: 'book-summaries/engineering/fundamentals-of-data-engineering' } }],
           },
           {
+            label: 'The Data Warehouse Toolkit',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/data-warehouse-toolkit' } }],
+          },
+          {
             label: 'Designing Data-Intensive Applications',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/designing-data-intensive-applications' } }],

@@ -1,0 +1,5 @@
+flowchart LR
+  A["Receipt<br/>приёмка"] --> B["Inspection<br/>проверка"] --> C["Bin placement<br/>на склад"] --> D["First sale<br/>первая продажа"] --> E["Last sale<br/>последняя продажа"]
+  A -. "lag" .-> B
+  B -. "lag" .-> C
+  C -. "lag" .-> D
