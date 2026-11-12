@@ -21,6 +21,7 @@ tags:
 |---|---|---|
 | Инженерия | [Fundamentals of Data Engineering](/book-summaries/engineering/fundamentals-of-data-engineering/) | Профессия дата-инженера, жизненный цикл данных, архитектура, выбор технологий |
 | Инженерия | [The Data Warehouse Toolkit](/book-summaries/engineering/data-warehouse-toolkit/) | Dimensional modeling, star schema, SCD, ETL. SQL-практика на DuckDB |
+| Инженерия | [Designing Data-Intensive Applications](/book-summaries/engineering/designing-data-intensive-applications/) | Как устроены базы данных и распределённые системы: хранение, репликация, транзакции, пакеты и потоки |
 | AI | Скоро | Книги об AI и LLM |
 | Бизнес и Soft Skills | [Lean Analytics](/book-summaries/business/lean-analytics/) | Как измерять стартап, метрики по бизнес-моделям и стадиям |
 

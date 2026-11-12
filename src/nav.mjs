@@ -84,6 +84,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-warehouse-toolkit' } }],
           },
+          {
+            label: 'Designing Data-Intensive Applications',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/designing-data-intensive-applications' } }],
+          },
         ],
       },
       // AI: добавить группу, когда появится первая книга (папка book-summaries/ai/).
