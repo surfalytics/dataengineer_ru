@@ -91,7 +91,16 @@ export const topics = [
           },
         ],
       },
-      // AI: добавить группу, когда появится первая книга (папка book-summaries/ai/).
+      {
+        label: 'AI и ML',
+        items: [
+          {
+            label: 'AI Engineering',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/ai/ai-engineering' } }],
+          },
+        ],
+      },
       {
         label: 'Бизнес и Soft Skills',
         items: [
