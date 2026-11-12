@@ -14,7 +14,7 @@ tags:
   - sql
 ---
 
-**Главная мысль:** заказ состоит из заголовка и строк. Fact table строим на grain строки заказа. Суммы заголовка (доставка, скидка) раскладываем по строкам. Путь заказа от размещения до оплаты описывает accumulating snapshot с lags.
+**Главная мысль:** заказ состоит из заголовка и строк. Fact table строим на grain строки заказа. Суммы заголовка (доставка, скидка) раскладываем по строкам. Путь заказа от размещения до выставления счёта описывает accumulating snapshot с lags.
 
 ![Star schema строки заказа: две роли даты, junk dimension и degenerate dimension](/assets/data-warehouse-toolkit/ch06-order-star.png)
 
@@ -78,6 +78,13 @@ Grain: одна строка заказа (`order line item`). Это самый
 | Отдельный fact на grain заголовка | Заголовочные суммы живут отдельно | Когда разложить нельзя |
 | Degenerate dimension | Номер заказа в fact | Всегда, чтобы собрать строки в заказ |
 
+Книга называет два плохих варианта header/line:
+
+- Заголовок как огромная dimension (`dim_order_header`). Она растёт так же быстро, как fact.
+- Заголовок как отдельный fact, а строки ссылаются на него по `order_number`. Строки не наследуют dimensions заголовка (клиент, дата). Чтобы отфильтровать строки по клиенту, нужна join двух fact.
+
+Правильно: строка наследует все dimensions заголовка.
+
 Правила allocation:
 
 - Сумма по строкам должна точно равна сумме в заголовке. Следите за округлением: остаток отдайте одной строке.
@@ -89,15 +96,18 @@ Grain: одна строка заказа (`order line item`). Это самый
 | Тема | Суть |
 |---|---|
 | Multiple currencies | В fact две суммы: местная валюта и единая отчётная. Курс фиксируем на момент события. Альтернатива — отдельная таблица курсов |
-| Multiple units of measure | Храним количество в базовой единице. Коэффициенты конверсии — в отдельной таблице |
+| Multiple units of measure | Храним количества в одной базовой единице и коэффициенты конверсии прямо в fact. View показывает количества в любой единице. Коэффициенты в dimension книга не советует: пользователи ошибаются, а коэффициенты меняются во времени |
 | Audit dimension | Метаданные ETL: batch, версия правил, флаг качества. Ключ в fact |
 | Invoice transactions | Счёт — отдельный процесс. Grain: строка счёта. Содержит дату отгрузки и дату счёта |
+| Service level | Качество отгрузки можно хранить как факт (флаг «вовремя» 0/1, lag в днях), как атрибут («на 2 дня позже») или и то, и другое |
+| Profit and loss facts | В fact счёта кладём выручку и затраты по порядку P&L: от gross revenue до net profit. Часть затрат приходит через allocation |
 | Credit memos и returns | Возвраты — отдельный fact или отрицательные суммы. Нужна причина возврата |
 | Late arriving facts | Факт пришёл поздно. Ищем версию dimension на дату события |
 
 Не делайте так:
 
 - Не смешивайте разные grain в одной таблице (заголовок и строки).
+- Не нормализуйте facts в пару «тип метрики + значение» (`fact normalization`). Строк станет в разы больше, а считать отношения между фактами станет трудно.
 - Не храните «чистое» отношение, например процент скидки. Храните суммы и считайте отношение в запросе.
 - Не оставляйте `NULL` в foreign key даты. Используйте строку «ещё не наступило».
 
@@ -105,7 +115,7 @@ Grain: одна строка заказа (`order line item`). Это самый
 
 Заказ проходит конвейер. Для него строим `accumulating snapshot`.
 
-![Конвейер заказа: от размещения до оплаты и lags между этапами](/assets/data-warehouse-toolkit/ch06-order-pipeline.png)
+![Вехи заказа: заказ, отгрузка, доставка, счёт и lags между ними](/assets/data-warehouse-toolkit/ch06-order-pipeline.png)
 
 | Элемент | Как устроен |
 |---|---|
@@ -131,9 +141,9 @@ Grain: одна строка заказа (`order line item`). Это самый
 | Вид | Пример |
 |---|---|
 | Событие | Клиент получил рекламное письмо |
-| Coverage | Какие товары по сделке доступны клиенту |
+| Coverage | Какой торговый представитель закреплён за клиентом. Две даты: начало и конец закрепления. Пример книги |
 
-Вопрос «чего не было» решаем в два шага: берём coverage table и вычитаем таблицу реальных событий. Остаток — это то, что не произошло. Например, товары по сделке, которые клиент не заказал.
+Вопрос «чего не было» решаем в два шага: берём coverage table и вычитаем таблицу реальных событий. Остаток — это то, что не произошло. Например, закрепления представителей, по которым не было ни одного заказа. В практике ниже та же идея на примере товаров по сделке.
 
 ## Ключевые термины
 
@@ -162,6 +172,8 @@ Grain: одна строка заказа (`order line item`). Это самый
 Запустите `duckdb` в терминале или откройте [shell.duckdb.org](https://shell.duckdb.org). Блоки идут по порядку в одной сессии.
 
 ### Шаг 1. Создаём dimensions и staging заказов
+
+Модель упрощена: без sales rep, deal и order profile. Техники от этого не меняются.
 
 ```sql
 CREATE MACRO key_to_date(k) AS strptime(k::VARCHAR, '%Y%m%d')::DATE;
@@ -199,7 +211,7 @@ SELECT * FROM (VALUES
     ('O3', 1, 3, 10, 25.0),
     ('O4', 1, 2, 2, 100.0),
     ('O4', 2, 1, 1, 50.0)
-) t(order_number, line_number, product_key, order_quantity, unit_price);
+) t(order_number, order_line_number, product_key, order_quantity, unit_price);
 
 -- события конвейера, пришедшие из склада и биллинга
 CREATE TABLE stg_order_event AS
@@ -220,7 +232,7 @@ SELECT * FROM (VALUES
     ('O2', 2, 'delivered', DATE '2024-03-10'),
     ('O2', 2, 'invoiced',  DATE '2024-03-08'),
     ('O3', 1, 'shipped',   DATE '2024-03-12')
-) t(order_number, line_number, event_type, event_date);
+) t(order_number, order_line_number, event_type, event_date);
 ```
 
 ### Задания
@@ -240,7 +252,7 @@ JOIN stg_order_header h USING (order_number);
 -- правильно: allocation пропорционально gross, остаток от округления в первую строку
 CREATE TABLE fact_order_line AS
 WITH lines AS (
-    SELECT l.order_number, l.line_number, l.product_key, l.order_quantity,
+    SELECT l.order_number, l.order_line_number, l.product_key, l.order_quantity,
            l.order_quantity * l.unit_price AS gross_amount,
            h.customer_key, h.freight_amount,
            strftime(h.order_date, '%Y%m%d')::INT AS order_date_key,
@@ -250,9 +262,9 @@ WITH lines AS (
     FROM stg_order_line l
     JOIN stg_order_header h USING (order_number)
 )
-SELECT order_number, line_number, order_date_key, requested_ship_date_key,
+SELECT order_number, order_line_number, order_date_key, requested_ship_date_key,
        customer_key, product_key, order_quantity, gross_amount,
-       (alloc_raw + CASE WHEN line_number = 1
+       (alloc_raw + CASE WHEN order_line_number = 1
             THEN freight_amount - sum(alloc_raw) OVER (PARTITION BY order_number)
             ELSE 0 END)::DECIMAL(10,2) AS allocated_freight
 FROM lines;
@@ -276,7 +288,7 @@ ORDER BY f.order_number;
 
 ```sql
 CREATE TABLE fact_order_fulfillment AS
-SELECT order_number, line_number, customer_key, product_key,
+SELECT order_number, order_line_number, customer_key, product_key,
        order_date_key, requested_ship_date_key,
        0 AS ship_date_key, 0 AS delivery_date_key, 0 AS invoice_date_key,
        NULL::INT AS order_to_ship_days,
@@ -288,14 +300,14 @@ SET ship_date_key     = coalesce(e.ship_key,     f.ship_date_key),
     delivery_date_key = coalesce(e.delivery_key, f.delivery_date_key),
     invoice_date_key  = coalesce(e.invoice_key,  f.invoice_date_key)
 FROM (
-    SELECT order_number, line_number,
+    SELECT order_number, order_line_number,
            max(CASE WHEN event_type = 'shipped'   THEN strftime(event_date, '%Y%m%d')::INT END) AS ship_key,
            max(CASE WHEN event_type = 'delivered' THEN strftime(event_date, '%Y%m%d')::INT END) AS delivery_key,
            max(CASE WHEN event_type = 'invoiced'  THEN strftime(event_date, '%Y%m%d')::INT END) AS invoice_key
     FROM stg_order_event
-    GROUP BY order_number, line_number
+    GROUP BY order_number, order_line_number
 ) e
-WHERE f.order_number = e.order_number AND f.line_number = e.line_number;
+WHERE f.order_number = e.order_number AND f.order_line_number = e.order_line_number;
 
 UPDATE fact_order_fulfillment
 SET order_to_ship_days = CASE WHEN ship_date_key <> 0
@@ -303,14 +315,14 @@ SET order_to_ship_days = CASE WHEN ship_date_key <> 0
     ship_to_delivery_days = CASE WHEN delivery_date_key <> 0
         THEN date_diff('day', key_to_date(ship_date_key), key_to_date(delivery_date_key)) END;
 
-SELECT order_number, line_number, ship_date_key, delivery_date_key,
+SELECT order_number, order_line_number, ship_date_key, delivery_date_key,
        order_to_ship_days, ship_to_delivery_days
 FROM fact_order_fulfillment
-ORDER BY order_number, line_number;
+ORDER BY order_number, order_line_number;
 ```
 </details>
 
-**3.** Анализ lags. Покажите средний срок «заказ → отгрузка» и «отгрузка → доставка» по клиентам. Затем найдите открытые строки: не отгружены, и возраст заказа на 31 марта.
+**3.** Анализ lags. Покажите средний срок «заказ → отгрузка» и «отгрузка → доставка» по клиентам. Затем найдите строки, которые ещё не отгружены, и их возраст в днях на 31 марта.
 
 <details>
 <summary>Решение</summary>
@@ -325,7 +337,7 @@ GROUP BY c.customer_name
 ORDER BY c.customer_name;
 
 -- открытые строки: ещё не отгружены
-SELECT order_number, line_number,
+SELECT order_number, order_line_number,
        date_diff('day', key_to_date(order_date_key), DATE '2024-03-31') AS age_days
 FROM fact_order_fulfillment
 WHERE ship_date_key = 0
@@ -335,7 +347,7 @@ ORDER BY age_days DESC;
 Строки без доставки дают `NULL` в lag. `avg` их пропускает, поэтому средние не портятся.
 </details>
 
-**4.** Role-playing dimension. Сделайте два view над `dim_date`: для даты заказа и для даты отгрузки. Найдите строки, отгруженные позже запрошенной даты. Покажите, во сколько дней просрочка.
+**4.** Role-playing dimension. Сделайте два view над `dim_date`: для запрошенной даты отгрузки и для фактической даты отгрузки. Найдите строки, отгруженные позже запрошенной даты. Покажите, во сколько дней просрочка.
 
 <details>
 <summary>Решение</summary>
@@ -347,7 +359,7 @@ SELECT date_key AS requested_ship_date_key, full_date AS requested_ship_date FRO
 CREATE VIEW dim_ship_date AS
 SELECT date_key AS ship_date_key, full_date AS ship_date, day_name AS ship_day FROM dim_date;
 
-SELECT f.order_number, f.line_number,
+SELECT f.order_number, f.order_line_number,
        r.requested_ship_date, s.ship_date,
        s.ship_date - r.requested_ship_date AS days_late
 FROM fact_order_fulfillment f

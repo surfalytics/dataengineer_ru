@@ -48,6 +48,7 @@ export const topics = [
       { label: 'Базовый минимум статистики', items: [{ autogenerate: { directory: 'practice/stats' } }] },
       { label: 'Базовый минимум Git', items: [{ autogenerate: { directory: 'practice/git' } }] },
       { label: 'Базовый минимум Docker', items: [{ autogenerate: { directory: 'practice/docker' } }] },
+      { label: 'Базовый минимум Dimensional Modeling', items: [{ autogenerate: { directory: 'practice/modeling' } }] },
     ],
   },
   {
@@ -96,7 +97,16 @@ export const topics = [
           },
         ],
       },
-      // AI: добавить группу, когда появится первая книга (папка book-summaries/ai/).
+      {
+        label: 'AI и ML',
+        items: [
+          {
+            label: 'AI Engineering',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/ai/ai-engineering' } }],
+          },
+        ],
+      },
       {
         label: 'Бизнес и Soft Skills',
         items: [
@@ -104,6 +114,11 @@ export const topics = [
             label: 'Lean Analytics',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/business/lean-analytics' } }],
+          },
+          {
+            label: 'Escaping the Build Trap',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/escaping-the-build-trap' } }],
           },
         ],
       },

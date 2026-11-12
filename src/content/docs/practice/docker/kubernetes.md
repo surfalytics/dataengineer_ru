@@ -54,7 +54,7 @@ tags:
 | Локальная разработка | Docker и Compose |
 | Одна база, один BI, несколько задач на одном сервере | Compose на одной виртуальной машине |
 | Пакетные задачи по расписанию | AWS ECS на Fargate, Cloud Run jobs, Container Apps jobs |
-| Веб-сервис или API с небольшой нагрузкой | Cloud Run, ECS на Fargate, App Runner |
+| Веб-сервис или API с небольшой нагрузкой | Cloud Run, ECS на Fargate (или ECS Express Mode), Container Apps |
 | Оркестрация пайплайнов | Управляемый Airflow: MWAA, Cloud Composer, Astronomer |
 | Задачи по событию, короткие | Lambda с образом контейнера |
 
@@ -79,7 +79,7 @@ tags:
 - `Dockerfile` и образ остаются теми же. Kubernetes запускает тот же образ.
 - Переменные окружения работают так же.
 - Том в Docker похож на PVC в Kubernetes.
-- Порт `ports` в Compose похож на Service.
+- Имя службы в Compose (`db`) похоже на Service: постоянный адрес, по которому другие находят сервис.
 
 ## Сравнение: Compose и Kubernetes
 
@@ -97,7 +97,7 @@ services:
       - pgdata:/var/lib/postgresql/data
 ```
 
-Тот же сервис в Kubernetes (концептуальный пример, **не запускаем**):
+Тот же сервис в Kubernetes (концептуальный пример, **не запускаем**). Для баз в Kubernetes обычно берут StatefulSet. Здесь Deployment, чтобы пример был проще:
 
 ```yaml
 apiVersion: apps/v1

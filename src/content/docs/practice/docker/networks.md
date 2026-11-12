@@ -47,16 +47,7 @@ Compose создаёт свою сеть автоматически. Поэто�
 
 ## Демо: база и загрузчик
 
-Нужна папка `~/docker-practice` с учебными файлами. Создайте в ней `Dockerfile`:
-
-```dockerfile
-FROM python:3.12-slim
-WORKDIR /app
-COPY app/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY app/ .
-CMD ["python", "report.py"]
-```
+Нужна папка `~/docker-practice` и `Dockerfile` из урока [Хороший образ](/practice/docker/build-better/) (раздел «Итоговый Dockerfile»). Если вы его пропустили, создайте файл по этому уроку.
 
 Соберите образ:
 
@@ -156,7 +147,7 @@ docker exec db psql -U postgres -d shop -c \
 
 ## Два порта: хоста и контейнера
 
-В уроке про [порты](/practice/docker/ports-env/) мы писали `-p 5432:5432`. Этот ключ нужен только для доступа **с вашего компьютера**: из DBeaver, `psql` на ноутбуке, браузера.
+В уроке про [порты](/practice/docker/ports-env/) мы писали `-p 127.0.0.1:5432:5432`. Этот ключ нужен только для доступа **с вашего компьютера**: из DBeaver, `psql` на ноутбуке, браузера.
 
 | Кто подключается | Куда | Нужен `-p`? |
 |---|---|---|

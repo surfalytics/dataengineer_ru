@@ -1,0 +1,77 @@
+---
+title: Базовый минимум Dimensional Modeling
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "Dimensional modeling: курс по star schema | Инжиниринг Данных"
+description: "Бесплатный курс по dimensional modeling для инженера и аналитика данных. Факты и измерения, grain, star schema, SCD, bus matrix. Практика в DuckDB."
+sidebar:
+  order: 1
+  label: О курсе
+tags:
+  - data-modelling
+  - practice
+  - duckdb
+---
+import { Aside, LinkCard, CardGrid, Steps } from '@astrojs/starlight/components';
+
+**Dimensional modeling** (размерное моделирование) — способ организовать данные в хранилище для анализа. Его описал Ральф Кимбалл. Результат — **star schema**: таблица фактов в центре и таблицы измерений вокруг.
+
+В этом курсе мы возьмём OLTP-базу магазина и построим из неё хранилище: звезду продаж, остатки, доставку, историю клиентов и возвраты.
+
+![Star schema магазина: fact_sales в центре связан с dim_date, dim_customer, dim_product и dim_store](/assets/practice/modeling/star-schema.png)
+
+## Зачем знать моделирование
+
+- **Модель решает, будут ли цифры правильными.** Неверный grain или прямой `JOIN` двух фактов удваивает выручку. SQL при этом не выдаёт ошибок.
+- **Аналитикам и BI нужны понятные таблицы.** Звезда отвечает на вопрос «где лежит выручка по категориям» без пяти `JOIN`.
+- **dbt — это моделирование.** Каждая модель dbt — таблица факта или измерения. Без теории получается хаос из сотен моделей.
+- **AI-агентам тоже нужна понятная модель.** Агент пишет SQL лучше, когда таблицы называются `fact_sales` и `dim_customer`, а не `t_ord_itm_v2`.
+- **Собеседования.** Fact и dimension, grain, SCD Type 2, star против snowflake — частые вопросы для инженеров и аналитиков данных.
+
+## Как моделирование используют в работе
+
+| Кто | Задачи |
+|---|---|
+| Инженер данных / analytics engineer | Проектирует слой marts, строит факты и измерения в dbt, реализует SCD, пишет тесты |
+| Аналитик данных / BI-разработчик | Пишет запросы к звезде, строит семантический слой и дашборды, находит ошибки в grain |
+
+## Как устроен курс
+
+Каждый урок: теория простыми словами, схемы, потом практика в DuckDB на данных магазина. Уроки идут по порядку: следующий использует таблицы из прошлого.
+
+| Урок | Что внутри |
+|---|---|
+| [Установка](/practice/modeling/setup/) | DuckDB, учебная OLTP-база магазина, схема `src` |
+| [OLTP и OLAP](/practice/modeling/why-model/) | Нормализация, 3NF, денормализация. Зачем аналитике отдельная модель |
+| [Факты и измерения](/practice/modeling/facts-dimensions/) | Fact и dimension, star и snowflake, additive и semi-additive факты |
+| [Четыре шага и grain](/practice/modeling/four-steps/) | Процесс проектирования Кимбалла, grain, ловушка header/line |
+| [Таблицы измерений](/practice/modeling/dimensions/) | Surrogate key, календарь `dim_date`, unknown member |
+| [Строим fact table](/practice/modeling/fact-sales/) | `fact_sales`, key lookup, сверка с источником, запросы к звезде |
+| [Типы fact tables](/practice/modeling/fact-types/) | Periodic snapshot, accumulating snapshot, factless, role-playing |
+| [SCD](/practice/modeling/scd/) | Slowly Changing Dimensions: Type 1, 2, 3, 6 |
+| [Conformed dimensions](/practice/modeling/conformed/) | Bus matrix, drill-across, fan-out, агрегаты |
+| [Другие подходы](/practice/modeling/other-approaches/) | Инмон, Data Vault, OBT, Activity Schema, Medallion |
+| [Итоговая практика](/practice/modeling/final/) | Проектируем и строим возвраты от начала до отчёта |
+
+## Как заниматься
+
+<Steps>
+
+1. Пройдите [установку](/practice/modeling/setup/): DuckDB и учебная база магазина.
+2. Идите по урокам по порядку. Следующий урок использует таблицы из прошлого.
+3. Запускайте каждый SQL-блок сами. Сравнивайте результат с текстом урока.
+4. Решайте задания **сами, без AI**. Сначала напишите запрос, потом сверьтесь с блоком «Проверка», и только потом открывайте решение.
+
+</Steps>
+
+Курс основан на статье [Dimensional Modeling 101](https://thedatatoolbox.substack.com/p/dimensional-modeling-101) и книге Кимбалла *The Data Warehouse Toolkit*. В конце каждого урока есть ссылки «Глубже» на главы [конспекта книги](/book-summaries/engineering/data-warehouse-toolkit/).
+
+<Aside type="tip" title="Что нужно знать до начала">
+Уверенный SQL: `JOIN`, `GROUP BY`, CTE (`WITH`). Оконные функции встретятся, но мы их объясняем. Если SQL слабый, начните с [базового минимума SQL](/practice/sql/).
+</Aside>
+
+<CardGrid>
+  <LinkCard title="Начать: установка" description="DuckDB и учебная база магазина." href="/practice/modeling/setup/" />
+  <LinkCard title="Конспект Кимбалла" description="The Data Warehouse Toolkit: 21 глава с практикой." href="/book-summaries/engineering/data-warehouse-toolkit/" />
+</CardGrid>

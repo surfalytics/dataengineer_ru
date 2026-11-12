@@ -76,13 +76,13 @@ docker rm -f web
 
 ```
 docker: Error response from daemon: failed to set up container networking: driver failed
-programming external connectivity on endpoint web (...): Bind for 0.0.0.0:8088 failed: port is already allocated
+programming external connectivity on endpoint web (...): Bind for 0.0.0.0:8080 failed: port is already allocated
 ```
 
 Что делать:
 
-- Выберите другой порт на компьютере: `-p 8089:80`. Порт контейнера (`80`) не меняйте.
-- Или найдите, кто занял порт: `docker ps` покажет контейнеры, `lsof -i :8088` на macOS и Linux покажет процессы.
+- Выберите другой порт на компьютере: `-p 8081:80`. Порт контейнера (`80`) не меняйте.
+- Или найдите, кто занял порт: `docker ps` покажет контейнеры, `lsof -i :8080` на macOS и Linux покажет процессы. На Windows в PowerShell: `netstat -ano | findstr :8080`.
 
 ## Переменные окружения: -e
 
@@ -96,7 +96,7 @@ docker run --rm -e GREETING=привет alpine:3.22 sh -c 'echo $GREETING'
 привет
 ```
 
-Кавычки вокруг `echo $GREETING` важны. Без них ваш shell подставит `$GREETING` сам, ещё до контейнера, и получится пустая строка.
+**Одинарные** кавычки вокруг `echo $GREETING` важны. С двойными кавычками или без кавычек ваш shell подставит `$GREETING` сам, ещё до контейнера. Получится пустая строка.
 
 ### Много переменных: --env-file
 
@@ -107,7 +107,7 @@ printf 'POSTGRES_PASSWORD=secret\nPOSTGRES_DB=shop\n' > pg.env
 docker run -d --name pg --env-file pg.env postgres:17
 ```
 
-Файл `.env` с паролями **не добавляют в Git**. Положите его в `.gitignore`.
+Файлы с паролями (`pg.env`, `.env`) **не добавляют в Git**. Положите его в `.gitignore`.
 
 ## Запускаем Postgres
 
@@ -146,7 +146,7 @@ docker run -d --name pg \
 Подождите пять секунд, пока база стартует. Проверьте:
 
 ```bash
-docker ps --filter name=pg
+docker ps --filter 'name=^pg$'
 ```
 
 ```
@@ -172,7 +172,7 @@ docker exec pg psql -U postgres -d shop -c "SELECT version();"
 
 Версия в ответе будет `PostgreSQL 17.x`.
 
-**Способ 2. С вашего компьютера.** Нужен установленный клиент `psql` или DBeaver, DataGrip. Адрес — `localhost` и порт, который вы открыли:
+**Способ 2. С вашего компьютера.** Нужен клиент: `psql`, DBeaver или DataGrip. Как поставить `psql`: на macOS `brew install libpq`, в Ubuntu и WSL `sudo apt install -y postgresql-client`. Адрес — `localhost` и порт, который вы открыли:
 
 ```bash
 PGPASSWORD=secret psql -h 127.0.0.1 -p 5432 -U postgres -d shop -c "SELECT 1"
@@ -187,7 +187,7 @@ PGPASSWORD=secret psql -h 127.0.0.1 -p 5432 -U postgres -d shop -c "SELECT 1"
 
 Для DBeaver и других клиентов: host `localhost`, port `5432`, database `shop`, user `postgres`, password `secret`.
 
-Таблиц в базе пока нет. Данные мы загрузим в уроке про [Docker Compose](/practice/docker/compose-stack/).
+Таблиц в базе пока нет. Данные мы загрузим в уроке [Сети](/practice/docker/networks/).
 
 ## Практика
 
@@ -225,10 +225,10 @@ docker run -d --name pg \
   -e POSTGRES_DB=shop \
   -p 127.0.0.1:5432:5432 \
   postgres:17
-docker ps --filter name=pg
+docker ps --filter 'name=^pg$'
 ```
 
-Если порт 5432 занят (например, у вас уже стоит Postgres), используйте `-p 127.0.0.1:5433:5432`.
+Если порт 5432 занят (например, у вас уже стоит Postgres), используйте `-p 127.0.0.1:5433:5432`. Тогда и дальше в уроке пишите 5433 вместо 5432.
 
 </details>
 

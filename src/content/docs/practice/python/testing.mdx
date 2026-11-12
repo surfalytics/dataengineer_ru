@@ -85,9 +85,12 @@ test_cleaning.py ..                                                      [100%]
 
 ## Когда тест падает
 
-Если `assert` ложный, pytest покажет, что ожидали и что получили.
+Если `assert` ложный, pytest покажет, что ожидали и что получили. Создайте для проверки файл `test_fail.py` и запустите `uv run pytest test_fail.py`:
 
 ```python
+from cleaning import clean_amount
+
+
 def test_wrong():
     assert clean_amount("10,5") == 105
 ```
@@ -103,11 +106,11 @@ E        +  where 10.5 = clean_amount('10,5')
 FAILED test_fail.py::test_wrong - AssertionError: assert 10.5 == 105
 ```
 
-Читайте строки с `E`. Они говорят, в чём разница. Здесь ошибка в самом тесте, не в функции.
+Читайте строки с `E`. Они говорят, в чём разница. Здесь ошибка в самом тесте, не в функции. Удалите `test_fail.py`, он больше не нужен.
 
 ## parametrize: много случаев, один тест
 
-Не копируйте тест пять раз. Дайте pytest таблицу случаев.
+Не копируйте тест пять раз. Дайте pytest таблицу случаев. Добавьте в `test_cleaning.py` импорт `import pytest` и этот тест:
 
 ```python
 import pytest
@@ -141,7 +144,7 @@ test_cleaning.py::test_clean_amount_formats[1 200,50-1200.5] PASSED      [ 85%]
 
 ## Проверка ошибок: pytest.raises
 
-Функция должна падать на пустой сумме. Это тоже поведение, его нужно проверить.
+Функция должна падать на пустой сумме. Это тоже поведение, его нужно проверить. Добавьте тест в `test_cleaning.py`:
 
 ```python
 def test_clean_amount_empty():
@@ -323,7 +326,7 @@ def test_clean_user_empty():
 **Проверка:** запустите `uv run pytest -k clean_user_upper`.
 
 ```
-1 passed, 11 deselected in 0.00s
+1 passed, 12 deselected in 0.01s
 ```
 
 В этом ответе число `deselected` зависит от того, сколько тестов уже в файле. Главное: `1 passed`.

@@ -388,14 +388,14 @@ print(safe_float("n/a", -1.0))
 
 ```python
 import csv
-from collections import defaultdict
 from pathlib import Path
 
-totals = defaultdict(float)
+totals = {}
 with open("data/orders.csv", encoding="utf-8", newline="") as f:
     for row in csv.DictReader(f):
         if row["amount"]:
-            totals[row["user"]] += float(row["amount"])
+            user = row["user"]
+            totals[user] = totals.get(user, 0) + float(row["amount"])
 
 Path("out").mkdir(exist_ok=True)
 with open("out/user_totals.csv", "w", encoding="utf-8", newline="") as f:

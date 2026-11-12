@@ -12,7 +12,7 @@ tags:
   - practice
 ---
 
-В этом уроке вы запустите первые контейнеры и научитесь ими управлять. Пять команд покрывают 80% ежедневной работы: `run`, `ps`, `logs`, `exec`, `stop` и `rm`.
+В этом уроке вы запустите первые контейнеры и научитесь ими управлять. Шесть команд покрывают почти всю ежедневную работу: `run`, `ps`, `logs`, `exec`, `stop` и `rm`.
 
 ## docker run
 
@@ -34,7 +34,7 @@ docker run --rm alpine:3.22 echo "Привет из контейнера"
 
 Что сделал Docker:
 
-1. Не нашёл образ `alpine:3.22` на вашем компьютере и скачал его из Docker Hub. Это видно по строкам `Pulling from library/alpine`. В следующий раз скачивания не будет.
+1. Проверил, есть ли образ `alpine:3.22` на вашем компьютере. Если нет, скачал его из Docker Hub. Это видно по строкам `Pulling from library/alpine`. В следующий раз скачивания не будет.
 2. Создал контейнер из образа.
 3. Запустил в нём команду `echo "Привет из контейнера"`.
 4. Команда закончилась, и контейнер остановился.
@@ -120,7 +120,7 @@ docker ps -a
 
 ```bash
 docker ps -q                          # только идентификаторы
-docker ps --filter name=web           # отфильтровать по имени
+docker ps --filter 'name=^web$'        # точное имя. Без ^ и $ найдёт и web-2, и airflow-webserver
 docker ps --format 'table {{.Names}}\t{{.Status}}'   # только нужные столбцы
 ```
 
@@ -187,7 +187,7 @@ docker rm web        # удалить остановленный контейн�
 
 ```bash
 docker stop web
-docker ps -a --filter name=web --format '{{.Names}} | {{.Status}}'
+docker ps -a --filter 'name=^web$' --format '{{.Names}} | {{.Status}}'
 ```
 
 ```
@@ -297,10 +297,10 @@ curl -s localhost:8080 | grep title
 <summary>Решение</summary>
 
 ```bash
-docker logs web 2>&1 | grep GET
+docker logs web | grep GET
 ```
 
-`2>&1` объединяет stderr и stdout. Nginx пишет часть логов в stderr, и `grep` по умолчанию их бы не увидел.
+Nginx пишет запросы в stdout, а ошибки в stderr. Чтобы искать сразу по всем логам, добавьте `2>&1`: `docker logs web 2>&1 | grep error`.
 
 </details>
 
@@ -328,19 +328,19 @@ exit
 
 Остановите `web`. Проверьте, что он остановлен, но не удалён. Запустите его снова. Остановите и удалите совсем.
 
-**Проверка:** после `stop` статус `Exited (0)`. После `start` статус `Up`. После `rm` команда `docker ps -a --filter name=web` показывает только строку заголовка.
+**Проверка:** после `stop` статус `Exited (0)`. После `start` статус `Up`. После `rm` команда `docker ps -a --filter 'name=^web$'` показывает только строку заголовка.
 
 <details>
 <summary>Решение</summary>
 
 ```bash
 docker stop web
-docker ps -a --filter name=web
+docker ps -a --filter 'name=^web$'
 docker start web
-docker ps --filter name=web
+docker ps --filter 'name=^web$'
 docker stop web
 docker rm web
-docker ps -a --filter name=web
+docker ps -a --filter 'name=^web$'
 ```
 
 Короткий вариант для последних двух шагов: `docker rm -f web`. Флаг `-f` останавливает и удаляет.

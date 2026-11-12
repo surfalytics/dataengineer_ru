@@ -38,7 +38,7 @@ tags:
 | Postgres | `postgres:17` | База данных для пайплайнов и тестов |
 | Adminer | `adminer:5` | Лёгкий веб-клиент для баз |
 | Metabase | `metabase/metabase:v0.65.4` | BI: графики и дашборды |
-| Superset | `apache/superset` | BI. Нужна дополнительная настройка |
+| Superset | `apache/superset:6.1.0` | BI. Нужна дополнительная настройка |
 | Airflow | официальный `docker-compose.yaml` | Оркестрация пайплайнов |
 | dbt | свой образ (ниже) | Трансформации в SQL |
 | Jupyter | `quay.io/jupyter/scipy-notebook:python-3.12` | Ноутбуки для анализа |
@@ -176,7 +176,7 @@ docker compose run --rm dbt run
 Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=1
 ```
 
-Полный пример со всеми файлами — в [итоговой практике](/practice/docker/final/).
+Полный пример со всеми файлами — в уроке [Compose для пайплайна](/practice/docker/compose-stack/).
 
 ## Стартеры: оркестраторы и ELT
 
@@ -186,12 +186,12 @@ Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=1
 |---|---|---|---|
 | **Airflow** | Оркестратор | `apache/airflow:3.4.0` и официальный `docker-compose.yaml` (выше) | Да |
 | **Prefect** | Оркестратор на Python | `prefecthq/prefect:3-latest` | Да |
-| **Dagster** | Оркестратор, ориентирован на данные | Официальный пример [deploy_docker](https://github.com/dagster-io/dagster/tree/master/examples/deploy_docker) | Да (`dagster/dagster-k8s`) |
+| **Dagster** | Оркестратор, ориентирован на данные | Официальный пример [deploy_docker](https://github.com/dagster-io/dagster/tree/master/examples/deploy_docker) | Да |
 | **Kestra** | Оркестратор, потоки в YAML | Официальный [docker-compose.yml](https://raw.githubusercontent.com/kestra-io/kestra/develop/docker-compose.yml) | Да |
 | **Mage** | Пайплайны в ноутбуке | `mageai/mageai`, [инструкция](https://docs.mage.ai/getting-started/setup) | Да |
 | **Meltano** | ELT на Singer | `meltano/meltano` | Да |
 | **dbt** | Трансформации в SQL | `ghcr.io/dbt-labs/dbt-core`, `dbt-postgres`, `dbt-snowflake`, `dbt-bigquery` | **Нет, только amd64.** Соберите свой образ |
-| **Superset** | BI | `apache/superset`, [репозиторий](https://github.com/apache/superset) | Да |
+| **Superset** | BI | `apache/superset:6.1.0`, [репозиторий](https://github.com/apache/superset) | Да |
 | **Lightdash** | BI поверх dbt | `lightdash/lightdash` | **Нет, только amd64** |
 | **Trino** | Запросы к разным источникам | `trinodb/trino` | Да |
 | **Spark** | Обработка больших данных | `apache/spark` | Да |
@@ -251,7 +251,7 @@ curl -s localhost:4200/api/health
 
 ## Практика
 
-Все задания — в папке `~/docker-practice`.
+Задания 1 и 3 — в папке `~/docker-practice`. Для задания 2 создайте отдельную папку, чтобы не перезаписать `compose.yaml` из прошлых уроков.
 
 ### Задание 1
 
@@ -282,7 +282,13 @@ docker run --rm -v "$PWD:/work" -w /work \
 <details>
 <summary>Решение</summary>
 
-Теги: [hub.docker.com/_/adminer/tags](https://hub.docker.com/_/adminer/tags). Файл `compose.yaml`:
+Теги: [hub.docker.com/_/adminer/tags](https://hub.docker.com/_/adminer/tags). Создайте отдельную папку:
+
+```bash
+mkdir -p ~/adminer-try && cd ~/adminer-try
+```
+
+Файл `compose.yaml` в ней:
 
 ```yaml
 services:

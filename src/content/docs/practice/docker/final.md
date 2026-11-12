@@ -16,6 +16,7 @@ tags:
 
 ```
 orders.csv → loader → Postgres → Metabase (дашборды в браузере)
+                              ↘ Adminer (просмотр таблиц)
 ```
 
 :::caution
@@ -79,11 +80,11 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: shop
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d shop"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d shop"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -113,6 +114,13 @@ services:
       db:
         condition: service_healthy
 
+  adminer:
+    image: adminer:5
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
 volumes:
   pgdata:
   metabase-data:
@@ -122,6 +130,7 @@ volumes:
 
 - `metabase` хранит свои настройки (пользователь, дашборды) в файле. `MB_DB_FILE` задаёт путь к файлу, а том `metabase-data` сохраняет его.
 - Два тома: один для данных, второй для настроек BI.
+- `adminer` — тот же веб-клиент базы, что в уроке [Docker Compose](/practice/docker/compose/). Удобно смотреть таблицы без Metabase.
 
 Проверьте файл:
 
@@ -132,6 +141,15 @@ docker compose config -q && echo ok
 **Проверка:** `ok`.
 
 ## Шаг 3. Запуск
+
+Сначала остановите стек из прошлых уроков. Иначе порты `5432` и `8080` будут заняты:
+
+```bash
+cd ~/docker-practice && docker compose down
+cd ~/shop-stack
+```
+
+Запустите новый стек:
 
 ```bash
 docker compose up -d --build
@@ -149,7 +167,7 @@ docker compose logs -f metabase
 curl localhost:3000/api/health
 ```
 
-**Проверка:** `{"status":"ok"}`. Пока Metabase запускается, ответ другой: `{"status":"initializing", ...}` или пусто. Подождите 1–2 минуты и повторите.
+**Проверка:** `{"status":"ok"}`. Пока Metabase запускается, ответ другой: `{"status":"initializing", ...}` или ошибка `curl: (52)` или `curl: (56)`. Подождите 1–2 минуты и повторите.
 
 Проверьте, что загрузчик отработал:
 
@@ -163,7 +181,7 @@ docker compose logs loader
 
 Откройте <http://localhost:3000>.
 
-1. Выберите язык и создайте администратора. Почта может быть любой. Пароль запомните.
+1. Выберите язык **English**: так названия кнопок совпадут с уроком. Создайте администратора. Почта может быть любой. Пароль запомните.
 2. Metabase предложит добавить данные. Выберите **PostgreSQL**. Если пропустили шаг, откройте Admin → Databases → Add database.
 3. Заполните поля:
 
@@ -216,9 +234,11 @@ ORDER BY revenue DESC;
 <details>
 <summary>Решение</summary>
 
+Запускаем только `db` и `metabase`, без загрузчика. Иначе загрузчик заново зальёт 500 строк, и проверка ничего не докажет.
+
 ```bash
 docker compose down
-docker compose up -d
+docker compose up -d --wait db metabase
 curl localhost:3000/api/health
 docker compose exec db psql -U postgres -d shop -tc "select count(*) from orders"
 ```
@@ -229,7 +249,7 @@ docker compose exec db psql -U postgres -d shop -tc "select count(*) from orders
 
 ### Задание 2
 
-Докажите, что `down -v` стирает данные. Выполните `docker compose down -v`. Запустите **только базу**: `docker compose up -d db`. Посчитайте строки в `orders`.
+Докажите, что `down -v` стирает данные. Выполните `docker compose down -v`. Запустите **только базу**: `docker compose up -d --wait db`. Посчитайте строки в `orders`.
 
 **Проверка:** ошибка `relation "orders" does not exist`. Таблицы нет: том удалён.
 
@@ -238,9 +258,11 @@ docker compose exec db psql -U postgres -d shop -tc "select count(*) from orders
 
 ```bash
 docker compose down -v
-docker compose up -d db
+docker compose up -d --wait db
 docker compose exec db psql -U postgres -d shop -tc "select count(*) from orders"
 ```
+
+`--wait` ждёт, пока база станет `healthy`. Без него `psql` может запуститься раньше базы и выдать другую ошибку.
 
 Важно запустить только `db`. Если выполнить `up -d` без имени службы, загрузчик создаст таблицу заново, и вы не увидите потери. Metabase тоже начнёт с чистого листа: придётся снова создать администратора.
 
@@ -256,11 +278,11 @@ docker compose exec db psql -U postgres -d shop -tc "select count(*) from orders
 <summary>Решение</summary>
 
 ```bash
-docker compose up -d loader
+docker compose run --rm loader
 docker compose exec db psql -U postgres -d shop -tc "select count(*) from orders"
 ```
 
-Compose сам запустит `db` (она нужна по `depends_on`) и дождётся `healthy`.
+`run` ждёт, пока загрузчик закончит. Compose сам запустит `db`, если она не работает (она нужна по `depends_on`), и дождётся `healthy`.
 
 </details>
 
@@ -301,6 +323,10 @@ curl localhost:3001/api/health
 
 **Проверка:** 501 строка. Выручка `email`: 15558.67 (было 15459.67, плюс 99.00).
 
+:::note[macOS]
+Docker Desktop на macOS видит изменения файла с задержкой в 1–2 секунды. Если загрузчик показал старое число, подождите пару секунд и запустите его ещё раз.
+:::
+
 <details>
 <summary>Решение</summary>
 
@@ -311,15 +337,52 @@ docker compose exec db psql -U postgres -d shop -tc "select count(*) from orders
 docker compose exec db psql -U postgres -d shop -tc "select sum(amount) from orders where channel='email' and status='completed'"
 ```
 
-В Metabase обновите вопрос: цифра изменилась. Затем удалите последнюю строку из файла и загрузите снова.
+В Metabase обновите вопрос: цифра изменилась. Затем удалите последнюю строку из файла и загрузите снова:
+
+```bash
+sed -i.bak '$d' data/orders.csv && rm data/orders.csv.bak
+docker compose run --rm loader
+```
 
 </details>
 
 ### Задание 6 (по желанию)
 
-Добавьте в стек службу `dbt` из урока [«Compose для пайплайна»](/practice/docker/compose-stack/). Файлы нужны те же: папка `dbt/` и служба с `profiles: ["tools"]`. Запустите `docker compose run --rm dbt run`. В Metabase обновите список таблиц базы `shop` (Admin → Databases → Sync). Появилась ли схема `analytics`?
+Добавьте в стек службу `dbt` из урока [«Compose для пайплайна»](/practice/docker/compose-stack/). Запустите `docker compose run --rm dbt run`. В Metabase обновите список таблиц базы `shop` (Admin → Databases → Sync database schema). Появилась ли схема `analytics`?
 
-**Проверка:** dbt пишет `PASS=1 WARN=0 ERROR=0`. В Metabase доступен view `revenue_by_channel`.
+**Проверка:** dbt пишет `PASS=1 WARN=0 ERROR=0`. В Metabase в схеме **Analytics** есть таблица **Revenue By Channel**. Metabase показывает имена так: с большой буквы и без `_`.
+
+<details>
+<summary>Решение</summary>
+
+Скопируйте папку `dbt/` из прошлого урока:
+
+```bash
+cp -r ~/docker-practice/dbt .
+printf 'dbt/target/\ndbt/logs/\ndbt/.user.yml\n' >> .gitignore
+```
+
+Вставьте службу в блок `services:` файла `compose.yaml`, перед строкой `volumes:`:
+
+```yaml
+  dbt:
+    build: ./dbt
+    profiles: ["tools"]
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
+      DBT_PROFILES_DIR: /project
+    volumes:
+      - ./dbt:/project
+    depends_on:
+      db:
+        condition: service_healthy
+```
+
+```bash
+docker compose run --rm dbt run
+```
+
+</details>
 
 ## Уборка
 
@@ -335,17 +398,17 @@ docker compose down
 docker compose down -v
 ```
 
-Удалить образ загрузчика, если он больше не нужен:
+Удалить образы загрузчика и dbt, если они больше не нужны:
 
 ```bash
 docker image ls
-docker rmi shop-stack-loader
+docker rmi shop-stack-loader shop-stack-dbt
 ```
 
 Имя образа — `<папка>-<служба>`. Проверьте его в списке `docker image ls`.
 
 :::caution
-Не используйте `docker system prune`, пока не поняли, что он удалит. Он стирает все остановленные контейнеры и неиспользуемые образы, в том числе чужие проекты.
+Не используйте `docker system prune`, пока не поняли, что он удалит. Он стирает все остановленные контейнеры, неиспользуемые сети, висячие образы и кэш сборки. В том числе чужих проектов.
 :::
 
 ## Что вы умеете теперь

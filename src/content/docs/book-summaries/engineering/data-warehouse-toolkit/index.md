@@ -14,7 +14,7 @@ tags:
   - sql
 ---
 
-**The Data Warehouse Toolkit, 3rd Edition** — книга Ralph Kimball и Margy Ross (Wiley, 2013). Это главный учебник по `dimensional modeling`. В ней 21 глава: приёмы моделирования, 11 отраслевых кейсов, жизненный цикл проекта, ETL и big data. Это конспект на русском. К каждой главе есть схема и практика на DuckDB.
+**The Data Warehouse Toolkit, 3rd Edition** — книга Ralph Kimball и Margy Ross (Wiley, 2013). Это главный учебник по `dimensional modeling`. В ней 21 глава: основы и приёмы моделирования (главы 1–2), 14 глав с кейсами из бизнеса и отраслей (3–16), жизненный цикл проекта, ETL и big data. Это конспект на русском. К каждой главе есть схема и практика на DuckDB.
 
 > Это собственный пересказ, а не перевод. За полным текстом идите в оригинал. Схемы и данные для SQL придуманы заново.
 
@@ -41,13 +41,13 @@ tags:
 | Приём | Где разбирается |
 |---|---|
 | Grain, fact, dimension, star schema | [Глава 3](/book-summaries/engineering/data-warehouse-toolkit/03-retail-sales/) |
-| Slowly changing dimensions (SCD 0–7) | [Глава 2](/book-summaries/engineering/data-warehouse-toolkit/02-modeling-techniques/) |
-| Conformed dimensions и bus matrix | Главы 1, 4, 18 |
+| Slowly changing dimensions (SCD 0–7) | [Глава 5](/book-summaries/engineering/data-warehouse-toolkit/05-procurement/), кратко в главе 2 |
+| Conformed dimensions и bus matrix | Главы 4, 18 |
 | Три типа fact table: transaction, snapshot, accumulating | Главы 4, 6 |
 | Junk, role-playing, degenerate dimensions | Главы 2, 6 |
 | Bridge table для связи many-to-many | Главы 8, 10, 14 |
-| Mini-dimension | Главы 8, 10 |
-| Factless fact table | Главы 6, 13 |
+| Mini-dimension | Главы 5, 8, 10 |
+| Factless fact table | Главы 3, 13 |
 
 ## Как читать
 
@@ -62,6 +62,7 @@ tags:
 - Данные в каждой главе создаются SQL-кодом. Файлы скачивать не нужно.
 - Блоки кода идут по порядку. Выполняйте их сверху вниз в одной сессии.
 - Сначала решайте задание сами. Потом открывайте решение.
+- Нужен вводный курс перед книгой? Пройдите [базовый минимум Dimensional Modeling](/practice/modeling/): 11 уроков на данных одного магазина.
 
 ## Разбор по главам
 

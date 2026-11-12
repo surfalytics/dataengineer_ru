@@ -1,14 +1,16 @@
 erDiagram
   FACT_ACCOUNT_SNAPSHOT }o--|| DIM_ACCOUNT : "account_key"
   FACT_ACCOUNT_SNAPSHOT }o--|| DIM_ACCOUNT_PROFILE : "profile_key"
+  FACT_ACCOUNT_SNAPSHOT }o--|| DIM_HOUSEHOLD : "household_key"
   FACT_ACCOUNT_SNAPSHOT }o--|| DIM_DATE : "month_key"
   FACT_CHECKING_SNAPSHOT }o--|| DIM_ACCOUNT : "account_key"
+  FACT_CHECKING_SNAPSHOT }o--|| DIM_DATE : "month_key"
   DIM_ACCOUNT ||--o{ BRIDGE_ACCOUNT_CUSTOMER : "account_key"
   BRIDGE_ACCOUNT_CUSTOMER }o--|| DIM_CUSTOMER : "customer_key"
-  DIM_CUSTOMER }o--|| DIM_HOUSEHOLD : "household_key"
   FACT_ACCOUNT_SNAPSHOT {
     int month_key FK
     int account_key FK
+    int household_key FK
     int profile_key FK
     decimal ending_balance
     decimal deposit_amount
@@ -18,8 +20,12 @@ erDiagram
   FACT_CHECKING_SNAPSHOT {
     int month_key FK
     int account_key FK
-    decimal overdraft_fee
-    int atm_withdrawal_count
+    decimal ending_balance "same as supertype"
+    decimal deposit_amount
+    decimal withdrawal_amount
+    int txn_count
+    decimal overdraft_fee "checking only"
+    int atm_withdrawal_count "checking only"
   }
   DIM_ACCOUNT {
     int account_key PK
@@ -40,13 +46,12 @@ erDiagram
   DIM_CUSTOMER {
     int customer_key PK
     string customer_name
-    int household_key FK
   }
   DIM_HOUSEHOLD {
     int household_key PK
     string household_name
   }
   DIM_DATE {
-    int date_key PK
+    int month_key PK
     date month_end
   }

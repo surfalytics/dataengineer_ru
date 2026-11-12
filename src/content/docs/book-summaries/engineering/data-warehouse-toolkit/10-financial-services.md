@@ -14,7 +14,7 @@ tags:
   - sql
 ---
 
-**Главная мысль:** в банке главный процесс — счёт. Счёт принадлежит нескольким клиентам, клиенты живут в household, а продукты разные. Книга решает это тремя приёмами: monthly snapshot счетов, bridge с весами и разделение на supertype и subtype.
+**Главная мысль:** в банке главный процесс — счёт. Счёт принадлежит нескольким клиентам, клиенты живут в household, а продукты разные. Книга решает это так: monthly snapshot счетов, больше dimensions (dimension triage), bridge с весами и разделение на supertype и subtype.
 
 ![Модель банка: снимок счетов, mini-dimension профиля, bridge счёт-клиент и household](/assets/data-warehouse-toolkit/ch10-bank-star.png)
 
@@ -28,10 +28,11 @@ tags:
 
 ## Dimension triage: не слишком мало dimensions
 
-- Если dimension всего две (месяц и счёт), модель выглядит слишком грубой.
-- Свойства счёта делят: продукт, филиал, статус, профиль риска.
-- Постоянные свойства — в `dim_account`. Быстро меняющиеся — в mini-dimension.
-- Так счёт получает больше аналитических срезов, а `dim_account` не растёт.
+- Если dimension всего две (месяц и счёт), а всё остальное спрятано в `dim_account`, это ловушка.
+- Книга выносит отдельные dimensions: филиал, продукт, главный клиент, статус счёта, household.
+- Так пользователю проще: это естественные срезы бизнеса. И `dim_account` (миллионы строк) меньше растёт от SCD2.
+- Обычно в модели 5–20 dimensions. Если меньше, проверьте: causal, несколько дат, degenerate, role-playing, status, audit, junk.
+- Правило: атрибут, у которого одно значение на строку fact, можно сделать dimension.
 
 ## Mini-dimension
 
@@ -40,26 +41,31 @@ tags:
 - Mini-dimension хранит все комбинации диапазонов. Это маленькая таблица.
 - Fact хранит `profile_key` на конец месяца.
 - История профиля видна в fact. Переходы между бандами считаются по соседним месяцам.
+- В одной fact может быть несколько mini-dimensions: демография, кредитный риск. Группируйте связанные атрибуты. Не делайте mini-dimension на каждый атрибут.
+- Если аналитикам нужно точное значение (score 1–1200), храните его ещё и как fact. Банд — для отчётов, число — для data mining.
+- Если клиент связан с fact через bridge, ключ mini-dimension кладут в bridge: `account_key`, `customer_key`, `demographics_key`.
 
 ## Dynamic value banding
 
 - Бизнес хочет менять диапазоны (банды) без перезагрузки истории.
-- Решение: таблица диапазонов `band_ranges` (`band_name`, `from_amount`, `to_amount`).
-- Запрос делает `JOIN` по `BETWEEN`. Банд считается на лету, fact не меняется.
-- Минус: запрос сложнее и медленнее. Для частых банд лучше mini-dimension.
+- Решение: таблица диапазонов `band_ranges` (`band_name`, `from_amount`, `to_amount`). В книге в ней может быть несколько наборов банд (`band_group`).
+- Запрос делает `JOIN` по условию `>= from AND < to`. Банд считается на лету, fact не меняется.
+- Минус: запрос читает все строки за период. Помогает колоночная БД. Для постоянных банд лучше mini-dimension.
 
 ## Household и many-to-many
 
 | Задача | Решение |
 |---|---|
 | Счёт принадлежит нескольким клиентам | `bridge_account_customer` |
-| Клиенты живут вместе | `household_key` в customer dimension |
+| Счета одной семьи | Отдельная `dim_household`, `household_key` в fact |
 | Доля в сумме не должна задваиваться | `weighting_factor`, сумма на счёт = 1 |
 
-- Household — группа клиентов с общими финансами. Это бизнес-определение, часто его считает отдельный алгоритм.
-- Привязка клиента к household меняется со временем. Тогда нужна версия (SCD2) или bridge с датами.
-- В отчётах по клиентам без весов суммы задваиваются. Без bridge нельзя ответить на вопрос «сколько у клиента во всех счетах».
-- Если клиентов в счёте много, роли тоже нужны: владелец, созаёмщик. Добавьте `role` в bridge.
+- Household — группа счетов и клиентов с общими финансами (семья, группа компаний). Его определяет отдельный алгоритм.
+- Книга кладёт `household_key` в fact, а не в `dim_account`. Связь счёта с household меняется, а SCD2 на 10 млн счетов дорог.
+- Отчёт с весами — correctly weighted report. Итог сходится.
+- Отчёт без весов — impact report. Совместный счёт попадает к обоим владельцам. Это допустимо, если пользователи понимают задвоение.
+- Удобно сделать два view: fact + bridge с весами и без весов.
+- Связь счёт-клиент меняется со временем: добавьте в bridge даты действия.
 
 ## Supertype и subtype
 
@@ -72,8 +78,15 @@ tags:
 
 - Общий отчёт идёт по supertype. Сравнение всех продуктов легко.
 - Глубокий анализ чековых счетов идёт по subtype. Там нет пустых колонок.
-- Dimensions тоже делят: общая `dim_account` и опционально поля продукта в subtype dimension.
+- Subtype fact повторяет общие facts supertype. Тогда аналитику не нужен `JOIN` между ними.
+- Dimensions тоже делят. Subtype `dim_checking_account` — shrunken conformed dimension: те же surrogate keys, меньше строк, свои атрибуты.
 - Нельзя класть все колонки в одну широкую таблицу: будет много `NULL`.
+- Если facts у всех продуктов одинаковые, хватит одной supertype fact. Разные только subtype dimensions.
+
+## Hot swappable dimensions
+
+- Одна fact, несколько версий одной dimension. Пример: брокер даёт клиентам общую таблицу цен акций. У каждого клиента своя `dim_stock` со своими атрибутами.
+- Нужную dimension подставляют в запрос. Foreign key constraints для этого обычно отключают.
 
 ## Ключевые термины
 
@@ -111,10 +124,10 @@ SELECT * FROM (VALUES (1,'Ивановы'),(2,'Петровы'),(3,'Сидоро
 
 CREATE TABLE dim_customer AS
 SELECT * FROM (VALUES
-    (1,'Иван Иванов',1),(2,'Мария Иванова',1),
-    (3,'Пётр Петров',2),(4,'Ольга Петрова',2),
-    (5,'Сергей Сидоров',3),(6,'Анна Кузнецова',4)
-) t(customer_key, customer_name, household_key);
+    (1,'Иван Иванов'),(2,'Мария Иванова'),
+    (3,'Пётр Петров'),(4,'Ольга Петрова'),
+    (5,'Сергей Сидоров'),(6,'Анна Кузнецова')
+) t(customer_key, customer_name);
 
 CREATE TABLE dim_account AS
 SELECT * FROM (VALUES
@@ -128,6 +141,10 @@ SELECT * FROM (VALUES
     (8,'40817-008','checking','Юг')
 ) t(account_key, account_number, product_type, branch);
 
+-- результат householding-алгоритма: какой household у счёта (staging для ETL)
+CREATE TABLE stg_account_household AS
+SELECT * FROM (VALUES (1,1),(2,1),(3,2),(4,2),(5,2),(6,3),(7,4),(8,2)) t(account_key, household_key);
+
 -- bridge: сумма весов на счёт равна 1
 CREATE TABLE bridge_account_customer AS
 SELECT * FROM (VALUES
@@ -138,7 +155,7 @@ SELECT * FROM (VALUES
     (5,4,1.0),
     (6,5,1.0),
     (7,6,1.0),
-    (8,5,0.5),(8,6,0.5)
+    (8,3,0.5),(8,4,0.5)
 ) t(account_key, customer_key, weighting_factor);
 
 -- mini-dimension: комбинации банд остатка и активности
@@ -147,22 +164,25 @@ SELECT row_number() OVER () AS profile_key, b.balance_band, s.activity_status
 FROM (VALUES ('1. до 3 000'),('2. 3 000-8 000'),('3. выше 8 000')) b(balance_band)
 CROSS JOIN (VALUES ('active'),('dormant')) s(activity_status);
 
--- supertype: один счёт x месяц. Общие facts для всех продуктов
+-- supertype: один счёт x месяц. Общие facts для всех продуктов.
+-- household_key лежит в fact: связь счёт-household меняется со временем
 CREATE TABLE fact_account_snapshot AS
 WITH base AS (
-    SELECT a.account_key, d.month_key,
+    SELECT a.account_key, h.household_key, d.month_key,
            (a.account_key * 7919 + (d.month_key % 100) * 104729) % 1301 + 200 AS deposit_amount,
            (a.account_key * 6007 + (d.month_key % 100) * 86969) % 1499      AS withdrawal_amount,
            (a.account_key * (d.month_key % 100)) % 5                  AS txn_count,
            1500 * a.account_key                                       AS opening_balance
-    FROM dim_account a CROSS JOIN dim_date d
+    FROM dim_account a
+    JOIN stg_account_household h USING (account_key)
+    CROSS JOIN dim_date d
 ),
 bal AS (
     SELECT *, opening_balance
               + sum(deposit_amount - withdrawal_amount) OVER (PARTITION BY account_key ORDER BY month_key) AS ending_balance
     FROM base
 )
-SELECT b.month_key, b.account_key, p.profile_key,
+SELECT b.month_key, b.account_key, b.household_key, p.profile_key,
        b.ending_balance, b.deposit_amount, b.withdrawal_amount, b.txn_count
 FROM bal b
 JOIN dim_account_profile p
@@ -171,9 +191,10 @@ JOIN dim_account_profile p
                            ELSE '3. выше 8 000' END
  AND p.activity_status = CASE WHEN b.txn_count = 0 THEN 'dormant' ELSE 'active' END;
 
--- subtype: метрики только чековых счетов
+-- subtype: только чековые счета. Повторяет общие facts и добавляет свои
 CREATE TABLE fact_checking_snapshot AS
 SELECT s.month_key, s.account_key,
+       s.ending_balance, s.deposit_amount, s.withdrawal_amount, s.txn_count,
        CASE WHEN s.ending_balance < 6000 THEN 25 ELSE 0 END AS overdraft_fee,
        s.txn_count * 3 AS atm_withdrawal_count
 FROM fact_account_snapshot s
@@ -202,26 +223,34 @@ SELECT count(*) AS snapshot_rows, count(DISTINCT account_key) AS accounts FROM f
 
 ### Задания
 
-**1.** Остатки по household на июнь. Используйте bridge с весами. Проверьте, что сумма по household равна общему остатку.
+**1.** Household и bridge. Покажите остаток по household на июнь: `household_key` есть прямо в fact. Затем покажите остаток по клиентам через bridge: с весами и без весов. Сравните итоги с общим остатком.
 
 <details>
 <summary>Решение</summary>
 
 ```sql
-SELECT h.household_name,
-       round(sum(s.ending_balance * b.weighting_factor), 2) AS household_balance
+SELECT h.household_name, sum(s.ending_balance) AS household_balance
 FROM fact_account_snapshot s
-JOIN bridge_account_customer b USING (account_key)
-JOIN dim_customer c USING (customer_key)
 JOIN dim_household h USING (household_key)
 WHERE s.month_key = 202406
 GROUP BY h.household_name
 ORDER BY household_balance DESC;
 
+SELECT c.customer_name,
+       sum(s.ending_balance * b.weighting_factor) AS weighted_balance,
+       sum(s.ending_balance)                      AS impact_balance
+FROM fact_account_snapshot s
+JOIN bridge_account_customer b USING (account_key)
+JOIN dim_customer c USING (customer_key)
+WHERE s.month_key = 202406
+GROUP BY c.customer_name
+ORDER BY weighted_balance DESC;
+
 SELECT sum(ending_balance) AS total_balance FROM fact_account_snapshot WHERE month_key = 202406;
 ```
 
-Если убрать вес, суммы совместных счетов посчитаются дважды.
+- Сумма по household и сумма `weighted_balance` равны общему остатку.
+- Сумма `impact_balance` больше: совместные счета посчитаны у обоих владельцев. Книга называет это impact report. Он полезен («какие деньги затрагивает клиент»), но не для итогов.
 </details>
 
 **2.** Semi-additive. Покажите общий остаток банка по месяцам. Потом покажите, что будет, если просуммировать остаток по всем месяцам. Найдите правильное «среднее значение за период».
@@ -287,27 +316,27 @@ ORDER BY min(r.from_amount);
 Fact не менялся. Банды можно менять без перезагрузки.
 </details>
 
-**5.** Supertype и subtype. Для чековых счетов покажите вместе остаток (supertype) и комиссию за овердрафт (subtype) по месяцам. Сложите комиссии по месяцам. Проверьте, что число строк subtype меньше, чем supertype.
+**5.** Supertype и subtype. Для чековых счетов покажите по месяцам остаток и комиссию за овердрафт. Используйте только subtype fact, без `JOIN`. Затем проверьте, что остаток чековых счетов на июнь в supertype и subtype совпадает.
 
 <details>
 <summary>Решение</summary>
 
 ```sql
-SELECT s.month_key,
+SELECT month_key,
        count(*)                  AS checking_accounts,
-       sum(s.ending_balance)     AS checking_balance,
-       sum(c.overdraft_fee)      AS overdraft_fees,
-       sum(c.atm_withdrawal_count) AS atm_withdrawals
-FROM fact_account_snapshot s
-JOIN fact_checking_snapshot c USING (month_key, account_key)
-GROUP BY s.month_key
-ORDER BY s.month_key;
+       sum(ending_balance)       AS checking_balance,
+       sum(overdraft_fee)        AS overdraft_fees,
+       sum(atm_withdrawal_count) AS atm_withdrawals
+FROM fact_checking_snapshot
+GROUP BY month_key
+ORDER BY month_key;
 
-SELECT (SELECT count(*) FROM fact_account_snapshot) AS supertype_rows,
-       (SELECT count(*) FROM fact_checking_snapshot) AS subtype_rows;
+SELECT (SELECT sum(s.ending_balance) FROM fact_account_snapshot s
+        JOIN dim_account a USING (account_key) WHERE a.product_type = 'checking' AND s.month_key = 202406) AS supertype_checking_jun,
+       (SELECT sum(ending_balance) FROM fact_checking_snapshot WHERE month_key = 202406) AS subtype_checking_jun;
 ```
 
-Subtype содержит только чековые счета (5 из 8). Сберегательные не получают пустые колонки.
+Subtype содержит только чековые счета (5 из 8). Он повторяет общие facts. Поэтому аналитик чековых счетов работает с одной таблицей и не соединяет её с supertype.
 </details>
 
 ## Вопросы для самопроверки

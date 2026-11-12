@@ -38,7 +38,9 @@ tags:
 - В dimension не заставляйте людей фильтровать по первой цифре. Добавьте атрибуты: `account_type`, `account_group`, `normal_balance`.
 - Cost center даёт rollup в отдел и подразделение. Это отдельная dimension `organization`.
 - Если ledger несколько (местный, налоговый, управленческий), добавьте dimension `ledger`. Или храните их отдельными фактами.
-- Для нескольких фискальных календарей в `date` держите несколько наборов атрибутов: `fiscal_year`, `fiscal_period`, `calendar_month`.
+- Фискальный календарь — просто атрибуты в `date`: `fiscal_year`, `fiscal_period` рядом с `calendar_month`.
+- Если календарей несколько и их мало, в `date` держат по набору атрибутов на каждый. Если их много, делают outrigger с ключом «дата + дочерняя компания».
+- Несколько валют: в fact сумма в местной валюте и в единой корпоративной. Ключ валюты тоже в fact.
 
 ## Остатки: semi-additive и year-to-date
 
@@ -48,7 +50,7 @@ tags:
 | Year-to-date (YTD) | Не храните в fact. Считайте window-функцией |
 | Оборот за период | Additive. Суммируйте по любым dimensions |
 
-- YTD в fact опасен. Две даты в запросе дают двойной счёт.
+- YTD не соответствует grain строки. Если сложить YTD за несколько месяцев, январь посчитается много раз. Результат будет завышен.
 - Для периодов фискального года пригодится атрибут `fiscal_period` в `date`.
 
 ## Бюджет
@@ -177,10 +179,16 @@ SELECT g.month_key, g.account_key, g.org_key,
 FROM grid g
 LEFT JOIN net n USING (month_key, account_key, org_key);
 
--- бюджет: месяц x отдел x счёт. Это более крупный grain
+-- shrunken rollup dimension: месяц. Её используют snapshot и бюджет
+CREATE TABLE dim_month AS
+SELECT DISTINCT date_key // 100 AS month_key, cal_month, fiscal_year, fiscal_period
+FROM dim_date;
+
+-- бюджет: месяц x отдел x счёт. Это более крупный grain.
+-- department — rollup атрибут dim_org, общий для факта и бюджета
 CREATE TABLE fact_budget AS
 SELECT 202400 + m AS month_key, dep.department, a.account_key,
-       CASE a.account_key WHEN 3 THEN 14000 WHEN 4 THEN 13000 ELSE 12000 END / 2 AS budget_amount
+       CASE a.account_key WHEN 3 THEN 14000 WHEN 4 THEN 13000 ELSE 12000 END // 2 AS budget_amount
 FROM range(1, 13) t(m)
 CROSS JOIN (VALUES ('Продажи'), ('Маркетинг')) dep(department)
 CROSS JOIN (VALUES (3), (4), (5)) a(account_key);

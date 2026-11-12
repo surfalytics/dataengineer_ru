@@ -29,6 +29,14 @@ CREATE TABLE
 INSERT 0 3
 ```
 
+Запишите имя тома первого контейнера. Оно понадобится для уборки в конце:
+
+```bash
+docker inspect pg1 --format '{{range .Mounts}}{{.Name}}{{end}}'
+```
+
+Ответ — длинная строка из букв и цифр. Это имя тома.
+
 Удалим контейнер и запустим новый с теми же настройками:
 
 ```bash
@@ -61,11 +69,10 @@ volume 60339739465d7ecb35d3abd... -> /var/lib/postgresql/data
 Уберите за собой:
 
 ```bash
-docker rm -f pg2
-docker volume ls
+docker rm -fv pg2
 ```
 
-В `docker volume ls` найдите тома с длинными именами из букв и цифр. Это анонимные тома от наших опытов. Удалите их по имени: `docker volume rm <имя>`. Не трогайте тома, которые вы не создавали.
+Флаг `-v` удаляет вместе с контейнером его анонимный том. Том первого контейнера `pg1` остался. Его имя вы записали в начале урока. Удалите его по имени: `docker volume rm <имя>`. Не трогайте другие тома: на вашем компьютере могут быть данные других проектов.
 
 ## Два вида монтирования
 
@@ -206,17 +213,21 @@ sh: 1: cannot create /usr/share/nginx/html/new.html: Read-only file system
 Том можно сохранить в архив с помощью временного контейнера. Он читает том и пишет архив в вашу папку:
 
 ```bash
+docker stop pg
 docker run --rm -v pgdata:/src:ro -v "$PWD:/backup" alpine:3.22 \
   tar czf /backup/pgdata.tar.gz -C /src .
+docker start pg
 ```
 
-Это копия файлов базы. Делайте её, когда Postgres **остановлен**. Для работающей базы лучше `pg_dump`: `docker exec pg pg_dump -U postgres shop > shop.sql`.
+Это копия файлов базы. Делайте её, только когда Postgres **остановлен**. Поэтому первая команда — `docker stop`. Для работающей базы лучше `pg_dump`: `docker exec pg pg_dump -U postgres shop > shop.sql`.
 
 ## Практика
 
 Работайте в папке `~/docker-practice`. Если файлов ещё нет, скачайте их в уроке [Установка](/practice/docker/setup/).
 
 ### Задание 1
+
+Сначала удалите контейнер и том из примеров выше: `docker rm -f pg && docker volume rm pgdata`.
 
 Запустите Postgres `pg` с томом `pgdata`. Создайте таблицу `t` с тремя строками. Удалите контейнер. Запустите новый с тем же томом и посчитайте строки.
 
