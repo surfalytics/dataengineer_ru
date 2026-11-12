@@ -105,6 +105,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/ai/ai-engineering' } }],
           },
+          {
+            label: 'Machines that Think',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/ai/machines-that-think' } }],
+          },
         ],
       },
       {
