@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "The Diary of a CEO: 33 закона, конспект | Инжиниринг Данных"
 description: "Конспект The Diary of a CEO Стивена Бартлетта на русском. 33 закона бизнеса и жизни: личность, история, философия и команда. Разбор по законам."
+author: "Steven Bartlett"
 sidebar:
   order: 0
   label: "Обзор книги"

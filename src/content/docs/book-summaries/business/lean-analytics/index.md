@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "Lean Analytics: конспект книги на русском | Инжиниринг Данных"
 description: "Конспект книги Lean Analytics на русском. Зачем читать, как измерять стартап, метрики по бизнес-моделям и стадиям, разбор по главам."
+author: "Alistair Croll, Benjamin Yoskovitz"
 sidebar:
   order: 0
   label: "Обзор книги"

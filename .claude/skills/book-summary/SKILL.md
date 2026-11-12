@@ -20,6 +20,7 @@ Good examples to copy:
 | Chapter | `.../<book-slug>/NN-<chapter-slug>.md` (`01-...`, `02-...`) |
 | Images | `public/assets/<book-slug>/chNN-<name>.png` |
 | Diagram sources | `scripts/<book>-diagrams/` (see the `diagrams` skill) |
+| Cover | `public/assets/book-covers/<book-slug>.jpg` (240px wide JPEG, under 30 KB) |
 
 - `<group>`: `engineering`, `business`, `entrepreneurship`, or `ai`.
 - `<book-slug>`: English title in lowercase with hyphens.
@@ -29,13 +30,14 @@ Good examples to copy:
 1. Create the folder, the overview, and all chapter pages.
 2. Add the book to `src/nav.mjs` under "Конспекты книг", in the right group, as a `collapsed: true` item with `autogenerate`.
 3. Add a row to the table in `src/content/docs/book-summaries/index.md`.
+   Add the cover file and `author:` in the overview front matter. The home page carousel (`src/components/BookCarousel.astro`) picks the book up from `src/nav.mjs`.
 4. If the book is listed in `src/content/docs/resources/books.md`, link it to the summary.
 5. Make diagrams with the `diagrams` skill. Check SQL blocks (see below).
 6. Run `npm run build`.
 
 ## Overview page (`index.md`)
 
-Front matter: `sidebar.order: 0`, `sidebar.label: "Обзор книги"`, `tags: [books, ...]`.
+Front matter: `sidebar.order: 0`, `sidebar.label: "Обзор книги"`, `author: "<Имя Автора>"`, `tags: [books, ...]`.
 
 Sections, in this order:
 1. First paragraph: full title, authors, publisher, year. What the book is about. How many chapters.

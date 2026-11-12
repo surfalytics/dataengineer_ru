@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "AI Engineering Chip Huyen: конспект | Инжиниринг Данных"
 description: "Конспект книги AI Engineering (Chip Huyen) на русском. Foundation models, evaluation, prompt, RAG, агенты, finetuning, данные, inference: разбор 10 глав."
+author: "Chip Huyen"
 sidebar:
   order: 0
   label: "Обзор книги"
