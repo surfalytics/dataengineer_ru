@@ -100,6 +100,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-pipelines-with-apache-airflow' } }],
           },
+          {
+            label: 'Data Engineering Design Patterns',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/data-engineering-design-patterns' } }],
+          },
         ],
       },
       {
