@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "The Data Warehouse Toolkit: конспект и SQL | Инжиниринг Данных"
 description: "Конспект The Data Warehouse Toolkit (Kimball) на русском. Dimensional modeling, star schema, SCD, fact tables, ETL. Схемы и практика на DuckDB для каждой главы."
+author: "Ralph Kimball, Margy Ross"
 sidebar:
   order: 0
   label: "Обзор книги"

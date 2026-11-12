@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "Fundamentals of Data Engineering: конспект | Инжиниринг Данных"
 description: "Конспект книги Fundamentals of Data Engineering на русском. Жизненный цикл данных, архитектура, выбор технологий, разбор всех глав и приложений."
+author: "Joe Reis, Matt Housley"
 sidebar:
   order: 0
   label: "Обзор книги"

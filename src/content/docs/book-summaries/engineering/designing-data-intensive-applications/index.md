@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "Designing Data-Intensive Applications: конспект | Инжиниринг Данных"
 description: "Конспект книги Designing Data-Intensive Applications на русском. Репликация, партиции, транзакции, согласованность, batch и stream: разбор 11 глав."
+author: "Martin Kleppmann"
 sidebar:
   order: 0
   label: "Обзор книги"

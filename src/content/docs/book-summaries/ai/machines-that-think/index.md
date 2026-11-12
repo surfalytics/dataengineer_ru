@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "Machines that Think: конспект книги про LLM | Инжиниринг Данных"
 description: "Конспект книги Machines that Think на русском. Как работают LLM, думают ли они, где ошибаются, что с этикой и как AI меняет работу. Разбор 8 глав."
+author: "Rubén Castillo Sánchez"
 sidebar:
   order: 0
   label: "Обзор книги"

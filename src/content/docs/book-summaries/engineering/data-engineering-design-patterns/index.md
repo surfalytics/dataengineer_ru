@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "Data Engineering Design Patterns: конспект | Инжиниринг Данных"
 description: "Конспект книги Data Engineering Design Patterns на русском. Загрузка, идемпотентность, ошибки, качество, наблюдаемость: 10 глав и около 70 паттернов."
+author: "Bartosz Konieczny"
 sidebar:
   order: 0
   label: "Обзор книги"

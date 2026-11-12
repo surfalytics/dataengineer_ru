@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "Apache Airflow: конспект книги Data Pipelines | Инжиниринг Данных"
 description: "Конспект книги Data Pipelines with Apache Airflow на русском: DAG, расписания, assets, операторы, тесты, production и безопасность. Разбор 17 глав со схемами."
+author: "Julian de Ruiter и др."
 sidebar:
   order: 0
   label: "Обзор книги"

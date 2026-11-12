@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "DuckDB: Up and Running — конспект и SQL | Инжиниринг Данных"
 description: "Конспект DuckDB: Up and Running (Wei-Meng Lee) на русском. CSV, Parquet, JSON, Polars, JupySQL, httpfs, MotherDuck. SQL-практика в каждой главе."
+author: "Wei-Meng Lee"
 sidebar:
   order: 0
   label: "Обзор книги"

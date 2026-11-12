@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "The Mom Test: конспект книги на русском | Инжиниринг Данных"
 description: "Конспект книги The Mom Test на русском. Как говорить с клиентами и стейкхолдерами, задавать правильные вопросы и не получать ложных ответов."
+author: "Rob Fitzpatrick"
 sidebar:
   order: 0
   label: "Обзор книги"

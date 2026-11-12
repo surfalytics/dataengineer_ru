@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "The Startup Owner's Manual: конспект на русском | Инжиниринг Данных"
 description: "Конспект The Startup Owner's Manual на русском. Customer Development, business model canvas, customer discovery и validation, pivot or proceed."
+author: "Steve Blank, Bob Dorf"
 sidebar:
   order: 0
   label: "Обзор книги"

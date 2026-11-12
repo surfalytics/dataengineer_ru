@@ -4,6 +4,7 @@ head:
   - tag: title
     content: "Escaping the Build Trap: конспект книги | Инжиниринг Данных"
 description: "Конспект книги Escaping the Build Trap на русском. Build trap, роль продакт-менеджера, стратегия, Product Kata, метрики. Разбор 25 глав для инженера данных."
+author: "Melissa Perri"
 sidebar:
   order: 0
   label: "Обзор книги"
