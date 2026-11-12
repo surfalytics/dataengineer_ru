@@ -23,6 +23,7 @@ tags:
 | Инженерия | [The Data Warehouse Toolkit](/book-summaries/engineering/data-warehouse-toolkit/) | Dimensional modeling, star schema, SCD, ETL. SQL-практика на DuckDB |
 | Инженерия | [Designing Data-Intensive Applications](/book-summaries/engineering/designing-data-intensive-applications/) | Как устроены базы данных и распределённые системы: хранение, репликация, транзакции, пакеты и потоки |
 | Инженерия | [DuckDB: Up and Running](/book-summaries/engineering/duckdb-up-and-running/) | DuckDB: CSV, Parquet, JSON, Polars, JupySQL, удалённые данные, MotherDuck. SQL-практика |
+| Инженерия | [Data Pipelines with Apache Airflow](/book-summaries/engineering/data-pipelines-with-apache-airflow/) | Airflow 3: DAG, расписания, assets, операторы, тесты, production и безопасность |
 | AI и ML | [AI Engineering](/book-summaries/ai/ai-engineering/) | Как строить приложения на foundation models: оценка, prompt, RAG, агенты, finetuning, данные, inference, архитектура |
 | AI и ML | [Machines that Think](/book-summaries/ai/machines-that-think/) | Как работают LLM и думают ли они: история AI, токены и embeddings, нейросети, transformer, ошибки, этика, влияние на работу |
 | Бизнес и Soft Skills | [Lean Analytics](/book-summaries/business/lean-analytics/) | Как измерять стартап, метрики по бизнес-моделям и стадиям |
