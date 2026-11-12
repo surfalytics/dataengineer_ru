@@ -16,7 +16,7 @@ tags:
 
 ## logging, а не print
 
-`print` годится для быстрого опыта. В работе нужен модуль `logging`.
+`print` годится для быстрой проверки. В работе нужен модуль `logging`.
 
 | | `print` | `logging` |
 |---|---|---|
@@ -38,7 +38,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 
-logger.debug("не видно: уровень выше")
+logger.debug("не видно: DEBUG ниже INFO")
 logger.info("старт загрузки")
 logger.warning("пустая сумма в заказе %s", 4)
 logger.error("не удалось прочитать файл")
@@ -121,7 +121,7 @@ def run(path: Path) -> None:
     try:
         rows = load(path)
     except FileNotFoundError:
-        logger.exception("file not found file=%s", path)
+        logger.error("file not found file=%s", path)
         raise
     bad = [r for r in rows if not r["amount"]]
     logger.info("rows read=%d", len(rows))
@@ -211,7 +211,7 @@ None
 
 Не пишите `logger.error(str(e))` вместо этого. Вы потеряете traceback.
 
-Если нужно записать ошибку и остановиться, после `logger.exception` вызовите `raise`. Так сделано в `etl.py` выше.
+Если вы ловите ошибку и снова поднимаете её через `raise`, не пишите `logger.exception`. Иначе traceback появится дважды: от вас и от того, кто поймает ошибку дальше (или от Python в конце). Достаточно `logger.error` с контекстом, как в `etl.py` выше.
 
 ## Ленивое форматирование: %s, а не f-string
 
@@ -302,6 +302,8 @@ if __name__ == "__main__":
 ```
 
 Первый блок — консоль. Второй — файл.
+
+Ротация по времени (новый файл каждые сутки) — `TimedRotatingFileHandler(when="midnight")`.
 
 Добавьте `logs/` в `.gitignore`. Логи не коммитят.
 
@@ -396,17 +398,6 @@ INFO api ok attempt=3 rows=3
 
 Если вы пишете модуль, который импортируют другие, **не вызывайте** в нём `basicConfig`. Не добавляйте handler с выводом. Решает тот, кто запускает программу.
 
-В модуле достаточно:
-
-```python
-import logging
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
-```
-
-`NullHandler` нужен, чтобы без настройки не появлялись лишние сообщения.
-
 Модуль `shop_lib.py`:
 
 ```python
@@ -420,6 +411,8 @@ def total(amounts: list[float]) -> float:
     logger.debug("total items=%d", len(amounts))
     return sum(amounts)
 ```
+
+`NullHandler` нужен на случай, когда программа не настроила logging. Без него сообщения библиотеки уровня `WARNING` и выше всё равно печатаются в консоль. С ним библиотека молчит.
 
 Запуск без настройки молчит. Результат работы видно, лога нет:
 
@@ -469,20 +462,14 @@ token = "sk-live-123456"
 url = f"https://api.shop.example/orders?token={token}"
 
 logger.info("bad: %s", url)
-
-
-def mask(value: str) -> str:
-    return value[:3] + "***"
-
-
-logger.info("good: token=%s", mask(token))
+logger.info("good: GET %s", "https://api.shop.example/orders")
 ```
 
 Ответ:
 
 ```
 INFO bad: https://api.shop.example/orders?token=sk-live-123456
-INFO good: token=sk-***
+INFO good: GET https://api.shop.example/orders
 ```
 
 Правила:
@@ -609,9 +596,9 @@ INFO quality ok: bad share 10%
 WARNING bad share too high: 30% (limit 20%)
 ```
 
-### Задание 4. logger.exception
+### Задание 4. logger.exception в цикле
 
-Напишите `parse_amount(raw)`. При ошибке она вызывает `logger.exception("cannot parse amount raw=%r", raw)` и возвращает `None`. Вызовите для `"12.5"` и `"abc"`.
+Напишите `sum_amounts(raws)`. Она складывает суммы из списка строк. Плохую строку она логирует через `logger.exception("skip amount raw=%r", raw)` и пропускает. Вызовите для `["10", "abc", "5.5"]` и выведите результат.
 
 <details>
 <summary>Решение</summary>
@@ -623,21 +610,22 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
 
-def parse_amount(raw: str) -> float | None:
-    try:
-        return float(raw)
-    except ValueError:
-        logger.exception("cannot parse amount raw=%r", raw)
-        return None
+def sum_amounts(raws: list[str]) -> float:
+    total = 0.0
+    for raw in raws:
+        try:
+            total += float(raw)
+        except ValueError:
+            logger.exception("skip amount raw=%r", raw)
+    return total
 
 
-print(parse_amount("12.5"))
-print(parse_amount("abc"))
+print(sum_amounts(["10", "abc", "5.5"]))
 ```
 
 </details>
 
-**Проверка:** есть строка `ERROR cannot parse amount raw='abc'`, под ней traceback с `ValueError: could not convert string to float: 'abc'`. Значения: `12.5` и `None`.
+**Проверка:** есть строка `ERROR skip amount raw='abc'`, под ней traceback с `ValueError: could not convert string to float: 'abc'`. Затем результат `15.5`.
 
 ### Задание 5. Лог в файл
 

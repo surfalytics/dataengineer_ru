@@ -106,6 +106,8 @@ TIMEOUT = 10
 PAGE_SIZE = 50
 ```
 
+У jsonplaceholder нет ключа. Если вашему API нужен ключ, берите его здесь из переменной окружения: `API_KEY = os.environ["API_KEY"]` (и `import os`). Не пишите ключ в коде.
+
 ## Шаг 3. Extract и raw
 
 `etl/extract.py`:
@@ -333,7 +335,9 @@ uv run python -m etl.pipeline --offline
 
 ## Шаг 7. Тесты
 
-Тесты не ходят в сеть. Ответ API подменяем объектом `FakeResponse` через `monkeypatch` (урок про [pytest](/practice/python/testing/)).
+Тесты не ходят в сеть. Ответ API подменяем объектом `FakeResponse`.
+
+Для этого нужна fixture `monkeypatch`. Это встроенная fixture pytest, её не надо импортировать. `monkeypatch.setattr(obj, "name", value)` на время теста заменяет атрибут `obj.name` на `value`. После теста pytest сам возвращает всё как было. Основы pytest и `tmp_path` есть в [уроке про тесты](/practice/python/testing/).
 
 `tests/test_transform.py`:
 
@@ -560,6 +564,8 @@ print(todos.filter(pl.col("title_len") > 30).height)
 <details>
 <summary>Решение</summary>
 
+Сохраните код в `city.py` в корне проекта и запустите `uv run python city.py`.
+
 ```python
 import duckdb
 from etl import extract, transform
@@ -630,7 +636,7 @@ parser.add_argument("--out", default=str(OUT_DIR), help="output folder")
 run(offline=args.offline, out_dir=Path(args.out))
 ```
 
-Функция `run` принимает `out_dir: Path = OUT_DIR` и пишет в `out_dir / "user_summary.parquet"`. Не забудьте `from pathlib import Path`.
+Функция `run` принимает `out_dir: Path = OUT_DIR`. Внутри замените `OUT_DIR` на `out_dir`: в `mkdir` и в пути к файлу. Не забудьте `from pathlib import Path`.
 
 </details>
 
@@ -647,7 +653,7 @@ run(offline=args.offline, out_dir=Path(args.out))
 - [ ] `uv run pytest -q` проходит без сети.
 - [ ] Ключей и токенов в коде нет.
 - [ ] `data/` в `.gitignore`.
-- [ ] Каждая функция делает одно дело и не читает глобальных данных.
+- [ ] Каждая функция делает одно дело и не меняет глобальные переменные.
 
 ## Что запомнить
 

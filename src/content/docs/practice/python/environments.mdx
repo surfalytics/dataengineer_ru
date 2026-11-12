@@ -98,7 +98,7 @@ which python
 mkdir venv-demo; cd venv-demo
 python -m venv .venv
 .venv\Scripts\Activate.ps1
-where python
+where.exe python
 ```
 
 Если PowerShell запрещает скрипты: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`. В `cmd` используйте `.venv\Scripts\activate.bat`.
@@ -202,10 +202,6 @@ poetry --version
 
 Нужен Poetry 2.x. Он хранит зависимости в стандартной секции `[project]`.
 
-<Aside type="note">
-Вывод ниже получен на Poetry 1.6.1. В Poetry 2.x вывод команд почти такой же, но `pyproject.toml` выглядит иначе. Мы показываем 2.x-вариант отдельно.
-</Aside>
-
 ### Практика: Poetry
 
 Создайте проект и положите в него `app.py`:
@@ -215,13 +211,20 @@ poetry new poetry-demo
 cd poetry-demo
 ```
 
-Poetry создаёт структуру:
+Poetry 2.x создаёт структуру с папкой `src`:
 
 ```
 README.md
-poetry_demo/
 pyproject.toml
+src/
+  poetry_demo/
 tests/
+```
+
+По умолчанию Poetry хранит окружения в общей папке. Попросите его создать `.venv` внутри проекта:
+
+```bash
+poetry config virtualenvs.in-project true --local
 ```
 
 Укажите Python 3.14 и добавьте `requests`:
@@ -233,6 +236,10 @@ poetry add requests
 
 ```
 Creating virtualenv poetry-demo in .../poetry-demo/.venv
+Using virtualenv: .../poetry-demo/.venv
+Using version ^2.34.2 for requests
+
+Updating dependencies
 Resolving dependencies...
 
 Package operations: 5 installs, 0 updates, 0 removals
@@ -258,11 +265,9 @@ dependencies = [
 ]
 ```
 
-И создал `poetry.lock`. Это lock-файл. Коммитьте его в git.
+Значение `requires-python` у вас может быть другим. Poetry берёт его из версии Python, на которой работает сам.
 
-<Aside type="note">
-Окружение внутри проекта (`.venv`) включается настройкой: `poetry config virtualenvs.in-project true`. По умолчанию Poetry хранит окружения в общей папке.
-</Aside>
+И создал `poetry.lock`. Это lock-файл. Коммитьте его в git.
 
 Запустите скрипт и посмотрите дерево зависимостей:
 
@@ -287,7 +292,7 @@ poetry lock
 poetry install
 ```
 
-Если зависимости не менялись, `poetry install` ничего не делает. На новой машине он создаст окружение по `poetry.lock`.
+Если зависимости не менялись, `poetry install` не ставит пакеты заново. На новой машине он создаст окружение по `poetry.lock`.
 
 Удалите окружение:
 
@@ -299,9 +304,9 @@ poetry env remove --all
 Deleted virtualenv: .../poetry-demo/.venv
 ```
 
-Команда `poetry shell` в Poetry 2.x вынесена в плагин. Проще всего использовать `poetry run ...`.
+В Poetry 2.x команды `poetry shell` больше нет. Её вынесли в плагин `poetry-plugin-shell`. Чтобы активировать окружение, есть `eval $(poetry env activate)`. Проще всего использовать `poetry run ...`.
 
-Минусы: медленнее `uv`. Сам Poetry надо ставить отдельно. Poetry не управляет версиями Python: он берёт установленный.
+Минусы: медленнее `uv`. Сам Poetry надо ставить отдельно. Обычно Poetry берёт уже установленный Python. Скачивать Python умеет только команда `poetry python install` (с версии 2.1, пока экспериментальная).
 
 ## Способ 3. uv
 
@@ -344,10 +349,10 @@ uv --version
 
 ### Практика: uv
 
-Создайте проект:
+Создайте проект на Python 3.14:
 
 ```bash
-uv init uv-demo
+uv init uv-demo --python 3.14
 cd uv-demo
 ls -a
 ```
@@ -356,17 +361,12 @@ ls -a
 .git  .gitignore  .python-version  README.md  main.py  pyproject.toml
 ```
 
-Закрепите Python 3.14:
+Флаг `--python 3.14` делает две вещи:
 
-```bash
-uv python pin 3.14
-```
+- пишет `3.14` в файл `.python-version`;
+- пишет `requires-python = ">=3.14"` в `pyproject.toml`.
 
-```
-Updated `.python-version` from `3.12` -> `3.14`
-```
-
-Если 3.14 нет на машине, `uv` скачает его сам при первом запуске.
+Если 3.14 нет на машине, `uv` скачает его сам при первом запуске. Сменить версию позже: `uv python pin 3.13`. Эта команда меняет только `.python-version`.
 
 Добавьте `requests`:
 
@@ -451,9 +451,9 @@ uv sync
 | Установка | Встроен | Отдельно (`pipx`) | Один бинарный файл |
 | Lock-файл | Нет (`pip freeze`) | `poetry.lock` | `uv.lock` |
 | Файл зависимостей | `requirements.txt` | `pyproject.toml` | `pyproject.toml` |
-| Скачивает Python | Нет | Нет | Да |
+| Скачивает Python | Нет | Экспериментально (2.1+) | Да |
 | Скорость | Обычная | Средняя | Очень высокая |
-| Запуск без activate | Нет | `poetry run` | `uv run` |
+| Запуск без activate | `.venv/bin/python` | `poetry run` | `uv run` |
 | Публикация пакета | Нет | Да | Да (`uv build`, `uv publish`) |
 
 Когда что выбрать:
@@ -525,15 +525,14 @@ which python
 
 ### Задание 3. Проект на uv
 
-Создайте проект `shop-uv`, закрепите Python 3.14, добавьте `requests`, запустите `app.py`.
+Создайте проект `shop-uv` на Python 3.14, добавьте `requests`, запустите `app.py`.
 
 <details>
 <summary>Решение</summary>
 
 ```bash
-uv init shop-uv
+uv init shop-uv --python 3.14
 cd shop-uv
-uv python pin 3.14
 uv add requests
 # создайте app.py из урока
 uv run app.py

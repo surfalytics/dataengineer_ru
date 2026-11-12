@@ -198,6 +198,7 @@ print(df.select("order_id", "amount", "amount_vat", "user_up").head(3))
 Вывод:
 
 ```
+shape: (3, 4)
 ┌──────────┬────────┬────────────┬─────────┐
 │ order_id ┆ amount ┆ amount_vat ┆ user_up │
 │ ---      ┆ ---    ┆ ---        ┆ ---     │
@@ -229,6 +230,7 @@ print(res)
 Вывод:
 
 ```
+shape: (3, 4)
 ┌─────────┬────────┬─────────┬────────┐
 │ channel ┆ orders ┆ revenue ┆ avg    │
 │ ---     ┆ ---    ┆ ---     ┆ ---    │
@@ -488,6 +490,7 @@ print(df.filter(pl.col("device") == "desktop")["amount"].sum())
 **Проверка:**
 
 ```
+shape: (2, 2)
 ┌───────┬─────┐
 │ size  ┆ n   │
 │ ---   ┆ --- │

@@ -106,6 +106,8 @@ for v in [0, "", [], None, "0", [0], " "]:
     print(repr(v), bool(v))
 ```
 
+`repr(v)` печатает значение так, как его пишут в коде: строки в кавычках. Так видно пустую строку и пробел.
+
 Ответ:
 
 ```
@@ -134,6 +136,7 @@ if not items:                    # список пустой
     print("empty")
 
 label = "paid" if code else "unpaid"   # условное выражение в одну строку
+print(label)
 ```
 
 Ответ:
@@ -141,6 +144,7 @@ label = "paid" if code else "unpaid"   # условное выражение в 
 ```
 NO_COUPON
 empty
+paid
 ```
 
 `None` проверяйте через `is None`. Так вы отличите `None` от `0` и пустой строки.
@@ -150,22 +154,23 @@ empty
 `match` удобен, когда одно значение надо сравнить с несколькими вариантами. Он есть с Python 3.10.
 
 ```python
-def channel_group(ch):
+for ch in ["web", "email", "tv"]:
     match ch:
         case "web" | "app":
-            return "own"
+            group = "own"
         case "email":
-            return "crm"
+            group = "crm"
         case _:
-            return "other"
-
-print(channel_group("web"), channel_group("email"), channel_group("tv"))
+            group = "other"
+    print(ch, group)
 ```
 
 Ответ:
 
 ```
-own crm other
+web own
+email crm
+tv other
 ```
 
 - `|` объединяет несколько вариантов.
@@ -183,25 +188,28 @@ own crm other
 
 ### Задание 1
 
-Напишите функцию `size(a)`. Она возвращает `"big"` при сумме от 100, `"medium"` от 50, иначе `"small"`. Проверьте на `120`, `75`, `10`.
+Для сумм `120`, `75`, `10` выведите размер заказа: `big` при сумме от 100, `medium` от 50, иначе `small`.
 
-**Проверка:** `big medium small`
+**Проверка:**
+
+```
+120 big
+75 medium
+10 small
+```
 
 <details>
 <summary>Решение</summary>
 
 ```python
-def size(a):
+for a in [120, 75, 10]:
     if a >= 100:
-        return "big"
+        print(a, "big")
     elif a >= 50:
-        return "medium"
-    return "small"
-
-print(size(120), size(75), size(10))
+        print(a, "medium")
+    else:
+        print(a, "small")
 ```
-
-Функции подробно в уроке про [функции](/practice/python/functions/). Сейчас важно только условие.
 
 </details>
 
@@ -313,17 +321,15 @@ new check
 <summary>Решение</summary>
 
 ```python
-def action(status):
-    match status:
-        case "paid" | "shipped":
-            return "keep"
-        case "refunded":
-            return "revert"
-        case _:
-            return "check"
-
 for s in ["paid", "refunded", "new"]:
-    print(s, action(s))
+    match s:
+        case "paid" | "shipped":
+            action = "keep"
+        case "refunded":
+            action = "revert"
+        case _:
+            action = "check"
+    print(s, action)
 ```
 
 </details>
