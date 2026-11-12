@@ -90,6 +90,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/designing-data-intensive-applications' } }],
           },
+          {
+            label: 'DuckDB: Up and Running',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/duckdb-up-and-running' } }],
+          },
         ],
       },
       {
