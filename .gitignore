@@ -18,7 +18,7 @@ venv
 Dockerfile.dev
 docker-compose.dev.yml
 Makefile
-SETUP.md
+/SETUP.md
 entrypoint.sh
 .dockerignore
 .playwright-mcp/
