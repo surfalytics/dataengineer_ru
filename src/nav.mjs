@@ -91,6 +91,16 @@ export const topics = [
             items: [{ autogenerate: { directory: 'book-summaries/engineering/designing-data-intensive-applications' } }],
           },
           {
+            label: 'DuckDB: Up and Running',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/duckdb-up-and-running' } }],
+          },
+          {
+            label: 'Data Pipelines with Apache Airflow',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/data-pipelines-with-apache-airflow' } }],
+          },
+          {
             label: 'Data Engineering Design Patterns',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-engineering-design-patterns' } }],
@@ -104,6 +114,11 @@ export const topics = [
             label: 'AI Engineering',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/ai/ai-engineering' } }],
+          },
+          {
+            label: 'Machines that Think',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/ai/machines-that-think' } }],
           },
         ],
       },
