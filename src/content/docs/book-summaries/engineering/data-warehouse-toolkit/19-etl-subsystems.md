@@ -44,7 +44,7 @@ Staging: пишите данные на диск после каждого кр�
 | № | Подсистема | Что делает |
 |---|---|---|
 | 1 | Data profiling | Описывает содержимое, структуру и связи источника. Сначала быстрая оценка «брать или нет». Потом глубокий анализ |
-| 2 | Change data capture (CDC) | Находит только изменённые данные |
+| 2 | Change data capture system (CDC) | Находит только изменённые данные, включая delete. Лучше делать как можно раньше |
 | 3 | Extract system | Забирает данные из источника: файл или поток |
 
 ### Как работает CDC
@@ -63,11 +63,11 @@ Extract в файл удобнее потока: легко перезапуст
 
 | № | Подсистема | Что делает |
 |---|---|---|
-| 4 | Data cleansing | Проверяет данные quality screens. Исправляет или помечает |
+| 4 | Data cleansing system | Проверяет данные quality screens. Исправляет или помечает |
 | 5 | Error event schema | Таблицы, где хранятся все события качества |
 | 6 | Audit dimension assembler | Собирает метаданные о качестве каждой строки |
-| 7 | Deduplication | Находит дубли и выбирает победителя (survivorship) |
-| 8 | Conforming | Приводит данные из разных источников к общим dimensions и facts |
+| 7 | Deduplication system | Находит дубли и собирает одну строку из лучших колонок (survivorship) |
+| 8 | Conforming system | Приводит данные из разных источников к общим dimensions и facts |
 
 ### Quality screens
 
@@ -77,7 +77,7 @@ Extract в файл удобнее потока: легко перезапуст
 - **Structure screens:** связи между полями. Foreign key, иерархии.
 - **Business rule screens:** сложные правила. Например, дата выдачи раньше даты закрытия.
 
-Каждое срабатывание пишется в error event schema: время, экран, таблица, запись, severity. Решения при срабатывании: пропустить, исправить, отбросить, остановить загрузку. Чаще всего правильно записать событие и продолжить.
+Каждое срабатывание пишется в error event schema. Это маленькая star schema. Fact «error event» имеет grain «одна ошибка от одного screen». Dimensions: дата, batch, screen. Есть второй fact с grain ниже: одно поле в одной записи (таблица, запись, поле, условие ошибки). Решения при срабатывании: пропустить, исправить, отбросить, остановить загрузку. Чаще всего правильно записать событие и продолжить.
 
 ### Audit dimension
 
@@ -91,10 +91,10 @@ Extract в файл удобнее потока: легко перезапуст
 
 | № | Подсистема | Что делает |
 |---|---|---|
-| 9 | Slowly changing dimension manager | Применяет SCD типов 1, 2, 3 и гибриды |
+| 9 | Slowly changing dimension manager | Применяет SCD типов 1-7 |
 | 10 | Surrogate key generator | Выдаёт ключи dimensions |
 | 11 | Hierarchy manager | Поддерживает иерархии: fixed depth, ragged, bridge |
-| 12 | Special dimensions manager | Date, junk, mini-dimensions, shrunken, static |
+| 12 | Special dimensions manager | Date/time, junk, mini-dimensions, shrunken, small static, user maintained |
 | 13 | Fact table builders | Загружает transaction, periodic и accumulating snapshot |
 | 14 | Surrogate key pipeline | Заменяет natural keys в facts на surrogate keys |
 | 15 | Multivalued dimension bridge table builder | Строит bridge tables |
@@ -111,18 +111,26 @@ Extract в файл удобнее потока: легко перезапуст
 - **Type 2:** закрыть текущую строку и добавить новую с новым surrogate key.
 - **Type 3:** добавить колонку «предыдущее значение». Меняет структуру. Автоматизируют редко.
 - Дату окончания текущей строки лучше задавать как дальнюю дату (`9999-12-31`), а не `NULL`. Так проще сравнивать.
-- Для больших dimensions сравнивайте строки по hash от type 1 и от type 2 атрибутов.
+- Для больших dimensions ищите изменения по CRC или hash от строки. Потом смотрите, какие колонки изменились: type 1 или type 2.
+- Type 2 housekeeping columns: change date, row effective и row end date/time, reason for change, current flag.
+- Даты версий берите из системной даты загрузки (as-of date), а не из `last_modified` источника. Скрипты в источнике могут менять данные без обновления этого поля.
+- Type 1 и type 3 меняют историю. Агрегаты по этой колонке нужно пересчитать. Type 2 агрегаты не ломает.
+- Не используйте «UPDATE else INSERT» на больших объёмах. Отделяйте UPDATE от INSERT.
+- Types 4-7 тоже задача SCD manager: mini-dimension (4), mini-dimension и type 1 outrigger (5), type 1 атрибуты в type 2 dimension (6), dual type 1 и type 2 через durable key в fact (7).
 
 ### Surrogate key pipeline
 
-- Это последний шаг перед загрузкой fact. В facts natural keys заменяют на surrogate keys.
-- Для type 2 dimension нужно найти ту версию, которая была действительна на дату события.
-- Если ключ не найден, есть варианты: остановить загрузку (редко подходит), отбросить, записать в error table, создать inferred member или использовать unknown member.
+- Это последний шаг перед загрузкой fact. В facts natural keys заменяют на surrogate keys. Natural key в fact не оставляют.
+- Сначала обновите все dimensions. Только потом грузите facts. Так dimension всегда источник правильных ключей.
+- Для обычной загрузки берут текущую версию. Для перезагрузки истории и поздних фактов ищут версию, которая была действительна на дату события.
+- Каждый natural key должен найти ключ или получить значение по умолчанию. Ошибки ссылочной целостности отправляют назад на разбор. Дубли (key collisions) — это ошибка качества: остановить, отложить или исправить по правилу и записать в error event.
 
 ### Late arriving data
 
-- **Late arriving fact:** событие пришло позже. Нужно найти версию dimension на дату события.
-- **Late arriving dimension (early arriving fact):** факт пришёл раньше описания. Создайте **inferred member**: строку с ключом и значениями `Unknown`. Когда придут настоящие данные, обновите строку.
+- **Late arriving fact:** событие пришло позже. Нужно найти версию dimension на дату события. Иногда нужно поправить semi-additive балансы в следующих строках.
+- **Late arriving dimension (early arriving fact):** факт пришёл раньше описания. В batch-режиме часто можно просто подождать. Если ждать нельзя:
+  - Natural key есть, но клиента ещё нет в dimension. Создайте **inferred member**: новую строку со своим surrogate key и временными значениями. Когда придут настоящие данные, перезапишите строку как type 1. Ключ в fact менять не нужно. Ссылка на общую строку Unknown хуже: потом придётся переписывать ключи в fact.
+  - Опоздало type 2 изменение. Вставьте новую версию, поправьте даты версий и перепишите ключ в fact-строках после даты изменения.
 
 ## Группа 4. Manage (подсистемы 22-34)
 
@@ -130,14 +138,14 @@ Extract в файл удобнее потока: легко перезапуст
 |---|---|---|
 | 22 | Job scheduler | Расписание и зависимости задач |
 | 23 | Backup system | Резервные копии и архив |
-| 24 | Recovery and restart | Возобновить работу после сбоя |
-| 25 | Version control | Хранит версии ETL-кода |
-| 26 | Version migration | Переносит изменения dev, test, prod |
+| 24 | Recovery and restart system | Возобновить работу после сбоя |
+| 25 | Version control system | Хранит версии ETL-кода |
+| 26 | Version migration system | Переносит изменения dev, test, prod |
 | 27 | Workflow monitor | Следит за ходом задач |
 | 28 | Sorting system | Сортировка и группировка |
 | 29 | Lineage and dependency analyzer | Откуда пришла цифра. Что зависит от поля |
 | 30 | Problem escalation system | Эскалация сбоев |
-| 31 | Parallelizing and pipelining | Параллельная и конвейерная обработка |
+| 31 | Parallelizing/pipelining system | Параллельная и конвейерная обработка |
 | 32 | Security system | Доступ к ETL и данным |
 | 33 | Compliance manager | Доказательства chain of custody |
 | 34 | Metadata repository manager | Хранит технические, бизнес- и процессные метаданные |
@@ -220,7 +228,7 @@ QUALIFY row_number() OVER (PARTITION BY customer_id ORDER BY updated_at DESC) = 
 SELECT * FROM stg_customer ORDER BY customer_id;
 ```
 
-Было 6 строк и 5 разных клиентов. После dedup в `stg_customer` 5 строк. Это `survivorship`: победитель — строка с самым поздним `updated_at`.
+Было 6 строк и 5 разных клиентов. После dedup в `stg_customer` 5 строк. Здесь самое простое правило: побеждает строка с самым поздним `updated_at`. В книге survivorship сложнее: для каждой колонки задают приоритет источников и собирают одну строку из лучших значений.
 </details>
 
 **2.** Quality screens и error event. Создайте таблицу `error_event`. Запишите в неё: пустой email (warning), email без нормального формата (warning), пустой город (error).
@@ -308,6 +316,9 @@ SELECT * FROM (VALUES
     (106, 'Павел Седов',   'pavel@mail.ru',     'Омск',            TIMESTAMP '2024-04-01 09:00:00')
 ) t(customer_id, name, email, city, updated_at);
 
+-- audit-строка для batch 2
+INSERT INTO dim_audit VALUES (2, 2, TIMESTAMP '2024-04-02 02:00:00', 4, 4, 0, 'clean');
+
 -- type 1: перезаписываем email во всех версиях
 UPDATE dim_customer d SET email = s.email
 FROM stg_customer_2 s
@@ -366,7 +377,8 @@ FROM (
 CREATE TABLE fact_sales AS
 SELECT s.order_id, s.line_no,
        coalesce(d.customer_key, 0) AS customer_key,
-       s.order_date, s.amount
+       s.order_date, s.amount,
+       2 AS audit_key          -- каждая fact-строка ссылается на audit dimension
 FROM src_sales s
 LEFT JOIN dim_customer d
        ON d.customer_id = s.customer_id

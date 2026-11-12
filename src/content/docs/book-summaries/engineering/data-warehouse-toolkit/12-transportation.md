@@ -45,6 +45,12 @@ tags:
 
 Нельзя смешивать уровни в одной таблице. Мили сегмента и задержка leg живут в разных fact-таблицах.
 
+Другие fact-таблицы авиакомпании:
+
+- Leg: длительность полёта, задержки вылета и прилёта, вес топлива.
+- Бронирования и выписанные билеты.
+- Snapshot выручки и свободных мест по рейсу за 90 дней до вылета. Dimension «дней до вылета» позволяет сравнивать рейсы на одинаковом этапе.
+
 ## Trip origin и trip destination
 
 Из списка segment трудно понять, куда летел клиент. Сегмент BOS → ATL и ATL → DEN — это одна поездка BOS → DEN.
@@ -66,7 +72,7 @@ tags:
 | Trip origin | Откуда началась поездка |
 | Trip destination | Куда поездка закончилась |
 
-То же с датами: плановая и фактическая дата вылета, локальная и UTC. В BI-слое для каждой роли делают `view` с переименованными колонками. Тогда пользователь видит `origin_city`, а не два одинаковых `city`.
+То же с датами: плановая и фактическая дата вылета, локальная и UTC. В практике ниже для краткости есть только `dim_airport`, классы и маршруты. Passenger и fare basis из схемы опущены. В BI-слое для каждой роли делают `view` с переименованными колонками. Тогда пользователь видит `origin_city`, а не два одинаковых `city`.
 
 ## Объединение связанных dimensions
 
@@ -91,7 +97,9 @@ tags:
 - расстояние и группа расстояния;
 - домашний или международный маршрут.
 
-Метки маршрутов лежат в dimension. Тогда все отчёты показывают одно и то же имя. Bridge table для origin и destination не нужна.
+Метки маршрутов лежат в dimension. Тогда все отчёты показывают одно и то же имя.
+
+Два варианта: отдельная `route` dimension рядом с ролями аэропорта или одна общая таблица «аэропорт вылета + аэропорт прилёта + маршрут». У аэропортов десятки атрибутов, поэтому обычно выбирают отдельную `route`.
 
 ## Mini-dimension для профиля пассажира
 
@@ -103,9 +111,10 @@ tags:
 
 | Тема | Решение |
 |---|---|
-| Несколько часовых поясов | Два набора ключей: локальное время и UTC (equivalized). Смещение зависит от места и даты, поэтому его нельзя хранить только в dimension |
+| Несколько часовых поясов | Два набора ключей в fact: локальные дата и время и UTC (equivalized). Смещение зависит от места и даты (летнее время), поэтому его нельзя хранить ни в fact, ни в airport dimension. ETL считает его при загрузке |
 | Разные календари стран | Основная `dim_date` плюс outrigger с атрибутами страны: праздники, сезон, название |
-| Время суток | Отдельная dimension `time_of_day` или полный timestamp в fact, если нужна арифметика |
+| Время суток | Отдельная dimension `time_of_day` (смена, час пик). Тоже две роли: локальная и UTC. Полный timestamp в fact — если нужна арифметика |
+| Локализация | Валюты (глава 6), языки (глава 8), пояса и календари. Плюс перевод интерфейса BI |
 
 ## Другие отрасли
 
@@ -145,13 +154,15 @@ tags:
 ```sql
 CREATE TABLE dim_airport AS
 SELECT * FROM (VALUES
-    (1, 'ATL', 'Атланта',        'US', -5),
-    (2, 'BOS', 'Бостон',         'US', -5),
-    (3, 'DEN', 'Денвер',         'US', -7),
-    (4, 'SFO', 'Сан-Франциско',  'US', -8),
-    (5, 'MSP', 'Миннеаполис',    'US', -6),
-    (6, 'LGW', 'Лондон',         'UK',  0)
-) t(airport_key, airport_code, city, country, utc_offset_hours);
+    (1, 'ATL', 'Атланта',        'US', 'America/New_York'),
+    (2, 'BOS', 'Бостон',         'US', 'America/New_York'),
+    (3, 'DEN', 'Денвер',         'US', 'America/Denver'),
+    (4, 'SFO', 'Сан-Франциско',  'US', 'America/Los_Angeles'),
+    (5, 'MSP', 'Миннеаполис',    'US', 'America/Chicago'),
+    (6, 'LGW', 'Лондон',         'UK', 'Europe/London')
+) t(airport_key, airport_code, city, country, time_zone);
+-- в dimension хранится имя часового пояса, а не смещение:
+-- смещение зависит и от места, и от даты (летнее время)
 
 -- role-playing: два view на одну физическую таблицу
 CREATE VIEW dim_origin_airport AS
@@ -206,6 +217,7 @@ SELECT * FROM (VALUES
 
 -- grain: один segment (одна посадка пассажира)
 -- trip origin и trip destination считает ETL: первый и последний segment поездки
+-- UTC считает ETL по поясу аэропорта и дате вылета. timezone() учитывает летнее время
 CREATE TABLE fact_segment_flight AS
 WITH s AS (
     SELECT *,
@@ -216,9 +228,9 @@ WITH s AS (
 )
 SELECT
     strftime(s.dep_local_ts, '%Y%m%d')::INT AS dep_local_date_key,
-    strftime(s.dep_local_ts - to_hours(o.utc_offset_hours), '%Y%m%d')::INT AS dep_utc_date_key,
+    strftime(timezone('UTC', timezone(o.time_zone, s.dep_local_ts)), '%Y%m%d')::INT AS dep_utc_date_key,
     s.dep_local_ts,
-    s.dep_local_ts - to_hours(o.utc_offset_hours) AS dep_utc_ts,
+    timezone('UTC', timezone(o.time_zone, s.dep_local_ts)) AS dep_utc_ts,
     o.airport_key   AS origin_airport_key,
     d.airport_key   AS destination_airport_key,
     tro.airport_key AS trip_origin_airport_key,
@@ -258,6 +270,14 @@ SELECT ticket_number, flight_number, dep_local_ts, dep_utc_ts
 FROM fact_segment_flight
 WHERE dep_local_date_key <> dep_utc_date_key
 ORDER BY dep_local_ts;
+
+-- смещение от UTC у одного аэропорта меняется: 9 марта 2025 в США перешли на летнее время
+SELECT a.airport_code, f.dep_local_ts, f.dep_utc_ts,
+       date_diff('hour', f.dep_utc_ts, f.dep_local_ts) AS utc_offset_hours
+FROM fact_segment_flight f
+JOIN dim_airport a ON a.airport_key = f.origin_airport_key
+WHERE a.airport_code IN ('SFO', 'DEN')
+ORDER BY a.airport_code, f.dep_local_ts;
 ```
 
 ### Задания

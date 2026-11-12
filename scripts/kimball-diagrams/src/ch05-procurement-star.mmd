@@ -1,10 +1,10 @@
 erDiagram
-  FACT_PURCHASE_ORDER_LINE }o--|| DIM_DATE : "po_date_key"
-  FACT_PURCHASE_ORDER_LINE }o--|| DIM_PRODUCT : "product_key"
-  FACT_PURCHASE_ORDER_LINE }o--|| DIM_VENDOR : "vendor_key"
-  FACT_PURCHASE_ORDER_LINE }o--|| DIM_WAREHOUSE : "warehouse_key"
-  FACT_PURCHASE_ORDER_LINE }o--|| DIM_CONTRACT : "contract_key"
-  FACT_PURCHASE_ORDER_LINE {
+  FACT_PO_LINE }o--|| DIM_DATE : "po_date_key"
+  FACT_PO_LINE }o--|| DIM_PRODUCT : "product_key"
+  FACT_PO_LINE }o--|| DIM_VENDOR : "vendor_key"
+  FACT_PO_LINE }o--|| DIM_WAREHOUSE : "warehouse_key"
+  FACT_PO_LINE }o--|| DIM_CONTRACT : "contract_key"
+  FACT_PO_LINE {
     int po_date_key FK
     int product_key FK
     int vendor_key FK
@@ -19,7 +19,8 @@ erDiagram
     int vendor_key PK
     string vendor_id "natural key"
     string vendor_name
-    string vendor_tier
+    string tier "Type 2"
+    string region "Type 1"
     date row_effective_date
     date row_expiration_date
     boolean is_current

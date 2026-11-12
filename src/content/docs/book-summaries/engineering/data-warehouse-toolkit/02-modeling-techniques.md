@@ -103,6 +103,9 @@ tags:
 - `Shrunken dimension` — урезанная версия: подмножество атрибутов (месяц вместо дня) или строк. Нужна для агрегатов.
 - `Drill across` — запрос, который берёт числа из разных fact и объединяет по общим атрибутам conformed dimensions. Каждый fact агрегируем отдельно.
 - `Bus matrix` — таблица: строки — бизнес-процессы, колонки — conformed dimensions. План всего хранилища.
+- `Detailed implementation bus matrix` — та же матрица, но строка — отдельный fact table с grain и фактами.
+- `Opportunity/stakeholder matrix` — строки — процессы, колонки — отделы. Показывает, кому нужен каждый процесс.
+- `Value chain` — цепочка процессов компании (закупка → склад → продажа). У каждого процесса свой fact table.
 
 ## Slowly Changing Dimensions
 
@@ -119,7 +122,7 @@ tags:
 | 4 | Выносим быстро меняющиеся атрибуты в mini-dimension | Через fact | Возрастная группа, доход |
 | 5 | Type 4 плюс Type 1 outrigger | Текущий профиль + история | Профиль клиента |
 | 6 | Type 2 строка с Type 1 колонкой «текущее значение» | Обе | Историческая и текущая категория |
-| 7 | Две dimension: Type 2 и Type 1 с одним durable key | Обе | Текущее и историческое значение в одном fact |
+| 7 | В fact два ключа: surrogate key (Type 2) и durable key (ведёт к view текущих строк) | Обе | Отчёт «как было» или «как сейчас» на выбор |
 
 Типы 5, 6, 7 — гибриды. Они нужны редко. Подробно их разбирает [глава 5](/book-summaries/engineering/data-warehouse-toolkit/05-procurement/).
 
@@ -130,7 +133,7 @@ tags:
 
 Fact хранит surrogate key той версии dimension, которая действовала в момент события.
 
-![Одна dimension дат играет две роли в fact; junk dimension хранит флаги заказа](/assets/data-warehouse-toolkit/ch02-role-playing.png)
+В книге `row_expiration_date` — день перед стартом следующей версии. В практике ниже мы используем полуоткрытый интервал: дата окончания равна дате начала следующей версии, а в join стоит `<`. Оба варианта рабочие. Главное — один стиль во всём хранилище.
 
 ## Иерархии
 
@@ -153,6 +156,9 @@ Fact хранит surrogate key той версии dimension, которая д
 | Late arriving facts | Факт пришёл поздно. Ищем версию dimension на дату события |
 | Fact table surrogate key | Нужен для надёжного перезапуска ETL и для обновлений |
 | Centipede fact | Слишком много foreign keys (десятки). Признак ошибки: объединяйте dimensions |
+| Числа как атрибут или факт | Если число в основном фильтруют и группируют — это атрибут. Если суммируют — факт. Иногда нужно и то, и другое |
+| Multipass SQL | Не соединяем два fact напрямую. Каждый агрегируем отдельно, потом объединяем (drill across) |
+| Timespan tracking | Строка fact с датами начала и конца действия. Позволяет узнать состояние на любую дату |
 
 ## Продвинутые техники dimension
 
@@ -164,6 +170,9 @@ Fact хранит surrogate key той версии dimension, которая д
 - `Audit dimension`: метаданные загрузки (ETL batch, качество строки) в dimension.
 - `Hot swappable dimension`: разные наборы атрибутов для разных групп пользователей.
 - `Multiple time zones`: храним время в местной зоне и в UTC.
+- `Step dimension`: номер шага в сессии или процессе (шаг 3 из 7).
+- `Text comments dimension`: свободный текст выносим в отдельную dimension, а не в fact.
+- `Measure type dimension` и `abstract generic dimension`: одна колонка «значение» плюс тип метрики, или одна dimension на всё подряд. Книга советует избегать: запросы становятся сложными.
 
 ## Special purpose schemas
 
@@ -196,6 +205,8 @@ Fact хранит surrogate key той версии dimension, которая д
 Запустите `duckdb` в терминале или откройте [shell.duckdb.org](https://shell.duckdb.org). Блоки идут по порядку в одной сессии. Не пропускайте задания: каждое меняет таблицы для следующего.
 
 ### Шаг 1. Создаём схему
+
+![Одна dimension дат играет две роли в fact; junk dimension хранит флаги заказа](/assets/data-warehouse-toolkit/ch02-role-playing.png)
 
 ```sql
 CREATE TABLE dim_date AS
@@ -317,7 +328,7 @@ SELECT customer_id, segment, prior_segment FROM dim_customer WHERE is_current OR
 ```
 </details>
 
-**4.** Загрузка новых fact. Добавьте заказы за март и апрель. Для каждого найдите версию клиента, действовавшую на дату заказа. Потом покажите выручку по городам.
+**4.** Загрузка новых fact. Добавьте три заказа за март и апрель (O5–O7, данные в решении). Для каждого найдите версию клиента, действовавшую на дату заказа. Потом покажите выручку по городам.
 
 <details>
 <summary>Решение</summary>

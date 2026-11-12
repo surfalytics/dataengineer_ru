@@ -12,7 +12,7 @@ erDiagram
     int warehouse_key FK
     int quantity_on_hand "semi-additive"
     int quantity_sold "additive"
-    decimal inventory_value
+    decimal inventory_value "semi-additive"
   }
   FACT_INVENTORY_TXN {
     int date_key FK
@@ -23,13 +23,14 @@ erDiagram
   }
   DIM_PRODUCT {
     int product_key PK
-    string sku
+    string sku "natural key"
     string product_name
+    decimal unit_cost
   }
   DIM_WAREHOUSE {
     int warehouse_key PK
     string warehouse_name
-    string region
+    string city
   }
   DIM_DATE {
     int date_key PK
