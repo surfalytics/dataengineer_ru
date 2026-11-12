@@ -98,8 +98,8 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: pip install duckdb sqlfluff
@@ -116,6 +116,12 @@ jobs:
 - `steps` — шаги по порядку: забрать код, поставить Python, поставить пакеты, линтер, тест.
 
 Если любой шаг падает, проверка красная. В Pull Request появляется красный крестик.
+
+Результаты смотрят на вкладке **Actions**. Каждая строка — один запуск: какой коммит, какая ветка, сколько шёл, зелёный или красный.
+
+![Вкладка Actions на GitHub: список запусков workflow, у каждого зелёная галочка, ветка main и время работы](/assets/practice/git/github-actions-runs.jpg)
+
+Откройте запуск, чтобы увидеть его задачи (jobs). Красную задачу открывают и читают лог: там написано, какой шаг упал и почему.
 
 ## GitLab CI
 
@@ -139,6 +145,12 @@ checks:
 ```
 
 Идея та же. Меняется только формат файла.
+
+Результат в GitLab: **Build** → **Pipelines**. Задачи собраны в колонки по этапам (`stages`). Этапы идут слева направо. Следующий этап начнётся, только если предыдущий зелёный.
+
+![Pipeline в GitLab: этапы build, application-security-testing, qa и test в колонках, у каждой задачи зелёная галочка](/assets/practice/git/gitlab-pipeline.jpg)
+
+В большом проекте десятки задач. В нашем — одна задача `checks` в одном этапе.
 
 | | GitHub Actions | GitLab CI |
 |---|---|---|
@@ -166,6 +178,16 @@ CD — следующий шаг. После merge в `main` пайплайн с
 | dbt | Запускает `dbt build` на продакшен-схеме |
 | Terraform | Применяет изменения инфраструктуры |
 | Docker | Собирает образ и выкладывает его |
+
+Пример CD — этот сайт. Его код лежит на [GitHub](https://github.com/surfalytics/dataengineer_ru). После каждого merge в `main` workflow `deploy.yml` сам собирает сайт и выкладывает его:
+
+![Запуск workflow deploy.yml на GitHub: задачи build, deploy и indexnow соединены стрелками, все зелёные, у deploy ссылка на сайт](/assets/practice/git/github-actions-pipeline.jpg)
+
+- `build` — собирает сайт. Если сборка упала, дальше ничего не идёт.
+- `deploy` — выкладывает сайт. Под задачей ссылка на результат.
+- `indexnow` — сообщает поисковикам о новых страницах.
+
+Никто не копирует файлы на сервер руками. Merge — и через пару минут изменения на сайте.
 
 На старте CD не нужен. Сначала настройте хороший CI. Для CD понадобятся секреты (пароли и ключи). Их хранят в **Secrets** платформы (`Settings → Secrets`), а не в коде.
 

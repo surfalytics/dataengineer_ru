@@ -89,7 +89,11 @@ SQL
 git diff
 ```
 
-Строки с `+` добавлены. Строки с `-` удалены. Так же выглядит изменение в Pull Request.
+Строки с `+` добавлены. Строки с `-` удалены. Так же выглядит изменение на GitHub и GitLab, только в цвете:
+
+![Diff коммита на GitHub: сообщение коммита, автор, hash и строка, которая изменилась, красным и зелёным](/assets/practice/git/github-commit-diff.jpg)
+
+Вверху — сообщение коммита, автор и hash. Ниже — diff каждого файла.
 
 Сохраните:
 
@@ -185,7 +189,14 @@ git commit -m "Add .gitignore"
 
 ### Задание 2
 
-Добавьте второй запрос `models/refunds.sql` с текстом `select order_id, amount from refunds`. Сделайте для него отдельный коммит.
+Добавьте второй запрос `models/refunds.sql`. Сделайте для него отдельный коммит.
+
+```sql
+select
+    order_id,
+    amount
+from refunds
+```
 
 **Проверка:** в `git log --oneline` три коммита. Последний про `refunds`.
 
@@ -194,7 +205,10 @@ git commit -m "Add .gitignore"
 
 ```bash
 cat > models/refunds.sql <<'SQL'
-select order_id, amount from refunds
+select
+    order_id,
+    amount
+from refunds
 SQL
 git add models/refunds.sql
 git commit -m "Add refunds model"
@@ -222,9 +236,9 @@ git status
 
 ### Задание 4
 
-Отмените коммит `Filter completed orders` безопасным способом, без потери истории.
+Оказалось, что запрос `refunds` не нужен. Отмените коммит `Add refunds model` безопасным способом, без потери истории.
 
-**Проверка:** в `git log --oneline` появился коммит `Revert "Filter completed orders"`. В файле нет `where`.
+**Проверка:** в `git log --oneline` появился коммит `Revert "Add refunds model"`. Файла `models/refunds.sql` больше нет.
 
 <details>
 <summary>Решение</summary>

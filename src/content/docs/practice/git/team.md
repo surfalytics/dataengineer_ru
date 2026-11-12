@@ -141,6 +141,12 @@ where status in ('completed', 'shipped')
 
 Конфликтов меньше, если ветки короткие и вы чаще делаете `git pull`.
 
+<br />
+
+:::tip[Ветки наглядно]
+Ветки легче понять, когда видишь их. Попробуйте тренажёр [Learn Git Branching](https://learngitbranching.js.org/?locale=ru_RU). Он на русском. Хватит первых уровней раздела «Основы».
+:::
+
 ## Практика
 
 Полную практику на настоящих сайтах вы пройдёте в следующих уроках: [GitHub](/practice/git/github/) и [GitLab](/practice/git/gitlab/). Там вы создадите бесплатный репозиторий, заведёте Issue, откроете Pull Request и Merge Request.

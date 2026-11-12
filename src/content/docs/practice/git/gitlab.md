@@ -38,6 +38,19 @@ tags:
 4. Включите **Initialize repository with a README**.
 5. Нажмите **Create project**.
 
+Так выглядит страница проекта. Здесь — публичный проект GitLab Runner:
+
+![Страница проекта на GitLab: меню слева, кнопка Code, список файлов и последний коммит](/assets/practice/git/gitlab-project.jpg)
+
+Главное отличие от GitHub — **меню слева**:
+
+- **Code** — файлы, ветки, коммиты и Merge requests.
+- **Plan** — задачи (Issues или Work items).
+- **Build** — CI/CD: Pipelines и Jobs.
+- **Settings** — настройки проекта. Видны только владельцу.
+
+Над файлами — последний коммит и кнопка **History**. Это `git log` в браузере.
+
 ## Шаг 2. Клонируйте проект
 
 Нажмите синюю кнопку **Code**, скопируйте адрес из блока **Clone with SSH**.
@@ -52,7 +65,7 @@ cd sql-practice-gitlab
 
 ## Шаг 3. Заведите Issue
 
-Слева откройте **Plan** → **Issues** → **New issue**.
+Слева откройте **Plan** → **Issues** → **New issue**. В новых версиях GitLab этот пункт называется **Work items**, а кнопка — **New item**. Выберите тип **Issue**.
 
 - **Title:** `Add revenue by status query`
 - **Description:** `Нужен запрос: выручка по статусам заказов.`
@@ -121,9 +134,26 @@ Closes #1
 4. Включите **Squash commits** и **Delete source branch**.
 5. Нажмите **Create merge request**.
 
+Так выглядит Merge Request после merge:
+
+![Merge Request на GitLab: статус Merged, вкладки Overview, Commits, Pipelines, Changes, пройденный pipeline и блок Approved by](/assets/practice/git/gitlab-merge-request.jpg)
+
+Что на нём искать:
+
+- **Статус** под названием: `Open` или `Merged`. Рядом — из какой ветки в какую.
+- **Описание** со словами `Closes #40238`. После merge задача закрылась сама.
+- **Pipeline** — результат CI. Кружки — это этапы (stages). Зелёные — пройдены.
+- **Approved by** — кто одобрил.
+- **Вкладки:** `Overview` — обсуждение, `Commits` — коммиты, `Pipelines` — запуски CI, `Changes` — diff.
+
 ## Шаг 7. Ревью
 
-1. Откройте вкладку **Changes**.
+1. Откройте вкладку **Changes**. Тут тот же diff, что на GitHub:
+
+![Вкладка Changes в Merge Request на GitLab: три удалённые строки красным и три добавленные строки зелёным, исправлена опечатка ppc64el на ppc64le](/assets/practice/git/gitlab-mr-changes.jpg)
+
+В этом MR исправили опечатку: `ppc64el` → `ppc64le`. Маленький и понятный MR легко проверить.
+
 2. Наведите мышь на строку и нажмите значок комментария.
 3. Напишите: `Добавь в запрос количество заказов по статусам`.
 4. Нажмите **Start review** → **Submit review**.
