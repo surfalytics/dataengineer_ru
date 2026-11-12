@@ -1,4 +1,4 @@
-flowchart LR
+flowchart TB
   S[("Source")] -->|"modified_at > HWM"| ST["Staging<br/>копия сырых данных"]
   ST --> Q{"Quality<br/>screens"}
   Q -->|"плохие строки"| ERR["Error event<br/>таблица"]
