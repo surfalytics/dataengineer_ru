@@ -89,6 +89,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/designing-data-intensive-applications' } }],
           },
+          {
+            label: 'Data Engineering Design Patterns',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/data-engineering-design-patterns' } }],
+          },
         ],
       },
       // AI: добавить группу, когда появится первая книга (папка book-summaries/ai/).
