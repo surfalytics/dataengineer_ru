@@ -1,0 +1,49 @@
+erDiagram
+  FACT_SALES }o--|| DIM_DATE : "date_key"
+  FACT_SALES }o--|| DIM_CUSTOMER : "customer_key"
+  FACT_SALES }o--|| DIM_PRODUCT : "product_key"
+  FACT_SALES }o--|| DIM_STORE : "store_key"
+  FACT_SALES {
+    int date_key FK "когда"
+    int customer_key FK "кто"
+    int product_key FK "что"
+    int store_key FK "где"
+    int order_id "degenerate dimension"
+    int line_number
+    int quantity "additive"
+    decimal gross_amount "additive"
+    decimal discount_amount "additive"
+    decimal net_amount "additive"
+  }
+  DIM_DATE {
+    int date_key PK "20250131"
+    date full_date
+    int year
+    int month
+    string month_name
+    string day_name
+    boolean is_weekend
+  }
+  DIM_CUSTOMER {
+    int customer_key PK "surrogate key"
+    int customer_id "natural key"
+    string customer_name
+    string city
+    string segment
+  }
+  DIM_PRODUCT {
+    int product_key PK "surrogate key"
+    int product_id "natural key"
+    string sku
+    string product_name
+    string brand
+    string category_name "денормализовано"
+  }
+  DIM_STORE {
+    int store_key PK "surrogate key"
+    int store_id "natural key"
+    string store_name
+    string city
+    string region
+    string store_type
+  }

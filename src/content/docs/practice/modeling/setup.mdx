@@ -1,0 +1,161 @@
+---
+title: Установка
+# SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
+head:
+  - tag: title
+    content: "DuckDB и учебная база: курс Dimensional Modeling | Инжиниринг Данных"
+description: Как установить DuckDB, скачать учебную OLTP-базу магазина и загрузить её в схему src для курса по dimensional modeling.
+sidebar:
+  order: 2
+  label: Установка
+tags:
+  - data-modelling
+  - practice
+  - duckdb
+---
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Нужны две вещи: **DuckDB** и **учебные файлы**.
+
+Работаем в терминале. Если он незнаком, пройдите [курс CLI](/practice/cli/setup/).
+
+## Шаг 1. DuckDB
+
+Если DuckDB уже стоит после курса SQL, пропустите шаг. Проверьте:
+
+```bash
+duckdb --version
+```
+
+Нужна версия 1.1 или новее. Если DuckDB нет, установите:
+
+<Tabs syncKey="os">
+<TabItem label="macOS">
+
+```bash
+brew install duckdb
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```bash
+winget install DuckDB.cli
+```
+
+</TabItem>
+<TabItem label="Linux / WSL">
+
+```bash
+curl https://install.duckdb.org | sh
+```
+
+</TabItem>
+</Tabs>
+
+Подробнее — в [установке из курса SQL](/practice/sql/setup/).
+
+## Шаг 2. Учебные файлы
+
+```bash
+cd ~
+curl -L -o modeling-practice.tar.gz https://dataengineer.ru/assets/practice/modeling-practice.tar.gz
+tar xzf modeling-practice.tar.gz
+cd modeling-practice
+ls data
+```
+
+**Проверка:** `ls data` показывает девять файлов:
+
+```
+categories.csv        customers.csv  order_items.csv  products.csv  stores.csv
+customer_changes.csv  inventory.csv  orders.csv       returns.csv
+```
+
+## Что за данные
+
+Это выгрузка из **OLTP-базы** магазина спортивных товаров «Волна». Период: январь–июнь 2025. У магазина есть онлайн-магазин и три точки: Москва, Санкт-Петербург, Казань.
+
+Данные учебные. Мы их сгенерировали, но сделали похожими на настоящие: есть гости без карты, отменённые заказы, рост цен в апреле и переезды клиентов.
+
+| Файл | Строк | Что внутри |
+|---|---|---|
+| `categories.csv` | 5 | Категории товаров |
+| `products.csv` | 20 | Товары: SKU, бренд, категория, **текущая** цена |
+| `stores.csv` | 4 | Магазины: город, регион, тип (online / offline) |
+| `customers.csv` | 300 | Клиенты на 1 января 2025: город, сегмент |
+| `customer_changes.csv` | 30 | Журнал изменений клиентов: переезды и переход в VIP |
+| `orders.csv` | 2000 | Заказы (шапка): клиент, магазин, даты, статус, доставка |
+| `order_items.csv` | 3501 | Позиции заказов: товар, количество, цена, скидка |
+| `inventory.csv` | 2370 | Остаток товара в магазине на конец каждого дня июня |
+| `returns.csv` | 216 | Возвраты товаров (для итоговой практики) |
+
+Так выглядит схема источника. Это нормализованная модель (3NF): каждая сущность — в своей таблице.
+
+![ER-диаграмма источника: categories, products, orders, order_items, customers, customer_changes и stores, связанные внешними ключами](/assets/practice/modeling/source-3nf.png)
+
+## Шаг 3. Загружаем источник в DuckDB
+
+Откройте базу `modeling.duckdb` (файл создастся сам):
+
+```bash
+duckdb modeling.duckdb
+```
+
+Источник кладём в отдельную схему `src`. Так сырые таблицы не смешаются с моделью, которую мы построим.
+
+```sql
+CREATE SCHEMA IF NOT EXISTS src;
+
+CREATE OR REPLACE TABLE src.categories       AS SELECT * FROM 'data/categories.csv';
+CREATE OR REPLACE TABLE src.products         AS SELECT * FROM 'data/products.csv';
+CREATE OR REPLACE TABLE src.stores           AS SELECT * FROM 'data/stores.csv';
+CREATE OR REPLACE TABLE src.customers        AS SELECT * FROM 'data/customers.csv';
+CREATE OR REPLACE TABLE src.customer_changes AS SELECT * FROM 'data/customer_changes.csv';
+CREATE OR REPLACE TABLE src.orders           AS SELECT * FROM 'data/orders.csv';
+CREATE OR REPLACE TABLE src.order_items      AS SELECT * FROM 'data/order_items.csv';
+CREATE OR REPLACE TABLE src.inventory        AS SELECT * FROM 'data/inventory.csv';
+CREATE OR REPLACE TABLE src.returns          AS SELECT * FROM 'data/returns.csv';
+```
+
+Проверьте, что всё загрузилось:
+
+```sql
+SELECT table_name, estimated_size AS rows
+FROM duckdb_tables()
+WHERE schema_name = 'src'
+ORDER BY table_name;
+```
+
+**Проверка:** девять таблиц, число строк совпадает с таблицей выше.
+
+Посмотрите на заказы:
+
+```sql
+SELECT * FROM src.orders LIMIT 5;
+```
+
+Таблицы остаются в файле `modeling.duckdb`. В следующий раз просто откройте его: `duckdb modeling.duckdb`. Запускайте DuckDB всегда из папки `modeling-practice`. Выйти: `.exit`.
+
+<Aside type="tip" title="Удобный вывод">
+Длинные таблицы удобнее смотреть так: `.maxrows 50`. Чтобы видеть, сколько идёт запрос: `.timer on`.
+</Aside>
+
+<Aside type="note" title="Как начать заново">
+Если что-то сломали, удалите базу и повторите шаг 3:
+
+```bash
+rm modeling.duckdb
+duckdb modeling.duckdb
+```
+
+Каждый урок создаёт свои таблицы через `CREATE OR REPLACE`. Уроки идут по порядку: следующий урок использует таблицы из прошлого.
+</Aside>
+
+## Если что-то не работает
+
+- **`No files found that match the pattern "data/..."`**. Вы не в папке `modeling-practice`. Выйдите (`.exit`), выполните `cd ~/modeling-practice` и откройте базу снова.
+- **`Could not set lock on file`**. База открыта в другом окне. Закройте его.
+- **Русские буквы выглядят как `???`** (Windows). Выполните `chcp 65001` в терминале перед запуском DuckDB.
+
+Дальше: [OLTP и OLAP: зачем моделировать](/practice/modeling/why-model/).

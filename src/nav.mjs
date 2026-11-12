@@ -48,6 +48,7 @@ export const topics = [
       { label: 'Базовый минимум статистики', items: [{ autogenerate: { directory: 'practice/stats' } }] },
       { label: 'Базовый минимум Git', items: [{ autogenerate: { directory: 'practice/git' } }] },
       { label: 'Базовый минимум Docker', items: [{ autogenerate: { directory: 'practice/docker' } }] },
+      { label: 'Базовый минимум Dimensional Modeling', items: [{ autogenerate: { directory: 'practice/modeling' } }] },
     ],
   },
   {
