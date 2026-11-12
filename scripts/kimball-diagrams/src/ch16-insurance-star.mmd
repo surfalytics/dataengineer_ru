@@ -9,6 +9,8 @@ erDiagram
   FACT_PREMIUM_SNAPSHOT }o--|| DIM_COVERED_ITEM : "covered_item_key"
   FACT_PREMIUM_SNAPSHOT }o--|| DIM_MONTH : "month_key"
   FACT_CLAIM }o--|| DIM_COVERAGE : "coverage_key"
+  FACT_CLAIM }o--|| DIM_POLICYHOLDER : "policyholder_key"
+  FACT_CLAIM }o--|| DIM_COVERED_ITEM : "covered_item_key"
   FACT_CLAIM }o--|| DIM_DATE : "loss, open, payment, closed"
   FACT_POLICY_TRANSACTION {
     int transaction_date_key FK
@@ -26,6 +28,7 @@ erDiagram
     int coverage_key FK
     int covered_item_key FK
     string policy_number "degenerate dimension"
+    string policy_status
     decimal written_premium
     decimal earned_premium
   }
@@ -35,7 +38,11 @@ erDiagram
     int first_payment_date_key FK
     int closed_date_key FK
     int coverage_key FK
+    int policyholder_key FK
+    int covered_item_key FK
     string claim_id "degenerate dimension"
+    string claim_status
+    decimal original_reserve
     decimal paid_to_date
     int lag_open_to_closed
   }

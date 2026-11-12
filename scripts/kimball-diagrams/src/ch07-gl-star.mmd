@@ -2,12 +2,13 @@ erDiagram
   FACT_GL_JOURNAL }o--|| DIM_DATE : "date_key"
   FACT_GL_JOURNAL }o--|| DIM_ACCOUNT : "account_key"
   FACT_GL_JOURNAL }o--|| DIM_ORG : "org_key"
-  FACT_GL_SNAPSHOT }o--|| DIM_DATE : "month_key"
+  FACT_GL_SNAPSHOT }o--|| DIM_MONTH : "month_key"
   FACT_GL_SNAPSHOT }o--|| DIM_ACCOUNT : "account_key"
   FACT_GL_SNAPSHOT }o--|| DIM_ORG : "org_key"
-  FACT_BUDGET }o--|| DIM_DATE : "month_key"
+  FACT_BUDGET }o--|| DIM_MONTH : "month_key"
   FACT_BUDGET }o--|| DIM_ACCOUNT : "account_key"
-  FACT_BUDGET }o--|| DIM_DEPARTMENT : "department_key"
+  BRIDGE_ORG }o--|| DIM_ORG : "parent_key"
+  BRIDGE_ORG }o--|| DIM_ORG : "child_key"
   FACT_GL_JOURNAL {
     string journal_entry_id "degenerate dimension"
     int date_key FK
@@ -25,27 +26,37 @@ erDiagram
   }
   FACT_BUDGET {
     int month_key FK
-    int department_key FK
+    string department "rollup of DIM_ORG"
     int account_key FK
     decimal budget_amount
   }
   DIM_ACCOUNT {
     int account_key PK
-    string account_number "natural key"
+    int account_number "natural key"
+    string account_name
     string account_type
     string account_group
+    string normal_balance
   }
   DIM_ORG {
     int org_key PK
     string org_name
+    int parent_key
     string department
   }
-  DIM_DEPARTMENT {
-    int department_key PK
-    string department_name
+  BRIDGE_ORG {
+    int parent_key FK
+    int child_key FK
+    int depth
+  }
+  DIM_MONTH {
+    int month_key PK
+    int fiscal_year
+    int fiscal_period
   }
   DIM_DATE {
     int date_key PK
+    date full_date
     int fiscal_year
     int fiscal_period
   }

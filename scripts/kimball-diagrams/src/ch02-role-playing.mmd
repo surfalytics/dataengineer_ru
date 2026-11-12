@@ -14,11 +14,15 @@ erDiagram
   DIM_DATE {
     int date_key PK
     date full_date
+    string month_name
   }
   DIM_CUSTOMER {
     int customer_key PK
     string customer_id "natural key"
-    string city
+    string customer_name "Type 1"
+    string city "Type 2"
+    string segment "Type 3"
+    string prior_segment "Type 3"
     date row_effective_date
     date row_expiration_date
     boolean is_current

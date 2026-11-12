@@ -1,8 +1,0 @@
-flowchart LR
-  L["Web log<br/>один hit = одна строка"] --> S["Sessionization<br/>пауза больше 30 минут = новая сессия"]
-  S --> P["fact_page_event<br/>grain: событие страницы"]
-  P --> F["fact_session<br/>grain: одна сессия"]
-  F --> A["aggregate<br/>месяц, сегмент, исход"]
-  D["Conformed dimensions<br/>дата, страница, referrer, клиент"] -.-> P
-  D -.-> F
-  D -.-> A

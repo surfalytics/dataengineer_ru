@@ -1,10 +1,11 @@
 erDiagram
-  FACT_SEGMENT_FLIGHT }o--|| DIM_DATE : "scheduled, actual, local, UTC"
+  FACT_SEGMENT_FLIGHT }o--|| DIM_DATE : "dep_local_date_key, dep_utc_date_key"
   FACT_SEGMENT_FLIGHT }o--|| DIM_AIRPORT : "origin, destination, trip origin, trip destination"
   FACT_SEGMENT_FLIGHT }o--|| DIM_PASSENGER : "passenger_key"
-  FACT_SEGMENT_FLIGHT }o--|| DIM_PASSENGER_PROFILE : "profile_key"
+  FACT_SEGMENT_FLIGHT }o--|| DIM_PASSENGER_PROFILE : "passenger_profile_key"
   FACT_SEGMENT_FLIGHT }o--|| DIM_CLASS_OF_SERVICE : "class_of_service_key"
   FACT_SEGMENT_FLIGHT }o--|| DIM_FARE_BASIS : "fare_basis_key"
+  FACT_SEGMENT_FLIGHT }o--|| DIM_ROUTE : "route_key"
   FACT_SEGMENT_FLIGHT {
     int dep_local_date_key FK
     int dep_utc_date_key FK
@@ -16,6 +17,7 @@ erDiagram
     int passenger_profile_key FK
     int class_of_service_key FK
     int fare_basis_key FK
+    int route_key FK
     string ticket_number "degenerate dimension"
     string flight_number "degenerate dimension"
     decimal base_fare
@@ -26,7 +28,7 @@ erDiagram
     string airport_code
     string city
     string country
-    int utc_offset_hours
+    string time_zone
   }
   DIM_CLASS_OF_SERVICE {
     int class_of_service_key PK
@@ -47,6 +49,12 @@ erDiagram
   DIM_FARE_BASIS {
     int fare_basis_key PK
     string fare_basis_name
+  }
+  DIM_ROUTE {
+    int route_key PK
+    string directional_route_name
+    string non_directional_route_name
+    string route_type
   }
   DIM_DATE {
     int date_key PK

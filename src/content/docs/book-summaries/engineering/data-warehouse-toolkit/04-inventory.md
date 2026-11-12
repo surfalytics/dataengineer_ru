@@ -68,7 +68,7 @@ tags:
 | Обновления | Строку вставляют при старте и обновляют при каждой вехе |
 | Неполная строка | Вехи, которых ещё не было, ссылаются на специальную строку dimension «ещё не наступило» |
 
-![Вехи accumulating snapshot: от приёмки до последней продажи](/assets/data-warehouse-toolkit/ch04-inventory-pipeline.png)
+![Вехи accumulating snapshot партии: приёмка, проверка, склад, первая продажа](/assets/data-warehouse-toolkit/ch04-inventory-pipeline.png)
 
 - Это единственный тип fact table, где строки регулярно обновляются.
 - Он подходит для процессов с понятным конвейером: заказы, претензии, поставки.
@@ -114,10 +114,9 @@ tags:
 | Вариант | Пример |
 |---|---|
 | Identical | Одна `dim_date` для всех |
-| Shrunken: подмножество атрибутов | `dim_month` для прогнозов. Прогнозы делают по месяцам, а не по дням |
+| Shrunken rollup: подмножество атрибутов | `dim_month` для прогнозов по месяцам. `dim_brand` над `dim_product` для агрегатов |
 | Shrunken: подмножество строк | Dimension магазинов только одного региона |
-| Rollup | `dim_brand` над `dim_product` для агрегатов |
-| Limited conformity | Часть атрибутов общая, часть — нет |
+| Limited conformity | Полная conformity не нужна или невозможна (очень разные бизнесы). Начинают с нескольких общих атрибутов |
 
 Что даёт conformity:
 
@@ -209,7 +208,7 @@ FROM (VALUES
 
 ### Задания
 
-**1.** Постройте periodic snapshot из transactions. Grain: товар × склад × день. Строка должна быть и в дни без движений (например, 4 января). Остаток — накопленная сумма.
+**1.** Постройте periodic snapshot из transactions. Grain: товар × склад × день. Строка должна быть и в дни без движений (например, 4 января). Остаток — накопленная сумма. Добавьте `inventory_value` = остаток × `unit_cost`.
 
 <details>
 <summary>Решение</summary>
@@ -227,14 +226,19 @@ WITH grid AS (
            sum(CASE WHEN txn_type_key = 2 THEN -quantity_change ELSE 0 END) AS quantity_sold
     FROM fact_inventory_txn
     GROUP BY ALL
+), snap AS (
+    SELECT g.date_key, g.product_key, g.warehouse_key,
+           sum(coalesce(d.qty_change, 0)) OVER (
+               PARTITION BY g.product_key, g.warehouse_key ORDER BY g.date_key
+           )::INT AS quantity_on_hand,
+           coalesce(d.quantity_sold, 0)::INT AS quantity_sold
+    FROM grid g
+    LEFT JOIN daily d USING (date_key, product_key, warehouse_key)
 )
-SELECT g.date_key, g.product_key, g.warehouse_key,
-       sum(coalesce(d.qty_change, 0)) OVER (
-           PARTITION BY g.product_key, g.warehouse_key ORDER BY g.date_key
-       )::INT AS quantity_on_hand,
-       coalesce(d.quantity_sold, 0)::INT AS quantity_sold
-FROM grid g
-LEFT JOIN daily d USING (date_key, product_key, warehouse_key);
+-- стоимость остатка: остаток × себестоимость единицы
+SELECT s.*, s.quantity_on_hand * p.unit_cost AS inventory_value
+FROM snap s
+JOIN dim_product p USING (product_key);
 
 -- проверка: остаток на 7 января равен сумме всех движений
 SELECT (SELECT sum(quantity_on_hand) FROM fact_inventory_snapshot WHERE date_key = 20240107) AS from_snapshot,
@@ -266,7 +270,7 @@ ORDER BY p.product_name;
 `wrong_sum_over_days` растёт с числом дней. Это бессмысленное число. Для времени берите `avg` или последний день.
 </details>
 
-**3.** Inventory turns и days of supply. Для каждого товара посчитайте оборачиваемость: продано штук за неделю делить на средний остаток. И запас в днях: средний остаток делить на продажи в день. Помните: показатель считаем как отношение сумм.
+**3.** Inventory turns и days of supply. Для каждого товара посчитайте оборачиваемость: продано штук за неделю делить на средний остаток. И запас в днях (days of supply): остаток на последний день делить на средние продажи в день. Оба показателя non-additive: считаем их из компонентов.
 
 <details>
 <summary>Решение</summary>
@@ -283,7 +287,7 @@ SELECT p.product_name,
        sum(sold)                         AS units_sold,
        round(avg(qoh), 1)                AS avg_qoh,
        round(sum(sold) / avg(qoh), 2)    AS turns,
-       round(avg(qoh) / (sum(sold) / count(*)), 1) AS days_of_supply
+       round(max_by(qoh, date_key) / avg(sold), 1) AS days_of_supply
 FROM daily
 JOIN dim_product p USING (product_key)
 GROUP BY p.product_name
@@ -334,12 +338,12 @@ SET inspect_lag_days = CASE WHEN inspected_date_key <> 0
     bin_lag_days = CASE WHEN bin_date_key <> 0
         THEN date_diff('day', key_to_date(inspected_date_key), key_to_date(bin_date_key)) END,
     sale_lag_days = CASE WHEN first_sale_date_key <> 0
-        THEN date_diff('day', key_to_date(received_date_key), key_to_date(first_sale_date_key)) END;
+        THEN date_diff('day', key_to_date(bin_date_key), key_to_date(first_sale_date_key)) END;
 
 SELECT * FROM fact_receipt_pipeline ORDER BY lot_number;
 ```
 
-Одна строка на партию. Вехи, которых ещё не было, равны 0 («ещё не наступило»), а lag равен `NULL`.
+Одна строка на партию. Каждый lag — дни между соседними вехами. Полный путь от приёмки до продажи — их сумма. Вехи, которых ещё не было, равны 0 («ещё не наступило»), а lag равен `NULL`.
 </details>
 
 **5.** Анализ конвейера. Покажите воронку: сколько партий дошло до каждой вехи. Потом средние lags. Затем найдите «застрявшие» партии: проверены, но ещё не размещены на складе.

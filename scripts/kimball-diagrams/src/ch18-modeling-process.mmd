@@ -1,9 +1,0 @@
-flowchart LR
-  A["1. Подготовка<br/>участники, инструменты,<br/>naming, календарь"] --> B["2. High-level<br/>модель (bubble chart)<br/>grain и dimensions"]
-  B --> C["3. Детальная модель<br/>dimensions, facts,<br/>SCD, правила ETL"]
-  C --> D["4. Итерации<br/>и тесты на<br/>требованиях и данных"]
-  D --> E["5. Review<br/>IT, core users,<br/>бизнес"]
-  E --> F["6. Финальная<br/>документация"]
-  D -.->|"нашли проблему"| B
-  E -.->|"правки"| C
-  style F fill:#d1e7dd,stroke:#2f7d5b
