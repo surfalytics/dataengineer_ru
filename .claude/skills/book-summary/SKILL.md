@@ -21,7 +21,7 @@ Good examples to copy:
 | Images | `public/assets/<book-slug>/chNN-<name>.png` |
 | Diagram sources | `scripts/<book>-diagrams/` (see the `diagrams` skill) |
 
-- `<group>`: `engineering`, `business`, or `ai` (create `ai/` when the first AI book comes).
+- `<group>`: `engineering`, `business`, `entrepreneurship`, or `ai`.
 - `<book-slug>`: English title in lowercase with hyphens.
 
 ## Steps

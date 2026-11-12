@@ -3,7 +3,7 @@ title: Конспекты книг
 head:
   - tag: title
     content: "Конспекты книг для инженера данных | Инжиниринг Данных"
-description: "Конспекты книг на русском для инженеров данных: инженерия, AI, бизнес и soft skills. Разбор по главам, ключевые термины, схемы и вопросы для самопроверки."
+description: "Конспекты книг на русском для инженеров данных: инженерия, AI, предпринимательство, бизнес и soft skills. Разбор по главам, ключевые термины, схемы и вопросы для самопроверки."
 sidebar:
   order: 1
   label: Обзор
@@ -27,6 +27,9 @@ tags:
 | Инженерия | [Data Engineering Design Patterns](/book-summaries/engineering/data-engineering-design-patterns/) | Около 70 паттернов: загрузка, идемпотентность, ошибки, качество, наблюдаемость |
 | AI и ML | [AI Engineering](/book-summaries/ai/ai-engineering/) | Как строить приложения на foundation models: оценка, prompt, RAG, агенты, finetuning, данные, inference, архитектура |
 | AI и ML | [Machines that Think](/book-summaries/ai/machines-that-think/) | Как работают LLM и думают ли они: история AI, токены и embeddings, нейросети, transformer, ошибки, этика, влияние на работу |
+| Предпринимательство | [The Startup Owner's Manual](/book-summaries/entrepreneurship/startup-owners-manual/) | Customer Development: как найти бизнес-модель стартапа через проверку гипотез |
+| Предпринимательство | [The Mom Test](/book-summaries/entrepreneurship/mom-test/) | Как говорить с клиентами и не получать ложных ответов |
+| Предпринимательство | [The Diary of a CEO](/book-summaries/entrepreneurship/diary-of-a-ceo/) | 33 закона бизнеса и жизни: личность, история, философия, команда |
 | Бизнес и Soft Skills | [Lean Analytics](/book-summaries/business/lean-analytics/) | Как измерять стартап, метрики по бизнес-моделям и стадиям |
 | Бизнес и Soft Skills | [Escaping the Build Trap](/book-summaries/business/escaping-the-build-trap/) | Как строится продукт: роль PM, стратегия, Product Kata, product-led компания |
 

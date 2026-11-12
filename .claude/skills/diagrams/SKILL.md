@@ -63,6 +63,8 @@ Uses the local Excalidraw canvas server on `http://127.0.0.1:3456` (the `excalid
 
 For more than 2-3 diagrams, write a spec script so they can be rebuilt. Reference: `scripts/kimball-diagrams/excalidraw_build.py` (nodes `N(...)`, edges `E(...)`, zones `Z(...)`, notes `T(...)`). Copy it and change the output folder and scene prefix.
 
+Shared canvas rule: other sessions use the same canvas server. Build scripts must hold the lock `~/dev/excalidraw/.canvas.lock` (`fcntl.flock`) while they create a scene, draw, export and save. Check that the current scene is yours before you clear it, and that the element count is right before you export. Copy `canvas_lock` from `scripts/entrepreneurship-diagrams/excalidraw_build.py`. When you draw by hand with the MCP, do it in one quick step and check `GET /api/scenes` shows your scene first.
+
 Style:
 
 | Use | Fill | Stroke |
