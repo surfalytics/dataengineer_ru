@@ -12,26 +12,30 @@ tags:
   - product-management
 ---
 
-**Escaping the Build Trap** — книга Melissa Perri (O'Reilly, 2018). Она о том, как компания попадает в ловушку «строить фичи ради фич» и как из неё выйти. Это конспект на русском с разбором по частям и схемами.
+**Escaping the Build Trap: How Effective Product Management Creates Real Value** — книга Melissa Perri (O'Reilly, 2018). Она о том, как компания попадает в ловушку «строить фичи ради фич» и как из неё выйти. Это конспект на русском с разбором по частям и схемами.
 
-> Это собственный пересказ, а не перевод. За полным текстом и примерами идите в оригинал. Схемы нарисованы заново по содержанию книги.
+> Это собственный пересказ, а не перевод. Он собран по книге и открытым материалам о ней (список в конце страницы). За полным текстом и примерами идите в оригинал. Схемы нарисованы заново.
 
 ![Карта книги: пять частей](/assets/escaping-the-build-trap/ch00-book-map.png)
 
 ## Что за книга
 
-**Build trap** — это когда компания считает успехом выпуск фич (`output`), а не пользу для клиента и бизнеса (`outcome`). Фичи растут. Выручка и удержание не растут.
+> «Build trap — это когда организация измеряет успех результатом работы (outputs), а не результатом для клиента и бизнеса (outcomes)».
+
+Компания в ловушке выпускает много фич. Ей кажется, что она продуктивна. Но выручка, удержание и довольство клиентов не растут.
 
 Книга идёт на примере вымышленной компании Marquetly. Это школа онлайн-курсов по маркетингу. Мы видим, как она за несколько лет переходит от «делаем фичи» к «решаем проблемы клиентов».
+
+Автор — Melissa Perri. Она консультант по продуктовому менеджменту (Produx Labs), основатель Product Institute и преподаёт в Harvard Business School.
 
 ## Зачем это дата-инженеру
 
 Сегодня от дата-инженера ждут продуктового мышления. Нужно говорить с бизнесом на его языке и понимать, как строится продукт. Эта книга даёт такую картину.
 
-- **Откуда берутся метрики.** Метрики идут из стратегии и целей продукта. Вы поймёте, зачем бизнес просит именно этот отчёт.
+- **Откуда берутся метрики.** Метрики идут из стратегии и целей продукта. В книге у каждого уровня стратегии есть своя метрика. Вы поймёте, зачем бизнес просит именно этот отчёт.
 - **Output и outcome.** Вы отличите метрику «сколько выпустили» от метрики «что изменилось». Это основа хороших дашбордов.
-- **Язык продакта.** `strategic intent`, `initiative`, `option`, `leading` и `lagging` метрики. Вы будете понимать встречи с продуктом.
-- **Эксперименты.** Вы увидите, какие данные нужны для A/B-тестов и проверки гипотез.
+- **Язык продакта.** `strategic intent`, `product initiative`, `option`, `leading` и `lagging` метрики. Вы будете понимать встречи с продуктом.
+- **Эксперименты.** Вы увидите, какие данные нужны для проверки гипотез и почему эксперимент не требует большого пайплайна.
 - **Свои приоритеты.** Вы сможете спросить: «Какую проблему решает эта таблица?» и отказаться от ненужной работы.
 - **Выбор компании.** Шесть вопросов из приложения помогают оценить компанию на собеседовании.
 
@@ -61,22 +65,30 @@ tags:
 ## Как читать
 
 - **Новичок.** Идите по порядку. На первом проходе берите «Главную мысль» и таблицы.
-- **Нужны метрики.** Страницы 5 (Product Kata и метрики) и 4 (видение и цели).
+- **Нужны метрики.** Страницы 3 (пример Netflix), 4 (уровни стратегии) и 5 (Product Kata и метрики).
 - **Готовитесь к собеседованию.** Страница 8: шесть вопросов о компании.
 
 ## Разбор по частям
 
-В оригинале 32 главы в пяти частях. Мы собрали их в восемь страниц.
+В оригинале 25 глав в пяти частях, послесловие и приложение. Мы собрали их в восемь страниц.
 
 | Страница | Главы книги | Тема |
 |---|---|---|
-| [1. Build trap и value exchange](/book-summaries/business/escaping-the-build-trap/01-build-trap-and-value-exchange/) | 1–6 | Output и outcome, проект и продукт, типы компаний, что известно и неизвестно |
-| [2. Роль продакт-менеджера и команды](/book-summaries/business/escaping-the-build-trap/02-product-manager-and-teams/) | 7–11 | Плохие архетипы, хороший PM, карьера, организация команд |
-| [3. Стратегия](/book-summaries/business/escaping-the-build-trap/03-strategy/) | 12–15 | Что такое стратегия, три разрыва, стратегический фреймворк |
-| [4. Видение, цели и портфель](/book-summaries/business/escaping-the-build-trap/04-vision-intents-portfolio/) | 16–17 | Vision, strategic intents, product initiatives, портфель |
-| [5. Product Kata и метрики](/book-summaries/business/escaping-the-build-trap/05-product-kata-and-metrics/) | 18–20 | Процесс, метрики успеха, AARRR и HEART |
-| [6. Исследование и разработка](/book-summaries/business/escaping-the-build-trap/06-exploration-and-building/) | 21–23 | Интервью, эксперименты, cost of delay, definition of done |
-| [7. Product-led организация](/book-summaries/business/escaping-the-build-trap/07-product-led-organization/) | 24–27 | Коммуникация, стимулы, безопасность и обучение |
-| [8. Бюджет, клиент и чек-лист](/book-summaries/business/escaping-the-build-trap/08-budgeting-customer-and-checklist/) | 28–32 | Бюджет, клиентоориентированность, Marquetly, шесть вопросов |
+| [1. Build trap и value exchange](/book-summaries/business/escaping-the-build-trap/01-build-trap-and-value-exchange/) | Часть I, гл. 1–5 | Output и outcome, проект и продукт, типы компаний, известное и неизвестное |
+| [2. Роль продакт-менеджера и команды](/book-summaries/business/escaping-the-build-trap/02-product-manager-and-teams/) | Часть II, гл. 6–9 | Плохие архетипы, хороший PM, карьера, организация команд |
+| [3. Стратегия](/book-summaries/business/escaping-the-build-trap/03-strategy/) | Часть III, гл. 10–12 | Netflix, что такое стратегия, три разрыва, развёртывание стратегии |
+| [4. Видение, цели и портфель](/book-summaries/business/escaping-the-build-trap/04-vision-intents-portfolio/) | Часть III, гл. 13–14 | Vision, strategic intents, product initiatives, options, портфель |
+| [5. Product Kata и метрики](/book-summaries/business/escaping-the-build-trap/05-product-kata-and-metrics/) | Часть IV, гл. 15–16 | Шесть вопросов Kata, метрики успеха, AARRR и HEART |
+| [6. Исследование и разработка](/book-summaries/business/escaping-the-build-trap/06-exploration-and-building/) | Часть IV, гл. 17–19 | Исследования, эксперименты, cost of delay, definition of done |
+| [7. Product-led организация](/book-summaries/business/escaping-the-build-trap/07-product-led-organization/) | Часть V, гл. 20–22 | Kodak, коммуникация, roadmap, product ops, стимулы, безопасность |
+| [8. Бюджет, клиент и чек-лист](/book-summaries/business/escaping-the-build-trap/08-budgeting-customer-and-checklist/) | Часть V, гл. 23–25, приложение | Бюджет, клиентоориентированность, Marquetly, шесть вопросов |
 
 Каждая страница содержит главную мысль, схемы, ключевые термины, выводы для практики и вопросы для самопроверки.
+
+## Источники и что почитать дальше
+
+- 🇬🇧 [Melissa Perri: The Product Kata](https://melissaperri.com/blog/2015/07/22/the-product-kata) — статья автора о Product Kata с примером.
+- 🇬🇧 [Will Larson: Notes on Escaping the Build Trap](https://lethain.com/notes-escaping-the-build-trap/) — заметки и критика от инженерного руководителя.
+- 🇬🇧 [Andrew Clark: Escaping the Build Trap](https://andrewclark.super.site/product-book-summaries/escaping-the-build-trap) — подробный конспект по главам.
+- 🇬🇧 [Evan Samek: Escaping the Build Trap](https://evansamek.substack.com/p/escaping-the-build-trap-by-melissa) — конспект с цитатами и красными флагами.
+- 🇬🇧 [Mind the Product: Escaping the Build Trap](https://mindtheproduct.com/escaping-build-trap-melissa-perri) — выступление автора.
