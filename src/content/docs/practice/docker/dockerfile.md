@@ -108,6 +108,7 @@ docker run --rm orders-report:1.0
 ```
 
 ```
+Traceback (most recent call last):
   File "/app/report.py", line 11, in <module>
     with open(path, newline="") as f:
          ^^^^^^^^^^^^^^^^^^^^^^

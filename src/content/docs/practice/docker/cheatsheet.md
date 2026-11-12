@@ -68,6 +68,7 @@ tags:
 | Команда | Что делает |
 |---|---|
 | `docker compose up -d` | Запустить всё в фоне |
+| `docker compose up -d --wait` | Запустить и дождаться, пока сервисы станут `healthy` |
 | `docker compose up --build` | Пересобрать образы и запустить |
 | `docker compose ps` | Сервисы. Остановленные видны с `-a` |
 | `docker compose logs -f SERVICE` | Логи сервиса |

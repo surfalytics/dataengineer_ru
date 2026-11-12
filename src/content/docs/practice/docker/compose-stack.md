@@ -79,7 +79,7 @@ Compose сам читает файл `.env` рядом с `compose.yaml`. Соз
 ```bash
 echo "DB_PASSWORD=secret" > .env
 echo "DB_PASSWORD=change-me" > .env.example
-echo ".env" > .gitignore
+printf '.env\ndbt/target/\ndbt/logs/\ndbt/.user.yml\n' > .gitignore
 ```
 
 В `compose.yaml` пароль берётся так: `${DB_PASSWORD}`.
@@ -111,11 +111,11 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: shop
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d shop"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d shop"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -187,7 +187,7 @@ volumes:
 | `no` (по умолчанию) | Не перезапускает |
 | `on-failure` | Перезапускает, если код выхода не 0 |
 | `unless-stopped` | Всегда, кроме ручной остановки |
-| `always` | Всегда, даже после ручной остановки при перезапуске Docker |
+| `always` | Всегда. Даже контейнер, остановленный вручную, запустится после перезапуска Docker |
 
 Загрузчику политика не нужна: он должен выполниться один раз.
 
@@ -252,7 +252,9 @@ group by channel
 docker compose up -d --build
 ```
 
-`--build` пересобирает образы, если файлы изменились. Compose запустит `db`, дождётся `healthy`, потом запустит `loader` и `adminer`.
+`--build` пересобирает образы, если файлы изменились. Compose запустит `db` и `adminer`. Потом дождётся, когда `db` станет `healthy`, и только тогда запустит `loader`.
+
+Подождите 2–3 секунды. Загрузчику нужно время, чтобы закончить работу.
 
 Статус:
 
@@ -263,7 +265,7 @@ docker compose ps
 ```
 NAME                        IMAGE         SERVICE   STATUS                   PORTS
 docker-practice-adminer-1   adminer:5     adminer   Up 8 seconds             0.0.0.0:8080->8080/tcp
-docker-practice-db-1        postgres:17   db        Up 8 seconds (healthy)   0.0.0.0:5432->5432/tcp
+docker-practice-db-1        postgres:17   db        Up 8 seconds (healthy)   127.0.0.1:5432->5432/tcp
 ```
 
 Загрузчика в списке нет: он уже завершился. Покажите все службы:
@@ -301,6 +303,12 @@ docker compose run --rm dbt run
 Completed successfully
 Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=1
 ```
+
+dbt пишет служебные файлы в папку `dbt/` на вашем компьютере: `target/`, `logs/`, `.user.yml`. Мы уже добавили их в `.gitignore`.
+
+:::note[Linux]
+Контейнер dbt работает от root. На Linux эти файлы будут принадлежать root. Удалить их можно так: `sudo rm -rf dbt/target dbt/logs dbt/.user.yml`. На macOS и Windows такой проблемы нет.
+:::
 
 Посмотрите результат:
 
@@ -407,6 +415,8 @@ docker compose up -d
 docker compose logs loader
 ```
 
+В конце верните `DB_PASSWORD=secret` в `.env` и снова выполните `docker compose down -v` и `docker compose up -d`.
+
 Нужен `-v`: Postgres задаёт пароль только при **первом** создании базы. Старый том хранит старый пароль. Без `-v` загрузчик упадёт с ошибкой `password authentication failed for user "postgres"`.
 
 </details>
@@ -416,6 +426,10 @@ docker compose logs loader
 Добавьте новую строку в конец `data/orders.csv` и запустите загрузчик снова, не пересоздавая стек. Сколько строк в таблице `orders`?
 
 **Проверка:** 501.
+
+:::note[macOS]
+Docker Desktop на macOS видит изменения файла с задержкой в 1–2 секунды. Если загрузчик показал старое число, подождите пару секунд и запустите его ещё раз.
+:::
 
 <details>
 <summary>Решение</summary>
@@ -428,10 +442,14 @@ docker compose exec db psql -U postgres -d shop -tc "select count(*) from orders
 
 Скрипт делает `TRUNCATE` и грузит файл заново, поэтому повторный запуск безопасен.
 
-Верните файл в исходный вид: удалите последнюю строку.
+Верните файл в исходный вид. Эта команда удаляет последнюю строку и работает на macOS и Linux:
+
+```bash
+sed -i.bak '$d' data/orders.csv && rm data/orders.csv.bak
+```
 
 </details>
 
 Остановите стек, когда закончите: `docker compose down`.
 
-Дальше: [Практические кейсы](/practice/docker/use-cases/).
+Дальше: [Open source за минуты](/practice/docker/use-cases/).
