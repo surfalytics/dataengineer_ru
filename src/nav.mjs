@@ -95,6 +95,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/duckdb-up-and-running' } }],
           },
+          {
+            label: 'Data Pipelines with Apache Airflow',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/data-pipelines-with-apache-airflow' } }],
+          },
         ],
       },
       {
