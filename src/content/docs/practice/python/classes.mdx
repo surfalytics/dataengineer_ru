@@ -16,7 +16,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 Класс объединяет данные и функции, которые с ними работают. Это шаблон, а объект — конкретный экземпляр по этому шаблону.
 
-Для data engineer нужен минимум. Вы будете **читать** классы в библиотеках и **писать** простые `dataclass`. ООП, наследование и паттерны сейчас не нужны.
+Для data engineer нужен минимум. Вы будете **читать** классы в библиотеках и **писать** простые `dataclass`. Наследование достаточно понимать при чтении. Сложное ООП и паттерны сейчас не нужны.
 
 Правило курса: решайте сами, без AI.
 
@@ -207,6 +207,49 @@ print(st.report())
 
 `self.count` и `self.total` живут между вызовами `add`. В обычной функции для этого пришлось бы передавать их туда и обратно.
 
+## Наследование: читать чужой код
+
+Запись `class Child(Parent)` значит: новый класс берёт все атрибуты и методы родителя. Свои методы можно добавить или заменить.
+
+```python
+class Source:
+    def __init__(self, name):
+        self.name = name
+
+    def describe(self):
+        return f"source {self.name}"
+
+    def read(self):
+        return []
+
+
+class CsvSource(Source):
+    def __init__(self, name, path):
+        super().__init__(name)
+        self.path = path
+
+    def read(self):
+        return [f"row from {self.path}"]
+
+
+s = CsvSource("orders", "orders.csv")
+print(s.describe())
+print(s.read())
+print(isinstance(s, Source))
+```
+
+Ответ:
+
+```
+source orders
+['row from orders.csv']
+True
+```
+
+- `describe` пришёл от `Source`. `read` класс `CsvSource` заменил своим.
+- `super().__init__(name)` вызывает `__init__` родителя.
+- Самый частый случай в работе — своё исключение: `class BadRowError(Exception): pass`. Вы встретите его в уроке про [файлы и исключения](/practice/python/files-exceptions/).
+
 ## Где это в работе
 
 | Задача | Как помогают классы |
@@ -215,7 +258,7 @@ print(st.report())
 | Настройки pipeline | `dataclass(frozen=True)`: путь, лимит, дата |
 | Чужие библиотеки | `client = Client(...)`, `client.get(...)`: это объекты и методы |
 | Коннекторы к БД, S3, API | Класс держит соединение между вызовами |
-| Pydantic, SQLAlchemy | Те же идеи: класс описывает поля |
+| Pydantic, SQLAlchemy | Те же идеи: класс описывает поля. Наследуется от `BaseModel` или `Base` |
 
 Простое правило: если хватает функций и `dict`, класс не нужен. Класс нужен, когда данные и поведение связаны, или когда нужна понятная структура записи.
 
@@ -402,7 +445,7 @@ c.limit = 99
 - Метод — функция внутри класса: `obj.method()`.
 - `@dataclass` убирает шаблонный код и даёт читаемый вывод и сравнение.
 - `frozen=True` защищает объект от случайных изменений.
-- Классы вы чаще читаете в библиотеках, чем пишете. Хватит `dataclass`.
+- Классы и наследование (`class Child(Parent)`) вы чаще читаете в библиотеках, чем пишете. Для своих данных хватит `dataclass`.
 
 Дальше: Python Crash Course, глава 9.
 

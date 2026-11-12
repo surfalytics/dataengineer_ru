@@ -19,7 +19,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 ## Переменные и основные типы
 
-Создайте файл `basics.py`. Запускайте его так: `python basics.py`.
+Создайте файл `basics.py`. Запускайте его так: `uv run basics.py` (или `python3 basics.py`).
 
 ```python
 order_id = 1001
@@ -51,6 +51,23 @@ print(type(order_id), type(user), type(amount), type(is_paid), type(coupon))
 - Только латиница, цифры и `_`. Не начинайте с цифры.
 - Стиль `snake_case`: `order_id`, не `OrderId`.
 - Имя должно говорить, что внутри: `amount`, не `a`.
+- Константы пишут большими буквами: `MAX_RETRIES = 3`.
+
+Если ошибиться в имени, Python скажет `NameError` и подскажет похожее имя:
+
+```
+NameError: name 'amout' is not defined. Did you mean: 'amount'?
+```
+
+## Комментарии
+
+Всё после `#` до конца строки Python не выполняет. Пишите в комментарии, зачем нужен код, а не что он делает.
+
+```python
+# API отдаёт сумму в копейках, переводим в рубли
+amount_rub = 4990 / 100
+MAX_RETRIES = 3  # сколько раз повторять запрос к API
+```
 
 ## Числа
 
@@ -87,6 +104,8 @@ print(s.strip().lower())
 print(s.strip().lower().split("@"))
 print("a,b,c".replace(",", ";"))
 print(len("hello"), "hello"[0], "hello"[-1])
+print("anna smith".title(), "eur".upper())
+print("order_id\tamount\n1001\t49.9")
 ```
 
 Ответ:
@@ -96,11 +115,15 @@ anna.smith@example.com
 ['anna.smith', 'example.com']
 a;b;c
 5 h o
+Anna Smith EUR
+order_id	amount
+1001	49.9
 ```
 
-- `strip()` убирает пробелы по краям. `lower()` делает буквы маленькими.
+- `strip()` убирает пробелы по краям. `lower()` делает буквы маленькими, `upper()` большими, `title()` делает первую букву слова большой.
 - `split(sep)` режет строку на список. `replace(a, b)` заменяет.
 - `s[0]` — первый символ. `s[-1]` — последний.
+- `\t` — табуляция, `\n` — новая строка.
 - Строки нельзя менять на месте. Методы возвращают новую строку.
 
 ## Преобразование типов
