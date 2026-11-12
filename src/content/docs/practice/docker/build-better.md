@@ -41,7 +41,7 @@ COPY app/ .
 
 ### Смотрим кэш
 
-Мы соберём образ с зависимостями. Полный `Dockerfile` — в конце урока. Соберите его:
+Мы соберём образ с зависимостями. Скопируйте `Dockerfile` из раздела [«Итоговый Dockerfile»](#итоговый-dockerfile) ниже в папку `~/docker-practice` и соберите его:
 
 ```bash
 docker build -t orders-app:1.0 .
@@ -168,10 +168,12 @@ COPY app/requirements.txt .
 RUN /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.12-slim
+RUN useradd --create-home appuser
 COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 WORKDIR /app
 COPY app/ .
+USER appuser
 CMD ["python", "report.py"]
 ```
 
@@ -198,6 +200,8 @@ docker push ghcr.io/<user>/orders-app:1.0
 Здесь `<user>` — ваш логин на GitHub. Перед `push` нужен вход: `docker login ghcr.io`. Мы этого не делаем в курсе. Как это работает в команде — в уроке [Контейнеры в продакшене](/practice/docker/production/).
 
 Теги образов тоже фиксируют. Не перезаписывайте `1.0`. Выпустили исправление — это `1.1`.
+
+В учебных сборках мы перезаписываем `1.0` для простоты. В команде так не делают.
 
 ## Итоговый Dockerfile
 
