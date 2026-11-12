@@ -6,7 +6,7 @@ head:
     content: "CI/CD для инженера данных: Actions и GitLab CI | Инжиниринг Данных"
 description: "Что такое CI и CD, зачем они инженеру данных и как настроить автоматическую проверку SQL в GitHub Actions и GitLab CI, чтобы не сломать продакшен."
 sidebar:
-  order: 6
+  order: 8
 tags:
   - git
   - ci-cd

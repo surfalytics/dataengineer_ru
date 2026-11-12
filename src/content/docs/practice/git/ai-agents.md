@@ -6,7 +6,7 @@ head:
     content: "Git для работы с AI-агентами: Claude Code, Codex | Инжиниринг Данных"
 description: "Почему Git и CI обязательны при агентской разработке: как видеть изменения агента, откатывать их, проверять тестами и работать через ветки и Pull Request."
 sidebar:
-  order: 7
+  order: 9
 tags:
   - git
   - ai
