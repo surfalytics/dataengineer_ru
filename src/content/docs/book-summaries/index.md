@@ -23,6 +23,7 @@ tags:
 | Инженерия | [Designing Data-Intensive Applications](/book-summaries/engineering/designing-data-intensive-applications/) | Как устроены базы данных и распределённые системы: хранение, репликация, транзакции, пакеты и потоки |
 | AI | Скоро | Книги об AI и LLM |
 | Бизнес и Soft Skills | [Lean Analytics](/book-summaries/business/lean-analytics/) | Как измерять стартап, метрики по бизнес-моделям и стадиям |
+| Бизнес и Soft Skills | [Escaping the Build Trap](/book-summaries/business/escaping-the-build-trap/) | Как строится продукт: роль PM, стратегия, Product Kata, product-led компания |
 
 ## Как устроен конспект
 

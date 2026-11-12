@@ -95,6 +95,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/business/lean-analytics' } }],
           },
+          {
+            label: 'Escaping the Build Trap',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/escaping-the-build-trap' } }],
+          },
         ],
       },
     ],
