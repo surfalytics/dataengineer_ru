@@ -6,7 +6,7 @@ head:
     content: "Практика по Git: SQL-проект, Pull Request и CI | Инжиниринг Данных"
 description: "Итоговое задание по Git: создайте SQL-проект, пройдите путь от коммита до Pull Request с CI на GitHub и GitLab, исправьте ошибку и сделайте откат."
 sidebar:
-  order: 8
+  order: 10
 tags:
   - git
   - practice

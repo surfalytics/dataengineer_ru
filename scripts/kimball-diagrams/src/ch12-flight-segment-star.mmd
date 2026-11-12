@@ -1,0 +1,54 @@
+erDiagram
+  FACT_SEGMENT_FLIGHT }o--|| DIM_DATE : "scheduled, actual, local, UTC"
+  FACT_SEGMENT_FLIGHT }o--|| DIM_AIRPORT : "origin, destination, trip origin, trip destination"
+  FACT_SEGMENT_FLIGHT }o--|| DIM_PASSENGER : "passenger_key"
+  FACT_SEGMENT_FLIGHT }o--|| DIM_PASSENGER_PROFILE : "profile_key"
+  FACT_SEGMENT_FLIGHT }o--|| DIM_CLASS_OF_SERVICE : "class_of_service_key"
+  FACT_SEGMENT_FLIGHT }o--|| DIM_FARE_BASIS : "fare_basis_key"
+  FACT_SEGMENT_FLIGHT {
+    int dep_local_date_key FK
+    int dep_utc_date_key FK
+    int origin_airport_key FK
+    int destination_airport_key FK
+    int trip_origin_airport_key FK
+    int trip_destination_airport_key FK
+    int passenger_key FK
+    int passenger_profile_key FK
+    int class_of_service_key FK
+    int fare_basis_key FK
+    string ticket_number "degenerate dimension"
+    string flight_number "degenerate dimension"
+    decimal base_fare
+    int miles_flown
+  }
+  DIM_AIRPORT {
+    int airport_key PK
+    string airport_code
+    string city
+    string country
+    int utc_offset_hours
+  }
+  DIM_CLASS_OF_SERVICE {
+    int class_of_service_key PK
+    string class_purchased
+    string class_flown
+    string class_change_indicator
+  }
+  DIM_PASSENGER_PROFILE {
+    int passenger_profile_key PK
+    string frequent_flyer_tier
+    string home_airport
+    string club_status
+  }
+  DIM_PASSENGER {
+    int passenger_key PK
+    string passenger_name
+  }
+  DIM_FARE_BASIS {
+    int fare_basis_key PK
+    string fare_basis_name
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+  }

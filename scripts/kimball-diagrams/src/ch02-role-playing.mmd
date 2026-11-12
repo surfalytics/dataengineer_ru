@@ -1,0 +1,31 @@
+erDiagram
+  FACT_ORDER_LINE }o--|| DIM_DATE : "order_date_key"
+  FACT_ORDER_LINE }o--|| DIM_DATE : "ship_date_key"
+  FACT_ORDER_LINE }o--|| DIM_CUSTOMER : "customer_key"
+  FACT_ORDER_LINE }o--|| DIM_ORDER_PROFILE : "profile_key"
+  FACT_ORDER_LINE {
+    int order_date_key FK
+    int ship_date_key FK
+    int customer_key FK
+    int profile_key FK
+    string order_number "DD"
+    decimal amount
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+  }
+  DIM_CUSTOMER {
+    int customer_key PK
+    string customer_id "natural key"
+    string city
+    date row_effective_date
+    date row_expiration_date
+    boolean is_current
+  }
+  DIM_ORDER_PROFILE {
+    int profile_key PK
+    string payment_type
+    string channel
+    string rush_flag
+  }

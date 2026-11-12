@@ -1,0 +1,68 @@
+erDiagram
+  FACT_POLICY_TRANSACTION }o--|| DIM_POLICYHOLDER : "policyholder_key"
+  FACT_POLICY_TRANSACTION }o--|| DIM_COVERAGE : "coverage_key"
+  FACT_POLICY_TRANSACTION }o--|| DIM_COVERED_ITEM : "covered_item_key"
+  FACT_POLICY_TRANSACTION }o--|| DIM_TRANSACTION_TYPE : "txn_type_key"
+  FACT_POLICY_TRANSACTION }o--|| DIM_DATE : "transaction, effective"
+  FACT_PREMIUM_SNAPSHOT }o--|| DIM_POLICYHOLDER : "policyholder_key"
+  FACT_PREMIUM_SNAPSHOT }o--|| DIM_COVERAGE : "coverage_key"
+  FACT_PREMIUM_SNAPSHOT }o--|| DIM_COVERED_ITEM : "covered_item_key"
+  FACT_PREMIUM_SNAPSHOT }o--|| DIM_MONTH : "month_key"
+  FACT_CLAIM }o--|| DIM_COVERAGE : "coverage_key"
+  FACT_CLAIM }o--|| DIM_DATE : "loss, open, payment, closed"
+  FACT_POLICY_TRANSACTION {
+    int transaction_date_key FK
+    int effective_date_key FK
+    int policyholder_key FK
+    int coverage_key FK
+    int covered_item_key FK
+    int txn_type_key FK
+    string policy_number "degenerate dimension"
+    decimal policy_transaction_amount
+  }
+  FACT_PREMIUM_SNAPSHOT {
+    int month_key FK
+    int policyholder_key FK
+    int coverage_key FK
+    int covered_item_key FK
+    string policy_number "degenerate dimension"
+    decimal written_premium
+    decimal earned_premium
+  }
+  FACT_CLAIM {
+    int loss_date_key FK
+    int open_date_key FK
+    int first_payment_date_key FK
+    int closed_date_key FK
+    int coverage_key FK
+    string claim_id "degenerate dimension"
+    decimal paid_to_date
+    int lag_open_to_closed
+  }
+  DIM_POLICYHOLDER {
+    int policyholder_key PK
+    string policyholder_id "durable key"
+    string zip_code "SCD type 2"
+  }
+  DIM_COVERAGE {
+    int coverage_key PK
+    string coverage_name
+    string line_of_business
+  }
+  DIM_COVERED_ITEM {
+    int covered_item_key PK
+    string item_description
+  }
+  DIM_TRANSACTION_TYPE {
+    int txn_type_key PK
+    string txn_type
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+    int month_key
+  }
+  DIM_MONTH {
+    int month_key PK
+    date month_start
+  }

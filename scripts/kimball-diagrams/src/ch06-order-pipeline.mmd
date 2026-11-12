@@ -1,0 +1,4 @@
+flowchart LR
+  O["Order<br/>заказ"] --> A["Approved<br/>одобрен"] --> S["Shipped<br/>отгружен"] --> D["Delivered<br/>доставлен"] --> I["Invoiced<br/>счёт"] --> P["Paid<br/>оплата"]
+  O -. "lag order → ship" .-> S
+  S -. "lag ship → deliver" .-> D

@@ -143,75 +143,11 @@ where status in ('completed', 'shipped')
 
 ## Практика
 
-### Задание 1
+Полную практику на настоящих сайтах вы пройдёте в следующих уроках: [GitHub](/practice/git/github/) и [GitLab](/practice/git/gitlab/). Там вы создадите бесплатный репозиторий, заведёте Issue, откроете Pull Request и Merge Request.
 
-Создайте репозиторий `sql-reports` на GitHub. Отправьте в него свой локальный репозиторий из прошлого урока.
+Здесь потренируйте конфликт локально. Для этого хватит репозитория `sql-reports` из прошлого урока.
 
-**Проверка:** на GitHub видны файлы и история коммитов.
-
-<details>
-<summary>Решение</summary>
-
-```bash
-git remote add origin git@github.com:YOUR_NAME/sql-reports.git
-git push -u origin main
-```
-
-</details>
-
-### Задание 2
-
-Создайте ветку `add-revenue-by-day`. Добавьте файл `models/revenue_by_day.sql`:
-
-```sql
-select
-    order_date,
-    sum(amount) as revenue
-from orders
-where status = 'completed'
-group by order_date
-```
-
-Сделайте коммит и отправьте ветку на GitHub.
-
-**Проверка:** на GitHub появилась ветка `add-revenue-by-day`.
-
-<details>
-<summary>Решение</summary>
-
-```bash
-git switch -c add-revenue-by-day
-git add models/revenue_by_day.sql
-git commit -m "Add revenue by day model"
-git push -u origin add-revenue-by-day
-```
-
-</details>
-
-### Задание 3
-
-Откройте Pull Request из этой ветки в `main`. Напишите описание: что изменилось и как проверить. Попросите коллегу или друга сделать ревью. Если коллеги нет, оставьте комментарий к строке самому себе.
-
-**Проверка:** PR открыт. В нём есть описание и хотя бы один комментарий.
-
-### Задание 4
-
-Сделайте merge через **Squash and merge**. Обновите локальный `main`.
-
-**Проверка:** `git log --oneline` в `main` показывает новый коммит. Файл `revenue_by_day.sql` есть в `main`.
-
-<details>
-<summary>Решение</summary>
-
-```bash
-git switch main
-git pull
-git log --oneline
-```
-
-</details>
-
-### Задание 5. Конфликт
+### Задание. Конфликт
 
 1. Создайте ветку `a` от `main`. Поменяйте в `models/revenue.sql` строку `where` на `where status = 'completed' and amount > 0`. Сделайте коммит.
 2. Вернитесь в `main`. Поменяйте ту же строку на `where status in ('completed', 'shipped')`. Сделайте коммит.
@@ -234,18 +170,5 @@ git merge a
 git add models/revenue.sql
 git commit -m "Merge branch a"
 ```
-
-</details>
-
-### Задание 6. GitLab
-
-Повторьте путь на GitLab: создайте проект, отправьте код, откройте Merge Request, сделайте merge.
-
-**Проверка:** на GitLab виден смёрженный Merge Request.
-
-<details>
-<summary>Подсказка</summary>
-
-Добавьте второй remote: `git remote add gitlab git@gitlab.com:YOUR_NAME/sql-reports.git`. Затем `git push gitlab main`. Ветки и коммиты работают одинаково.
 
 </details>

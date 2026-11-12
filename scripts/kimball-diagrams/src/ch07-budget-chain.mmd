@@ -1,0 +1,8 @@
+flowchart LR
+  B["Budget<br/>месяц x отдел x группа счетов"] --> C["Commitment<br/>заказы и обязательства"]
+  C --> P["Payment<br/>платежи"]
+  P --> J["GL journal<br/>проводки (atomic)"]
+  J --> S["GL snapshot<br/>остатки на конец периода"]
+  B --> V["Variance<br/>consolidated fact"]
+  S --> V
+  V --> R["Отчёт: план vs факт"]

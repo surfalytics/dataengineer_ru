@@ -1,0 +1,10 @@
+flowchart LR
+  SRC[("Источники")] --> E["EXTRACT<br/>1 Data profiling<br/>2 CDC<br/>3 Extract"]
+  E --> C["CLEAN и CONFORM<br/>4 Cleansing<br/>5 Error event schema<br/>6 Audit dimension<br/>7 Deduplication<br/>8 Conforming"]
+  C --> D["DELIVER<br/>9-13: SCD, ключи,<br/>иерархии, fact builders<br/>14-16: SK pipeline,<br/>multivalued, late arriving<br/>17-21: dimension manager,<br/>fact provider, aggregates,<br/>cubes, propagation"]
+  D --> P[("Presentation<br/>area")]
+  M["MANAGE<br/>22-34: scheduler, backup, recovery,<br/>versioning, monitor, lineage,<br/>security, compliance, metadata"]
+  M -.-> E
+  M -.-> C
+  M -.-> D
+  style M fill:#fff3cd,stroke:#b58900

@@ -1,0 +1,49 @@
+erDiagram
+  FACT_EMPLOYEE_EVENT }o--|| DIM_EMPLOYEE : "employee_key"
+  FACT_EMPLOYEE_EVENT }o--|| DIM_DATE : "event_date_key"
+  FACT_EMPLOYEE_EVENT }o--|| DIM_EVENT_TYPE : "event_type_key"
+  FACT_HEADCOUNT_SNAPSHOT }o--|| DIM_EMPLOYEE : "employee_key"
+  FACT_HEADCOUNT_SNAPSHOT }o--|| DIM_DATE : "month_end_key"
+  DIM_EMPLOYEE ||--o{ BRIDGE_MANAGEMENT : "employee_id"
+  DIM_EMPLOYEE ||--o{ BRIDGE_EMPLOYEE_SKILL : "employee_id"
+  BRIDGE_EMPLOYEE_SKILL }o--|| DIM_SKILL : "skill_key"
+  FACT_EMPLOYEE_EVENT {
+    int employee_key FK
+    int event_date_key FK
+    int event_type_key FK
+    decimal annual_salary
+  }
+  FACT_HEADCOUNT_SNAPSHOT {
+    int month_end_key FK
+    int employee_key FK
+    int headcount
+  }
+  DIM_EMPLOYEE {
+    int employee_key PK
+    int employee_id "durable key"
+    string job_title
+    string department
+    date effective_date
+    date expiration_date
+  }
+  BRIDGE_MANAGEMENT {
+    int manager_id
+    int employee_id
+    int depth
+  }
+  BRIDGE_EMPLOYEE_SKILL {
+    int employee_id
+    int skill_key FK
+  }
+  DIM_SKILL {
+    int skill_key PK
+    string skill_name
+  }
+  DIM_EVENT_TYPE {
+    int event_type_key PK
+    string event_type
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+  }

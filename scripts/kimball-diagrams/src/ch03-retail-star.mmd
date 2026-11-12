@@ -1,0 +1,38 @@
+erDiagram
+  FACT_RETAIL_SALES }o--|| DIM_DATE : "date_key"
+  FACT_RETAIL_SALES }o--|| DIM_PRODUCT : "product_key"
+  FACT_RETAIL_SALES }o--|| DIM_STORE : "store_key"
+  FACT_RETAIL_SALES }o--|| DIM_PROMOTION : "promotion_key"
+  FACT_RETAIL_SALES {
+    int date_key FK
+    int product_key FK
+    int store_key FK
+    int promotion_key FK
+    string ticket_number "degenerate dimension"
+    int sales_quantity
+    decimal net_sales_amount
+  }
+  DIM_PRODUCT {
+    int product_key PK
+    string sku "natural key"
+    string product_name
+    string brand
+    string category
+  }
+  DIM_STORE {
+    int store_key PK
+    string store_name
+    string city
+    string region
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+    string month_name
+    boolean is_holiday
+  }
+  DIM_PROMOTION {
+    int promotion_key PK
+    string promotion_name
+    string promo_type
+  }

@@ -1,0 +1,54 @@
+erDiagram
+  FACT_CLAIM_LINE }o--|| DIM_DATE : "treatment, billing, payment, zero balance"
+  FACT_CLAIM_LINE }o--|| DIM_PATIENT : "patient_key"
+  FACT_CLAIM_LINE }o--|| DIM_PHYSICIAN : "physician_key"
+  FACT_CLAIM_LINE }o--|| DIM_PROCEDURE : "procedure_key"
+  FACT_CLAIM_LINE }o--o{ BRIDGE_DIAGNOSIS_GROUP : "diagnosis_group_key"
+  BRIDGE_DIAGNOSIS_GROUP }o--|| DIM_DIAGNOSIS : "diagnosis_key"
+  FACT_CLAIM_LINE {
+    int treatment_date_key FK
+    int primary_bill_date_key FK
+    int primary_pay_date_key FK
+    int zero_balance_date_key FK
+    int patient_key FK
+    int physician_key FK
+    int procedure_key FK
+    int diagnosis_group_key FK
+    string claim_line_id "degenerate dimension"
+    decimal billed_amount
+    decimal primary_paid_amount
+    decimal unpaid_balance
+  }
+  BRIDGE_DIAGNOSIS_GROUP {
+    int diagnosis_group_key
+    int diagnosis_key
+    decimal weighting_factor
+    boolean is_primary
+  }
+  DIM_DIAGNOSIS {
+    int diagnosis_key PK
+    string icd_code "natural key"
+    string diagnosis_name
+  }
+  DIM_PATIENT {
+    int patient_key PK
+    string patient_id "durable key"
+    string city
+    string plan
+    date valid_from
+    date valid_to
+  }
+  DIM_PHYSICIAN {
+    int physician_key PK
+    string physician_name
+    string specialty
+  }
+  DIM_PROCEDURE {
+    int procedure_key PK
+    string procedure_name
+    string category
+  }
+  DIM_DATE {
+    int date_key PK
+    date full_date
+  }
