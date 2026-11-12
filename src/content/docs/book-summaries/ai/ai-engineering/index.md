@@ -12,7 +12,7 @@ tags:
   - ai
 ---
 
-**AI Engineering: Building Applications with Foundation Models** — книга Chip Huyen (O'Reilly, 2025). Она учит строить приложения на готовых foundation models: от выбора модели и оценки качества до RAG, агентов, finetuning и архитектуры продукта. В книге 10 глав.
+**AI Engineering: Building Applications with Foundation Models** — книга Chip Huyen (O'Reilly, декабрь 2024). Она учит строить приложения на готовых foundation models: от выбора модели и оценки качества до RAG, агентов, finetuning и архитектуры продукта. В книге 10 глав.
 
 > Это собственный пересказ, а не перевод. За полным текстом, примерами и ссылками на исследования идите в оригинал. Схемы нарисованы заново по содержанию глав.
 
@@ -46,6 +46,20 @@ tags:
 | Качество данных важнее их количества | [Глава 8](/book-summaries/ai/ai-engineering/08-dataset-engineering/) |
 | Prefill и decode: две разные фазы inference | [Глава 9](/book-summaries/ai/ai-engineering/09-inference-optimization/) |
 | Архитектура растёт шагами: context, guardrails, router, cache | [Глава 10](/book-summaries/ai/ai-engineering/10-architecture-and-user-feedback/) |
+
+## Что изменилось к 2026 году
+
+Книга написана в 2024 году. Главные идеи не устарели: оценка в центре, данные важнее модели, порядок prompt → RAG → finetuning. Устарели примеры моделей, цены и часть инструментов. В конце каждой главы есть раздел «Что изменилось к 2026 году».
+
+| Тема | Что изменилось | Глава |
+|---|---|---|
+| Модели | Reasoning models и test-time compute. RL с проверяемой наградой (RLVR). MoE стал нормой | [2](/book-summaries/ai/ai-engineering/02-understanding-foundation-models/) |
+| Оценка | MMLU насыщен. LMArena вместо LMSYS. Новые benchmarks для кода и агентов | [3](/book-summaries/ai/ai-engineering/03-evaluation-methodology/), [4](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) |
+| Контекст | Context engineering. Контекст 1M токенов. Structured output по JSON schema | [5](/book-summaries/ai/ai-engineering/05-prompt-engineering/) |
+| Агенты | MCP стал стандартом. Coding agents. Agentic search рядом с vector RAG | [6](/book-summaries/ai/ai-engineering/06-rag-and-agents/) |
+| Обучение | Reinforcement fine-tuning. Synthetic data с автоматической проверкой | [7](/book-summaries/ai/ai-engineering/07-finetuning/), [8](/book-summaries/ai/ai-engineering/08-dataset-engineering/) |
+| Serving | FP8 и FP4, disaggregated prefill/decode, vLLM и SGLang | [9](/book-summaries/ai/ai-engineering/09-inference-optimization/) |
+| Продакшен | AI gateways, OpenTelemetry для GenAI, онлайн-evals | [10](/book-summaries/ai/ai-engineering/10-architecture-and-user-feedback/) |
 
 ## Для кого
 
