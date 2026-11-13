@@ -8,6 +8,8 @@ Every example below comes from a real page of this site (DDIA chapter 6 test). A
 - Code, inline code, commands, paths, URLs, image paths, front matter keys.
 - Facts, numbers, the order of ideas.
 - Inside backticks a term is not declined. In plain text an English term is used like a Russian noun: `в routing tier`, `два hot spot`.
+- One form per term on a page. If the glossary says `consumer`, do not also write `потребитель`. If the glossary says `партиция`, do not also write `partition` (SQL keywords in code are fine). The script reports this as `term-drift`.
+- Do not change the form the glossary gives, in either direction. If the glossary has no entry, keep the form the page uses most and report the term to the owner.
 
 Gender of an English term in a sentence follows the Russian noun you would use for it. Use one gender for one term in all chapters. Write it in the glossary if it is not clear.
 
@@ -74,23 +76,53 @@ Stop words (канцелярит). Say it with a verb: `является` → `�
 
 ## 4. Flow: how to make it pleasant to read
 
-The site style is short sentences. That is good. Short sentences without links read like a list of facts. Fix this without making the page longer.
+The site style is short sentences. That is good. But short sentences with no links read like a list of facts. The reader has to guess how one fact follows from another. Fix this without adding facts.
 
-1. **Link the sentences.** Between two ideas put a word that shows the link: «поэтому», «но», «из-за этого», «иначе говоря», «например», «а». One link word per 2–3 sentences is enough.
-2. **Vary the rhythm.** Do not start three sentences in a row with the same word. Mix a short sentence with a medium one (10–20 words).
-3. **Put the main word first.** `Rebalancing нужен при росте данных`, not `При росте данных нужен rebalancing`, unless the condition is the point.
-4. **Use a verb, not a noun chain.** `для проведения анализа производительности` → `чтобы проанализировать скорость`.
-5. **Cut long sentences.** More than 30 words: split in two.
-6. **Read it aloud.** If you stumble, rewrite.
-7. **Use the same word for the same thing.** Not `партиция`, `раздел`, `кусок` in one section.
-8. **Explain at first use.** A term appears: one short phrase says what it is. Then use the term freely.
+Targets (check with `check.py --stats`). They are a guide, not a goal:
+
+| Number | Target | Dry page (example) |
+|---|---|---|
+| Median words per sentence | 8 or more | 5–6 |
+| Sentences of 5 words or less | 30% or less | 40–57% |
+| Link words per 100 sentences | 10 or more | 3–5 |
+
+### The tools
+
+1. **Link the sentences.** Put a word that shows the relation: «поэтому», «но», «а», «при этом», «к тому же», «например», «то есть», «в итоге». One link per 2–3 sentences is enough.
+2. **Join two halves of one thought.** Use a colon, «и», «а», «но», «который», «когда».
+3. **Unfold fragments.** In prose every sentence has a verb. Fragments are fine only in tables.
+4. **Vary the rhythm.** No more than 3 short sentences in a row. Do not start three sentences with the same word. Mix short and medium sentences (10–20 words). A short sentence after two medium ones gives stress.
+5. **Known first, new last.** The new or main word goes to the end of the sentence: `При росте данных нужен rebalancing` (new: rebalancing), `Rebalancing нужен при росте данных` (new: when).
+6. **Use a verb, not a noun chain.** `для проведения анализа производительности` → `чтобы проанализировать скорость`.
+7. **Cut long sentences.** More than 30 words: split in two. After joining, stay under 25 words.
+8. **Use the same word for the same thing.** Not `партиция`, `раздел`, `кусок` in one section.
 9. **Active voice.** `Приложение добавляет число к ключу`, not `Число добавляется приложением к ключу`. Passive is fine when the actor does not matter (`данные переносятся`).
+10. **Read it aloud.** If you stumble, rewrite.
 
-Do not:
+### Examples (real paragraphs)
 
-- add new facts or opinions to make the text "livelier";
-- add jokes, emoji, or idioms;
-- turn tables into paragraphs.
+Before (DDIA ch 6): five sentences, one link word.
+
+> Автоматика удобна, но непредсказуема. Rebalancing нагружает сеть и узлы. Вместе с автоматическим детектором отказов возможен каскад: медленный узел сочтён мёртвым, нагрузка уходит на другие, они тоже замедляются. Поэтому часто нужен человек в цикле. Couchbase, Riak и Voldemort предлагают план, но ждут подтверждения.
+
+After: same facts, the links are visible.
+
+> Автоматика удобна, но непредсказуема. К тому же rebalancing нагружает сеть и узлы. В паре с автоматическим детектором отказов это может вызвать каскад: система считает медленный узел мёртвым и переносит его нагрузку на другие узлы, а те от этого тоже замедляются. Поэтому в процессе часто оставляют человека: Couchbase, Riak и Voldemort сами предлагают план, но ждут подтверждения.
+
+What changed: «к тому же» (link, no new cause), «система считает» (a subject for the passive fragment), «а те от этого» (link inside the chain), the last two sentences joined with a colon (the second is an example of the first).
+
+Before (fragments): `Новичок. Читайте по порядку. Главы 1, 2, 5 дают основу. Главу 9 оставьте на второй проход.`
+
+After: `Новичку лучше читать по порядку: главы 1, 2 и 5 дают основу, а главу 9 можно оставить на второй проход.`
+
+### Do not
+
+- Do not add facts, numbers, examples, or opinions to make the text "livelier".
+- **Do not add a cause the text does not state.** «Поэтому» and «потому что» are claims. In the example above the text does not say that automation is unpredictable *because* rebalancing is heavy. So the link is «к тому же», not «потому что».
+- Do not add filler: «стоит отметить», «важно понимать», «как известно», «давайте разберёмся».
+- Do not add jokes, emoji, or idioms.
+- Do not turn tables into paragraphs or paragraphs into lists.
+- Do not pad sentences to hit the numbers.
 
 ## 5. Typography (what the script checks)
 

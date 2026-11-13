@@ -1,4 +1,4 @@
-# Prompt for the fresh review agent
+# Prompt for the correctness review
 
 Copy this, fill the `<...>` parts, and send it to a fresh subagent (`general-purpose`). Do not tell it what you expect to find.
 
@@ -15,7 +15,7 @@ Do two passes.
 
 **Pass 1: meaning and clarity.** For every sentence ask: who does what to whom? Is there a subject, a verb, an object? Does the sentence say something clear? Fix broken sentences, missing objects, wrong subjects, unclear brackets, bad agreement, unclear «это/этого».
 
-**Pass 2: terms, calques, punctuation, flow.** Fix calques from English, wrong or inconsistent terms, missing dashes and commas, typography. Then check the flow: link words between ideas, rhythm, sentences over 30 words, three sentences with the same first word.
+**Pass 2: terms, calques, punctuation.** Fix calques from English, wrong or inconsistent terms (one form per term, as in the glossary), missing dashes and commas, typography, sentences over 30 words. Do not rework the rhythm of paragraphs: a separate flow pass does that.
 
 Hard limits:
 - English technical terms stay in English. Do not translate them. Code, links, image paths, numbers, facts, heading structure and front matter keys do not change.
@@ -34,4 +34,6 @@ Output:
 
 Notes for the lead:
 - Run this on one chapter per agent. Run agents in parallel for many chapters.
+- After the review run the guard: `python3 -I scripts/ru-proofread/check.py --before <before.md> <page.md>`.
+- Then run the flow pass (`flow-prompt.md`) if `check.py --stats` shows `LOW`.
 - Compare the log to the script output. If the agent finds a new repeatable error, add it to `scripts/ru-proofread/calques.tsv` or `rules.md`.
