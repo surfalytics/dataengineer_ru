@@ -1,0 +1,12 @@
+# Глава 17: DAG из Git через git-sync. Блок values для chart apache-airflow/airflow
+dags:
+  persistence:
+    enabled: false
+  gitSync:
+    enabled: true
+    repo: https://github.com/example-org/airflow-dags.git
+    branch: main
+    ref: main
+    depth: 1
+    maxFailures: 0
+    subPath: "dags"
