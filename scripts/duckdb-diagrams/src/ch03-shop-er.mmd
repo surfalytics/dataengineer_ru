@@ -1,0 +1,23 @@
+erDiagram
+  CUSTOMERS ||--o{ ORDERS : "customer_id"
+  PRODUCTS ||--o{ ORDERS : "product_id"
+  CUSTOMERS {
+    int customer_id PK
+    varchar name
+    varchar city
+    date joined
+  }
+  PRODUCTS {
+    int product_id PK
+    varchar title
+    varchar category
+    decimal price
+  }
+  ORDERS {
+    int order_id PK
+    int customer_id FK
+    int product_id FK
+    date ordered_at
+    date shipped_at
+    varchar status
+  }

@@ -1,0 +1,11 @@
+SQLAlchemy==2.0.57
+duckdb==1.4.3
+duckdb-engine==0.17.0
+ipython==9.18.1
+jupysql==0.11.1
+matplotlib==3.11.2
+numpy==2.5.4
+pandas==2.3.3
+polars==1.8.2
+psutil==7.2.2
+pyarrow==26.0.1

@@ -16,149 +16,172 @@ tags:
 
 **Главная мысль:** данные приходят в случайное время. Не ждите «на всякий случай» в конце окна. Пусть Airflow сам узнает о событии: через sensor, вызов API или сообщение в очереди.
 
+## О чём глава
+
+Как запускать DAG от событий вне Airflow? В [главе 3](/book-summaries/engineering/data-pipelines-with-apache-airflow/03-time-based-scheduling/) мы запускали DAG по времени, в [главе 4](/book-summaries/engineering/data-pipelines-with-apache-airflow/04-asset-aware-scheduling/) по обновлению `Asset`. Теперь триггер приходит снаружи: файл, коммит, сообщение в шине. Темы: sensors, CLI и REST API, очереди сообщений.
+
 ![Четыре способа запустить DAG от внешнего события: sensor, CLI, REST API и сообщение в очереди](/assets/data-pipelines-with-apache-airflow/ch07-triggers.png)
 
-## Проблема: ожидание по расписанию
+## Опрос условий с помощью sensors
 
-Пример из книги: приложение с купонами. Четыре супермаркета выкладывают файлы с акциями в общее хранилище. Время разное: с 16:00 до 2:00 ночи.
+Пример автора: мобильное приложение с купонами. Четыре сети супермаркетов каждый день выкладывают файлы с акциями в общее хранилище. Акции готовят вручную, поэтому файлы приходят в случайное время, обычно с 16:00 до 2:00 ночи. Гарантии нет.
 
-- Если запускать DAG в 2:00, первый супермаркет ждёт 9,5 часов.
-- Данные есть, но не обработаны.
-- Решение: запускать DAG раньше и проверять условие, пока данные не придут.
+В DAG `copy_to_raw` копирует файл каждого супермаркета в сырое хранилище, откуда результат всегда можно пересчитать. Затем `process_supermarket_N` кладёт данные в базу приложения. В конце `create_metrics` считает метрики.
 
-## Sensors
+Если запускать DAG в 2:00, чтобы точно все данные были на месте, получается долгое ожидание. Первый супермаркет прислал файл в 16:30, обработка началась в 2:00: данные лежали 9,5 часа.
 
-`Sensor` - особый вид `operator`. Он снова и снова проверяет условие. Если условие верно, task получает `success`. Если нет, sensor ждёт и пробует ещё раз. Одна проверка называется `poke`.
+![Запуск DAG в 02:00 против sensors: данные ждут часами или обрабатываются сразу](/assets/data-pipelines-with-apache-airflow/ch07-wait-timeline.png)
 
-| Параметр | Что делает |
-|---|---|
-| `poke_interval` | Пауза между проверками. По умолчанию 60 секунд |
-| `timeout` | Сколько sensor может работать всего. По умолчанию 7 дней |
-| `mode` | `poke` держит slot всё время. `reschedule` отпускает slot между проверками |
+Решение в Airflow: `sensor`. Это особый подкласс `operator`. Sensor регулярно проверяет условие. Если оно верно, task получает `success`. Если нет, sensor ждёт и пробует снова, пока условие не выполнится или не наступит `timeout`. Одна проверка — `poke`. Пример: `FileSensor` проверяет, что файл существует. Пауза между проверками задаётся `poke_interval`, по умолчанию 60 секунд.
 
-Как строят DAG:
+Автор предупреждает: слишком малый `poke_interval` (например, 2 секунды при ответе системы в 2 секунды) перегрузит внешнюю систему.
 
-- `start_date` и расписание ставят в начало окна прихода данных.
-- Перед каждой веткой обработки стоит свой sensor.
-- Ветка готового супермаркета идёт дальше сразу. Остальные ждут.
-
-Предупреждение: слишком частый `poke_interval` может перегрузить внешнюю систему.
+В DAG расписание ставят на начало окна прихода данных, а не на его конец. Перед обработкой каждого супермаркета стоит свой sensor. Готовая ветка идёт дальше сразу, остальные ждут.
 
 ### Свои условия: PythonSensor
 
-`FileSensor` понимает wildcard, например `data-*.csv`. Но он сработает на первом файле, пока остальные ещё загружаются. Это плохо.
+Набор данных часто приходит несколькими файлами: `data-01.csv`, `data-02.csv`. `FileSensor` понимает шаблон `data-*.csv`, но сработает уже на первом файле, пока остальные грузятся. Обработается неполный набор.
 
-Решение: поставщик пишет файл `_SUCCESS` последним. `PythonSensor` вызывает вашу функцию. Она возвращает `True` или `False`. Проверяет и файлы данных, и `_SUCCESS`.
+Поэтому договариваются о маркере. Супермаркет пишет файл `_SUCCESS` последним. Нужно проверить два условия: есть файлы `data-*.csv` и есть `_SUCCESS`. Автор советует не усложнять шаблон для `FileSensor`, а написать две проверки в `PythonSensor`.
 
-### Когда данных нет: sensor deadlock
+`PythonSensor` похож на `PythonOperator`, но функция должна вернуть только `True` или `False`. В маркер можно записать и метаданные: число записей, ошибки.
 
-Если супермаркет не прислал данные, sensor ждёт до `timeout`. Это 7 дней. Каждый день добавляется новый DAG run со своими ждущими sensors.
-
-Что получается:
-
-1. День 1: три sensors ждут и занимают 3 slots.
-2. День 2: уже 6 slots. День 5: 15 slots.
-3. По умолчанию в одном DAG работает до 16 tasks (`max_active_tasks`). Дальше новые tasks не стартуют.
-4. Если достигнут общий лимит Airflow, встаёт вся система.
-
-Это называют `sensor deadlock`. Способы защиты:
-
-- Ставьте разумный `timeout`.
-- Используйте `mode="reschedule"`.
-- Используйте deferrable operators.
-- Настройте лимиты `max_active_tasks` и глобальные лимиты.
-
-### Deferrable operators
-
-Deferrable operator отдаёт ожидание компоненту `triggerer`. Worker slot освобождается. `Triggerer` запускает асинхронный код (`asyncio`) и ждёт сотни событий сразу. Когда условие выполнено, task возвращается на worker.
-
-- Такие операторы часто имеют суффикс `Async` или параметр `deferrable=True`.
-- Нужен хотя бы один процесс `triggerer`.
-- `PythonOperator` и TaskFlow-tasks нельзя сделать deferrable. Они синхронные.
-
-## Запуск через CLI и REST API
-
-Можно запустить DAG снаружи, например из CI/CD или из AWS Lambda. Тогда не нужны sensors, которые опрашивают всё время.
-
-| Способ | Пример |
-|---|---|
-| CLI | `airflow dags trigger dag1` |
-| CLI с параметрами | `airflow dags trigger --conf '{"supermarket_id": 1}' dag1` |
-| REST API | `POST /dags/<dag_id>/dagRuns` с телом `{"conf": {...}}` |
-| Обновление asset | `POST` в endpoint событий asset |
-
-Важные детали:
-
-- Run, запущенный снаружи, получает `run_type = manual`.
-- `conf` доступен в tasks через `context["dag_run"].conf`.
-- С `conf` не нужны копии tasks под разные значения. Один DAG обслуживает всех.
-- DAG, который зависит от `conf`, нельзя ставить на расписание. Scheduled run не имеет `conf`. Ставьте `schedule=None`.
-- Пароль в открытом виде в `curl` - плохая практика. Используйте другие способы аутентификации.
-
-## Запуск по сообщениям
-
-Очереди (Kafka, RabbitMQ, Google Pub/Sub, Azure Event Hubs) хорошо подходят для near-real-time. Каждый супермаркет мог бы отправлять сообщение «загрузка завершена» вместо файла `_SUCCESS`.
-
-Как это собрать в Airflow 3:
-
-1. `MessageQueueTrigger` получает `scheme="kafka"` и список `topics`. Адрес брокера берётся из Airflow connection (`kafka_default`).
-2. `apply_function` фильтрует сообщения. Она возвращает `True`, если нужно запустить DAG.
-3. Trigger оборачивают в `AssetWatcher` и привязывают к `Asset`.
-4. DAG получает этот `Asset` в `schedule`.
-
-Нюансы:
-
-- Есть небольшая задержка. Consumer читает новые сообщения с фиксированным интервалом.
-- Нужна дополнительная инфраструктура: очередь.
-- Это удобный способ связать два экземпляра Airflow. Один DAG пишет сообщение, другой стартует. API не нужно открывать наружу.
-
-## Пример кода
-
-Проверено на Airflow 3.4: функция sensor проверена в pytest, DAG с Kafka загружается. Для запуска нужен брокер Kafka и provider `apache-airflow-providers-apache-kafka`.
-
-Sensor с проверкой двух условий. Имена здесь выдуманы.
+Наша версия с выдуманными именами. Функцию можно проверить без Airflow.
 
 ```python
-from datetime import timedelta
 from pathlib import Path
 
-from airflow.providers.standard.sensors.python import PythonSensor
 
+def batch_is_ready(folder):
+    path = Path(folder)
+    has_data = any(path.glob("part-*.csv"))
+    return has_data and (path / "_DONE").exists()
+```
 
-def _batch_is_ready(partner):
-    folder = Path("/landing") / partner
-    has_data = any(folder.glob("part-*.parquet"))
-    return has_data and (folder / "_DONE").exists()
-
-
-wait_partner_a = PythonSensor(
+```python
+wait_a = PythonSensor(
     task_id="wait_partner_a",
-    python_callable=_batch_is_ready,
-    op_kwargs={"partner": "partner_a"},
+    python_callable=batch_is_ready,
+    op_kwargs={"folder": "/landing/partner_a"},
     poke_interval=300,
-    timeout=timedelta(hours=10),
-    mode="reschedule",
+    timeout=timedelta(hours=10),   # вместо 7 дней по умолчанию
+    mode="reschedule",             # между проверками слот свободен
 )
 ```
 
-Запуск DAG при сообщении в очереди:
+Полный DAG: [ch07_sensor_dag.py](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/ch07_sensor_dag.py).
+
+### Что, если данных нет: sensor deadlock
+
+Что, если супермаркет не прислал файл? Sensor упадёт по `timeout`. Но по умолчанию это 7 дней.
+
+DAG идёт раз в день. Каждый день добавляются новые sensors для молчащих супермаркетов, а старые ещё живут. Число одновременных tasks ограничено: на DAG, на весь Airflow. На один DAG по умолчанию 16 tasks (`max_active_tasks`).
+
+Пример автора. Супермаркет 1 присылает данные, а 2, 3 и 4 молчат:
+
+- День 1: ждут 3 sensors, занято 3 слота. День 2: занято 6. День 5: занято 15.
+- День 6: занято 16. Новые tasks не стартуют.
+
+Это называют `sensor deadlock`: все слоты заняты sensors, а им ждать нечего. Если лимит исчерпан в одном DAG, остальные работают. Если исчерпан глобальный лимит, встаёт вся система.
+
+Способы защиты:
+
+- Задайте разумный `timeout`.
+- Используйте `mode="reschedule"`: sensor освобождает слот между проверками. В режиме `poke` (по умолчанию) слот занят всё время, даже когда sensor ничего не делает.
+- Возьмите deferrable operators.
+- Настройте `max_active_tasks` и глобальные лимиты (глава 15 книги).
+
+![Что делает worker slot при poke, reschedule и deferrable](/assets/data-pipelines-with-apache-airflow/ch07-slots.png)
+
+В режиме `poke` слот занят всё время. В `reschedule` он занят только на проверку. У deferrable operator слот свободен, пока ждёт `triggerer`.
+
+### Deferrable operators
+
+Ожидающий deferrable operator отдаёт работу компоненту `triggerer` и освобождает worker. Triggerer запускает асинхронный код (`asyncio`) и ждёт много событий в одном процессе. Когда условие выполнено, task возвращается на worker.
+
+- У таких operators суффикс `Async` или аргумент `deferrable=True`.
+- Нужен хотя бы один процесс `triggerer`: вообще он необязателен, но для deferrable обязателен.
+- `PythonOperator` и TaskFlow-tasks нельзя сделать deferrable. Они синхронные: идут до конца и всё время держат слот.
+
+## Запуск через CLI и REST API
+
+DAG можно запустить и снаружи, например из CI/CD. Или AWS Lambda вызывает API, когда в S3 появился файл. Sensors с постоянным опросом тогда не нужны.
+
+CLI: `airflow dags trigger dag1`. Run получает `run_id` с префиксом `manual__` и `run_type = manual`.
+
+Команда принимает параметры: `airflow dags trigger --conf '{"supermarket_id": 1}' dag1`. Эта конфигурация (`conf`) доступна во всех tasks этого run через контекст: `context["dag_run"].conf`.
+
+`conf` упрощает DAG: не нужно копировать tasks ради разных значений.
+
+Есть важное ограничение. Run по расписанию не имеет `conf`. Поэтому DAG, который опирается на `conf`, нельзя ставить на расписание. Ставьте `schedule=None`.
+
+REST API даёт тот же результат, если нет доступа к CLI, но есть HTTP. Запрос: `POST /dags/<dag_id>/dagRuns` с телом `{"conf": {...}}`. Тело нужно всегда, даже пустое `{"conf": {}}`. Пароль в `curl` открытым текстом, как в книге, плохая практика: используйте другую аутентификацию.
+
+Через API можно сообщить и об обновлении `Asset`: `POST` в endpoint событий (`datasets/events/`). Airflow запустит DAG, которые зависят от asset.
+
+Наш DAG с `conf` и запуск через `dags test`:
 
 ```python
-from airflow.sdk import DAG, Asset, AssetWatcher
-from airflow.providers.common.messaging.triggers.msg_queue import MessageQueueTrigger
-from airflow.providers.standard.operators.empty import EmptyOperator
+@task
+def process(**context):
+    conf = context["dag_run"].conf
+    print("обрабатываем супермаркет:", conf["supermarket_id"])
+```
 
+```bash
+airflow dags test ch07_conf_demo --conf '{"supermarket_id": 1}'
+```
+
+```text
+обрабатываем супермаркет: 1
+state=success, run_type=manual
+```
+
+Полный DAG: [ch07_conf_dag.py](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/ch07_conf_dag.py).
+
+## Запуск по сообщениям
+
+Во многих компаниях есть очереди для near-real-time. Одно сообщение несёт один факт, например банковскую транзакцию. Примеры: Apache Kafka, RabbitMQ, Google Cloud Pub/Sub, Azure Event Hubs.
+
+Очередь может запускать DAG, если часть сообщений означает «пора работать». Вместо `_SUCCESS` и `FileSensor` каждый супермаркет шлёт в очередь сообщение «загрузка завершена». Пример автора на Kafka, другие очереди работают так же.
+
+Шаги:
+
+1. Создайте `MessageQueueTrigger`. Он знает, где очередь и какой topic читать.
+2. Добавьте `apply_function`. Она фильтрует сообщения. Если вернула `True`, DAG нужно запустить.
+3. Оберните trigger в `AssetWatcher` и привяжите к `Asset`.
+4. Передайте этот `Asset` в `schedule` DAG.
+
+![Путь сообщения из Kafka до запуска DAG](/assets/data-pipelines-with-apache-airflow/ch07-kafka-asset.png)
+
+> **Пояснение:** в книге адрес очереди задан строкой `queue="kafka://kafka:9092/events"`. В актуальном provider этот параметр устарел. Мы указываем `scheme="kafka"` и `topics`, а адрес брокера лежит в Airflow connection.
+
+```python
 trigger = MessageQueueTrigger(
     scheme="kafka",
     topics=["uploads"],
-    apply_function="my_project.filters.only_done",
+    apply_function="ch07_kafka_dag.only_done",
     kafka_config_id="kafka_default",
 )
 uploads = Asset("uploads_topic", watchers=[AssetWatcher(name="uploads_watcher", trigger=trigger)])
 
-with DAG(dag_id="on_upload", schedule=[uploads]):
-    EmptyOperator(task_id="load")
+with DAG(dag_id="ch07_on_upload", schedule=[uploads]):
+    ...
 ```
+
+Старт может задержаться: consumer читает очередь с фиксированным интервалом.
+
+Минус подхода: нужна дополнительная инфраструктура. Плюс: можно связать два экземпляра Airflow. DAG в экземпляре A пишет сообщение, DAG в экземпляре B стартует. Очередь служит интерфейсом, и API наружу открывать не нужно.
+
+## Итоги главы
+
+- Sensor проверяет условие по кругу, пока оно не станет `True` или не выйдет `timeout`.
+- `PythonSensor` вызывает вашу функцию. Маркер `_SUCCESS` защищает от неполных данных.
+- `timeout` по умолчанию 7 дней. В ежедневном DAG это ведёт к sensor deadlock.
+- `mode="reschedule"` и deferrable operators освобождают slot во время ожидания.
+- `PythonOperator` и TaskFlow-tasks нельзя сделать deferrable.
+- DAG можно запустить через CLI или REST API. `conf` передаёт параметры, но такой DAG нельзя ставить на расписание.
+- `MessageQueueTrigger` с `AssetWatcher` запускает DAG от сообщения. Так можно связать и два экземпляра Airflow.
 
 ## Ключевые термины
 
@@ -182,6 +205,57 @@ with DAG(dag_id="on_upload", schedule=[uploads]):
 - Договоритесь с поставщиком о маркере конца загрузки, например `_SUCCESS`. Иначе вы прочитаете половину файлов.
 - Если источник умеет вызывать API (Lambda, CI/CD), запускайте DAG через REST API. Это дешевле, чем опрос.
 - Параметризуйте DAG через `conf`, но помните: по расписанию он работать не будет.
+- Следите за `poke_interval`: частый опрос нагружает внешнюю систему.
+
+## Практика
+
+Статус проверок: [README.md](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/README.md). Airflow 3.4.0, Python 3.12. Kafka-DAG только разобран (DagBag). Настоящую очередь не запускали: нужен брокер Kafka.
+
+Проверка условия и расчёт sensor deadlock ([ch07_check_sensor.py](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/ch07_check_sensor.py)):
+
+```text
+пустая папка: False
+данные есть, маркера нет: False
+данные и маркер: True
+
+День | занято слотов sensors
+   1 | 3
+   2 | 6
+   3 | 9
+   4 | 12
+   5 | 15
+   6 | 16  <- лимит, новые tasks не стартуют
+   7 | 16  <- лимит, новые tasks не стартуют
+```
+
+Разбор обоих DAG через DagBag:
+
+```text
+ch07_sensor_dag.py -> ch07_partner_sensors ['process_partner_a', 'wait_partner_a']
+ошибки разбора: нет
+ch07_kafka_dag.py -> ch07_on_upload ['copy_to_raw', 'process']
+ошибки разбора: нет
+```
+
+### Задания
+
+1. В `ch07_check_sensor.py` поставьте `waiting_per_day = 5`. На какой день занятых слотов станет 16?
+
+<details>
+<summary>Решение</summary>
+
+Считаем: 5, 10, 15, потом 20, но лимит 16. Значит, на 4-й день. Сверьте с запуском.
+
+</details>
+
+2. Запустите `dags test` с другим `conf` (`{"supermarket_id": 3}`). Что будет без `--conf`?
+
+<details>
+<summary>Решение</summary>
+
+Task напечатает «обрабатываем супермаркет: 3». Без `--conf` словарь пустой, `conf["supermarket_id"]` даёт `KeyError`, task падает. Так же упал бы run по расписанию.
+
+</details>
 
 ## Вопросы для самопроверки
 
