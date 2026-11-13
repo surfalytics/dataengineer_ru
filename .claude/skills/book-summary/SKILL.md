@@ -11,9 +11,9 @@ A book summary is a detailed Russian retelling of a book. It is a folder with an
 
 - **Reader:** a Russian-speaking data engineer who has NOT read the book and may not know its field.
 - **Goal:** the reader gets the full core content of the book in clear Russian. After a chapter page they understand the chapter almost as well as after reading the original.
-- **Keep, do not cut.** Keep every idea, argument, definition, and example that matters in the chapter. Keep the order of the book.
-- **No size limit.** A chapter page is as long as it needs to be. A long chapter can give a 500+ line page. That is fine.
-- **Clear first.** If a short sentence from the book is not clear to a newcomer, add an explanation or an example. Clarity is more important than being short.
+- **Detailed summary, not a translation.** Keep every main idea, argument, definition, number, and warning of the chapter. Keep the order of the book. Cut repeats, side stories, and long listings.
+- **Size target: 20-40% of the book chapter, aim for 30%.** Count words of the prose on the page (code blocks and their output do not count). Count words of the book chapter without code. Example: a 4,900-word chapter gives a 1,000-2,000-word page. Below 20% the page is too thin. Above 40% it is too long: cut. Count words with a script (strip code blocks and `<details>`), not by eye.
+- **Clear first, within the target.** If a sentence is not clear to a newcomer, add one short sentence or one small example. Do not add long explanations. Mark our own additions with `> **Пояснение:**`, at most 3 per chapter.
 
 ### Translation vs retelling
 
@@ -114,7 +114,7 @@ At first use in each chapter, write: `<term> — <простое объясне�
   - examples and cases (keep them; change the wording, and the data if it is long);
   - numbers and study results that support the claim, with one line on what they show;
   - the author's advice and warnings.
-- Do not drop a paragraph because it is hard. Hard parts need more explanation, not less.
+- Hard parts get one clear sentence of explanation. Do not drop a main idea because it is hard. Do drop a minor example, a repeat, or a side detail to stay in the size target.
 
 ### 3. Sentences
 
@@ -163,7 +163,7 @@ When a passage assumes knowledge the reader may not have:
    - All labels in Russian. Keep English terms the same as in the glossary.
    - For a chart with data (a plot of results), draw a simple chart of the trend with our own example numbers. Say in the text what the original result was.
 4. Add our own diagrams where the book has none, but a flow or comparison is hard to follow in text.
-5. Each chapter has at least one diagram.
+5. Each chapter has at least one diagram. Keep 3-4 per chapter: the ones that carry the main ideas. Skip decorative ones (timelines, logos).
 
 Placement:
 - Put the diagram right after the paragraph that explains it. Add one sentence on how to read it.
@@ -218,7 +218,7 @@ Body, in this order:
    Then `## Что изменилось к 2026 году` if the old page had it (see "Keep what the project already has").
 6. `## Ключевые термины` - table: Термин | Значение. Same words as in the glossary.
 7. `## Что это значит на практике` - bullets for a data engineer's daily work.
-8. Practice: code of the chapter (see "Hands-on code from the book") and, for technical books, `## Практика в DuckDB` (see below). The practice may sit inside the content sections right after the idea it shows, or in its own section before `## Итоги главы`.
+8. Practice: 1-3 short code snippets of the chapter with their real output, and, for technical books, a short `## Практика в DuckDB` with 2-3 tasks (see below). Full scripts live in `scripts/<book>-code/` and the page links to them. Do not embed whole scripts in `<details>`.
 9. `## Вопросы для самопроверки` - 4-6 numbered questions. Ask "why" and "when", not only "what".
 10. Last line: `Предыдущая: [..](..). Следующая: [..](..).` with root-absolute links and a trailing slash.
 
@@ -247,7 +247,8 @@ Use it for technical books where SQL shows the idea (modeling, SQL, ETL).
 - Start: `Запустите \`duckdb\` в терминале или откройте [shell.duckdb.org](https://shell.duckdb.org). Блоки идут по порядку.`
 - `### Шаг 1. Создаём ...` - create small tables with `VALUES` and `generate_series`. No files to download.
 - `### Шаг 2. Проверяем` - a sanity query (row counts, "this must return 0 rows").
-- `### Задания` - 3-4 tasks. Each solution is in `<details><summary>Решение</summary> ... </details>`, with one line that explains the result.
+- Keep it short: one setup block, one check, 2-3 tasks.
+- `### Задания` - 2-3 tasks. Each solution is in `<details><summary>Решение</summary> ... </details>`, with one line that explains the result.
 - All blocks run top to bottom in one in-memory session.
 - Check the chapter: `python3 scripts/kimball-diagrams/check_sql.py <chapter.md>` (needs DuckDB CLI). It must print `OK`.
 
@@ -261,12 +262,13 @@ Use it for technical books where SQL shows the idea (modeling, SQL, ETL).
 
 For each chapter, answer yes to all:
 
-- [ ] Every H2/H3 of the book chapter has a section on our page.
-- [ ] Every definition, argument, and key example of the chapter is there.
+- [ ] Every H2/H3 of the book chapter has a section on our page (very short ones may be joined).
+- [ ] Prose size is 20-40% of the book chapter (words without code). Report both numbers.
+- [ ] Every main definition, argument, number, and warning of the chapter is there.
 - [ ] Every term is explained at first use, with the same word as in the glossary.
-- [ ] Hard passages have an extra explanation or example, not less text.
+- [ ] Hard passages have one clear sentence of explanation.
 - [ ] No paragraph is a word-by-word translation. No copied tables or figures.
-- [ ] Every figure of the book is redrawn, or listed as skipped with a reason in `figures.md`.
+- [ ] Every figure of the book is redrawn or listed as skipped with a reason in `figures.md`. 3-4 diagrams stay on the page.
 - [ ] Every code example runs. The output on the page is the real output. `scripts/<book>-code/README.md` is all `ok`.
 - [ ] A reader who has not read the book understands the page without the original.
 - [ ] `npm run build` passes.
