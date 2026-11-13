@@ -15,7 +15,7 @@ tags:
 
 **AI Engineering: Building Applications with Foundation Models** — книга Chip Huyen (O'Reilly, декабрь 2024). Она учит строить приложения на готовых foundation models: от выбора модели и оценки качества до RAG, агентов, finetuning и архитектуры продукта. В книге 10 глав, около 150 000 слов. Автор писала её два года и опиралась на более чем 100 интервью с исследователями, разработчиками фреймворков и руководителями компаний.
 
-> Это подробный пересказ на русском, а не перевод. За полным текстом, примерами и ссылками на исследования идите в оригинал. Схемы нарисованы заново по содержанию глав. Код в практике написан нами и проверен запуском.
+> Это подробный пересказ на русском, а не перевод. За полным текстом идите в оригинал.
 
 ![Карта книги: 10 глав в четырёх блоках](/assets/ai-engineering/ch00-book-map.png)
 
@@ -154,12 +154,11 @@ tags:
 
 ## Как работать с практикой
 
-В каждой главе есть практика: код на Python и запросы SQL в DuckDB. Они повторяют идеи главы на маленьких данных, которые мы генерируем сами. Платные API не нужны: там, где книга использует модель, мы ставим простую симуляцию, а в настоящей системе её заменяет вызов модели.
+В главах есть практика: короткие примеры на Python и SQL в DuckDB и ссылки на полные скрипты. Они повторяют идеи главы на маленьких данных, которые мы генерируем сами. Платные API не нужны: там, где книга использует модель, мы ставим простую симуляцию, а в настоящей системе её заменяет вызов модели.
 
-- Нужны Python 3.10+ и DuckDB CLI (для SQL). Блоки SQL идут по порядку в одной сессии: запустите `duckdb` в терминале или откройте [shell.duckdb.org](https://shell.duckdb.org).
-- Код Python в главах лежит в сворачиваемых блоках «Код: файл.py». Те же файлы есть в репозитории: [scripts/ai-engineering-code](https://github.com/surfalytics/dataengineer_ru/tree/main/scripts/ai-engineering-code). Запуск: `python3 scripts/ai-engineering-code/<файл>.py`.
-- Вывод под кодом настоящий: мы запускали каждый скрипт. Случайные данные генерируются с фиксированным seed, поэтому результат у вас будет тем же.
-- После вывода идёт список «Что видно»: что именно показывает результат.
+- Нужны Python 3.10+ и DuckDB CLI (для SQL). Запустите `duckdb` в терминале или откройте [shell.duckdb.org](https://shell.duckdb.org).
+- На страницах глав стоят только короткие примеры. Полные скрипты лежат в репозитории: [scripts/ai-engineering-code](https://github.com/surfalytics/dataengineer_ru/tree/main/scripts/ai-engineering-code). Запуск: `python3 -I scripts/ai-engineering-code/<файл>.py`.
+- Вывод под кодом настоящий: мы запускали каждый пример. Случайные данные генерируются с фиксированным seed, поэтому результат у вас будет тем же.
 
 ## Связь с другими конспектами
 
@@ -179,12 +178,12 @@ tags:
 | [1. Введение в AI engineering](/book-summaries/ai/ai-engineering/01-intro-ai-engineering/) | Что такое AI engineering, для чего его применяют, как спланировать приложение и из чего состоит AI-стек | Мини-модели autoregressive и masked, стоимость токенов, build vs buy в DuckDB |
 | [2. Как устроены foundation models](/book-summaries/ai/ai-engineering/02-understanding-foundation-models/) | Из чего сделана модель и как она генерирует ответ: данные, архитектура, post-training, sampling | Sampling и temperature, attention и KV cache, размер модели, FLOPs и Chinchilla, токенизатор BPE, reward model |
 | [3. Методы оценки](/book-summaries/ai/ai-engineering/03-evaluation-methodology/) | Как измерить качество открытого ответа: perplexity, тесты, similarity, AI as a judge, сравнения | Perplexity, `pass@k`, edit distance и cosine, симуляция AI-судьи, Elo и Bradley-Terry, матчи в DuckDB |
-| [4. Оценка AI-систем](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) | Как выбрать модель и собрать пайплайн оценки своего приложения | Проверка инструкций и фактов, выбор модели, contamination, bootstrap, таблицы оценок в DuckDB |
+| [4. Оценка AI-систем](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) | Как выбрать модель и собрать пайплайн оценки своего приложения | Проверка инструкций и фактов, выбор модели, contamination, bootstrap, парадокс Симпсона в DuckDB |
 | [5. Prompt engineering](/book-summaries/ai/ai-engineering/05-prompt-engineering/) | Как писать инструкции для модели и защищаться от атак на prompt | Сборка prompt, structured output с retry, цепочки prompt, каталог prompt, тест защиты от injection |
-| [6. RAG и агенты](/book-summaries/ai/ai-engineering/06-rag-and-agents/) | Как дать модели нужный контекст: retrieval, chunking, tools, planning, memory | Chunking, BM25 и embeddings, hybrid search, метрики поиска, цикл агента, memory, SQL по chunks |
+| [6. RAG и агенты](/book-summaries/ai/ai-engineering/06-rag-and-agents/) | Как дать модели нужный контекст: retrieval, chunking, tools, planning, memory | Chunking, BM25 и embeddings, hybrid search, метрики поиска, цикл агента, memory, RRF и метрики контекста в DuckDB |
 | [7. Finetuning](/book-summaries/ai/ai-engineering/07-finetuning/) | Когда дообучать модель, сколько это стоит по памяти и как это делают: LoRA, QLoRA, merging | Расчёт памяти GPU, форматы чисел и quantization, LoRA, merging моделей (нужен `numpy`) |
 | [8. Dataset engineering](/book-summaries/ai/ai-engineering/08-dataset-engineering/) | Откуда брать данные, как проверять их качество, синтезировать и обрабатывать | Дедупликация MinHash, синтез и проверка данных, model collapse, пайплайн очистки в DuckDB |
-| [9. Оптимизация inference](/book-summaries/ai/ai-engineering/09-inference-optimization/) | Как сделать ответы быстрее и дешевле: latency, KV cache, batching, quantization | TTFT и TPOT, MFU и MBU, KV cache, speculative decoding, batching, prompt cache, лог вызовов в DuckDB |
-| [10. Архитектура и feedback](/book-summaries/ai/ai-engineering/10-architecture-and-user-feedback/) | Как собрать всё в продукт: guardrails, router, cache, мониторинг, обратная связь пользователей | Guardrails, router и gateway, кэш, весь пайплайн с трассировкой, петля обратной связи, SQL по логам |
+| [9. Оптимизация inference](/book-summaries/ai/ai-engineering/09-inference-optimization/) | Как сделать ответы быстрее и дешевле: latency, KV cache, batching, quantization | TTFT и TPOT, MFU и MBU, KV cache, speculative decoding, batching, prompt cache, TTFT и перцентили в DuckDB |
+| [10. Архитектура и feedback](/book-summaries/ai/ai-engineering/10-architecture-and-user-feedback/) | Как собрать всё в продукт: guardrails, router, cache, мониторинг, обратная связь пользователей | Guardrails, router и gateway, кэш, весь пайплайн с трассировкой, петля обратной связи, срез логов по версиям в DuckDB |
 
 Каждая страница содержит главную мысль, схемы, подробный разбор, практику с проверенным кодом, ключевые термины, выводы для практики и вопросы для самопроверки.
