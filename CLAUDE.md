@@ -53,6 +53,7 @@ Shared rules for all three:
 
 - **Own words, not translation.** Retell the source. Do not copy text or pictures.
 - **Simple Russian.** Short sentences. Tables and lists instead of long paragraphs. English terms stay in English: `grain`, `fact table`, `SCD`.
+- **Proofread before commit.** Load the `ru-proofread` skill and run `python3 -I scripts/ru-proofread/check.py <page.md>`. It finds calques, missing dashes (`X — это Y`), straight quotes, and long sentences. Then a fresh review agent checks meaning and flow.
 - **Every code block must run.** Check SQL with DuckDB and Python with `python3` before commit. Write the real answers into the page.
 - **Data is generated or open.** Build data in SQL (`VALUES`, `generate_series`) or with a script in `scripts/<name>/` with a fixed seed.
 - **Diagram sources live in git** under `scripts/<name>/`, so anyone can rebuild the images.

@@ -1,0 +1,34 @@
+# Calques and stop words for check.py.
+# Columns (tab-separated): regex <TAB> better wording <TAB> error|warn <TAB> why (optional)
+# Add one line each time you find a new silly mistake. Use lowercase regex, it is case-insensitive.
+# English technical terms are NOT checked here. We keep them in English on purpose.
+
+# --- calques from English: always wrong
+имеет\s+смысл	разумно / логично / так нужно	error	it makes sense
+делает\s+смысл	имеет смысл → «логично»	error	makes sense
+человек\s+в\s+цикле	участие человека	error	human in the loop
+справедливо\s+(распредел|раздел|сбаланс)	равномерно	error	fairly
+\bлечат?\b|\bлечит\b	решают проблему	warn	heal
+лишн\w+\s+расход	накладные расходы	error	overhead
+адресов\w+\s+(проблем|вопрос)	решать проблему	error	address a problem
+перформанс|эвентуальн|сигнификантн|левередж	use a normal Russian word	error	English look-alike
+в\s+конце\s+дня	в итоге	error	at the end of the day
+\bактуально\b	на самом деле (если это actually)	warn	actually ≠ актуально
+в\s+терминах\s	по / с точки зрения	warn	in terms of
+обращаться\s+к\s+проблеме	решать проблему	warn	to address
+из\s+коробки	сразу, без настройки	warn	out of the box
+
+# --- "has" calque: ask if "есть / содержит / поддерживает" is better
+\bимеет(ся)?\b|\bимеют\b|\bимела\b|\bимели\b	есть / содержит / поддерживает	warn	has: for a thing use «есть»
+
+# --- stop words (канцелярит): say it with a verb
+\bявля(ется|ются|лся|лась|лись|лось)\b	«это», «быть», или другой глагол	warn	канцелярит
+осуществля\w+|осуществить	делать / проводить / выполнять	warn	канцелярит
+\bданн(ый|ая|ое|ого|ому|ой|ую)\b	этот / эта / это	warn	канцелярит; «данные» (data) is fine
+в\s+рамках\s	в / при / внутри	warn	канцелярит
+на\s+данный\s+момент|в\s+настоящее\s+время	сейчас	warn	канцелярит
+в\s+случае,?\s+если|в\s+том\s+случае,?\s+если	если	warn	канцелярит
+таким\s+образом	поэтому / итак	warn	filler
+стоит\s+отметить|следует\s+отметить|важно\s+отметить|необходимо\s+отметить	(delete, say the fact)	warn	filler
+\bпроизводить\s+(анализ|расчёт|расчет|проверк|обработк)	анализировать / считать / проверять / обрабатывать	warn	канцелярит
+в\s+целях\s	чтобы / для	warn	канцелярит

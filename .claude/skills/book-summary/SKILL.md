@@ -53,6 +53,7 @@ Good examples to copy:
 4. **Redraw the book's figures** with the `diagrams` skill (see "Diagrams").
 5. **Run and validate all code** from the chapter (see "Hands-on code from the book").
 6. **Check coverage**: every heading, figure, and code example of the book chapter has a place on our page.
+6b. **Proofread the Russian** with the `ru-proofread` skill: run `scripts/ru-proofread/check.py`, then a fresh review agent, then apply and re-run. Do this before the size count, because it can change the length a little. Meaning risks go in your final report, not on the page.
 7. After all chapters: overview page, `src/nav.mjs` (`collapsed: true` item with `autogenerate`), row in `src/content/docs/book-summaries/index.md`, cover, `author:` in front matter. The home page carousel (`src/components/BookCarousel.astro`) picks the book up from `src/nav.mjs`.
 8. If the book is listed in `src/content/docs/resources/books.md`, link it to the summary.
 9. Run `npm run build`.
@@ -92,7 +93,9 @@ Rules learned the hard way:
 
 ### 1. Glossary first
 
-Before chapter 1, make `scripts/<book>-diagrams/glossary.md`: a table `English | Как пишем | Пояснение`. Add new terms for every chapter. Use the same word for the same term in all chapters.
+Before chapter 1, make `scripts/<book>-diagrams/glossary.md`: a table `English | Как пишем | Не писать | Пояснение`. Add new terms for every chapter. Use the same word for the same term in all chapters. The column `Не писать` lists wrong variants (for example `склад данных`). `check.py --glossary` fails on them. Write `—` if there is none.
+
+Technical terms stay in English. Do not translate them to be "more Russian". Make the Russian around them correct.
 
 | Kind of term | Rule | Example |
 |---|---|---|
@@ -126,6 +129,8 @@ At first use in each chapter, write: `<term> — <простое объясне�
 
 ### 4. Common translation mistakes
 
+The full and growing list is in `scripts/ru-proofread/calques.tsv`, and the `ru-proofread` skill checks it. Short version:
+
 | English | Wrong | Right |
 |---|---|---|
 | actually | актуально | на самом деле |
@@ -138,6 +143,8 @@ At first use in each chapter, write: `<term> — <простое объясне�
 | it is worth noting | стоит отметить, что | (delete it, just say the fact) |
 
 Also:
+- A definition needs a dash: `Партиция — это часть данных`, not `Партиция это часть данных`.
+- Every verb needs its object and the right subject. Read each sentence and ask: who does what to whom?
 - Do not copy English word order. Put the main point at the start of the sentence.
 - Numbers: Russian format in text (`0,85`, `10 000`), but keep `.` inside code and formulas.
 - Units and money: keep the original (`$20`, `ms`), do not convert.
@@ -268,6 +275,7 @@ For each chapter, answer yes to all:
 - [ ] Every term is explained at first use, with the same word as in the glossary.
 - [ ] Hard passages have one clear sentence of explanation.
 - [ ] No paragraph is a word-by-word translation. No copied tables or figures.
+- [ ] `python3 -I scripts/ru-proofread/check.py <chapter.md>` shows no `ERROR`. Every `WARN` is fixed or judged fine. The fresh review table is applied. Meaning risks are in the report.
 - [ ] Every figure of the book is redrawn or listed as skipped with a reason in `figures.md`. 3-4 diagrams stay on the page.
 - [ ] Every code example runs. The output on the page is the real output. `scripts/<book>-code/README.md` is all `ok`.
 - [ ] A reader who has not read the book understands the page without the original.
