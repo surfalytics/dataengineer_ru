@@ -276,6 +276,22 @@ D["ch21-data-highway"] = dict(items=[
 ], edges=[E("raw","rt"),E("rt","ba"),E("ba","tl"),E("tl","dw"),E("dw","bf",dashed=True),
           E("bf","tl",dashed=True),E("bf","ba",dashed=True),E("bf","rt",dashed=True)])
 
+# ---- overview: book map
+D["book-map"] = dict(items=[
+    N("p1", "Часть 1\nОсновы\nглавы 1–2", 0, 0, "p", 270, 120),
+    N("p2", "Часть 2\nБизнес-процессы\nглавы 3–9", 320, 0, "g", 270, 120),
+    N("p3", "Часть 3\nОтрасли\nглавы 10–16", 640, 0, "g", 270, 120),
+    N("p4", "Часть 4\nПроект и ETL\nглавы 17–20", 960, 0, "pu", 270, 120),
+    N("p5", "Часть 5\nBig data\nглава 21", 1280, 0, "y", 270, 120),
+    N("d1", "Цели DW/BI,\nstar schema,\nсправочник приёмов", 0, 230, "n", 270, 120),
+    N("d2", "grain, bus matrix,\nSCD, три вида\nfact table", 320, 230, "n", 270, 120),
+    N("d3", "bridge, supertype,\nclickstream,\nстрахование", 640, 230, "n", 270, 120),
+    N("d4", "Lifecycle, workshops,\n34 подсистемы ETL,\n10 шагов разработки", 960, 230, "n", 270, 120),
+    N("d5", "RDBMS и Hadoop,\nbest practices", 1280, 230, "n", 270, 120),
+], edges=[E("p1","p2"),E("p2","p3"),E("p3","p4"),E("p4","p5"),
+          E("p1","d1",head=False),E("p2","d2",head=False),E("p3","d3",head=False),
+          E("p4","d4",head=False),E("p5","d5",head=False)])
+
 if __name__ == "__main__":
     names = sys.argv[1:] or list(D)
     OUT.mkdir(parents=True, exist_ok=True)
