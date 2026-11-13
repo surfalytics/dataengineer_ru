@@ -1,0 +1,21 @@
+# Term drift pairs for check.py.
+# Columns (tab-separated): Russian stem <TAB> English term <TAB> note (optional)
+# If a page uses both forms 3+ times (ALL CAPS like PARTITION is skipped: it is SQL), check.py warns (term-drift). Pick one form per book in its glossary.
+# Add only pairs where both words mean the same thing. Do not add "задача / task": «задача» is also a plain word.
+пайплайн	pipeline
+партици	partition
+потребител	consumer
+консьюмер	consumer
+продюсер	producer
+шедулер	scheduler
+планировщик	scheduler
+воркер	worker
+датасет	dataset
+промпт	prompt
+эмбеддинг	embedding
+дашборд	dashboard
+бэкфил	backfill
+шард	shard
+джоб	job
+батч	batch
+кэш	cache

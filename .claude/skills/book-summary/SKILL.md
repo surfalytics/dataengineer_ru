@@ -53,15 +53,16 @@ Good examples to copy:
 4. **Redraw the book's figures** with the `diagrams` skill (see "Diagrams").
 5. **Run and validate all code** from the chapter (see "Hands-on code from the book").
 6. **Check coverage**: every heading, figure, and code example of the book chapter has a place on our page.
-7. After all chapters: overview page, `src/nav.mjs` (`collapsed: true` item with `autogenerate`), row in `src/content/docs/book-summaries/index.md`, cover, `author:` in front matter. The home page carousel (`src/components/BookCarousel.astro`) picks the book up from `src/nav.mjs`.
-8. If the book is listed in `src/content/docs/resources/books.md`, link it to the summary.
-9. Run `npm run build`.
+7. **Proofread the Russian** with the `ru-proofread` skill: script, correctness review, guard, flow pass, re-run. The agent that wrote the chapter does not review it. Do this before the size count: the flow pass can add up to 10%. Meaning risks go in your final report, not on the page.
+8. After all chapters: overview page, `src/nav.mjs` (`collapsed: true` item with `autogenerate`), row in `src/content/docs/book-summaries/index.md`, cover, `author:` in front matter. The home page carousel (`src/components/BookCarousel.astro`) picks the book up from `src/nav.mjs`.
+9. If the book is listed in `src/content/docs/resources/books.md`, link it to the summary.
+10. Run `npm run build`.
 
 ## Keep what the project already has
 
 When you rewrite an existing page, first read the old one (`git show HEAD:<path>`). Keep our own additions:
 
-- `## Что изменилось к 2026 году` (marked "Это наше дополнение, его нет в книге"). Copy it unchanged after `## Итоги главы`. Add bullets if needed, never remove them.
+- `## Что изменилось к 2026 году` (marked "Это наше дополнение, его нет в книге"). Copy it after `## Итоги главы`. Add bullets if needed, never remove them. Proofreading may fix the language there, but not the facts.
 - The bullets in `## Что это значит на практике`. They are written for data engineers. Keep them and add new ones.
 - `sidebar.order`, `sidebar.label`, file names and URLs. A renamed page needs a `redirects` entry.
 
@@ -87,12 +88,17 @@ Rules learned the hard way:
 - Never run regex clean-ups over a whole page: code blocks have meaningful blank lines. If you edit a page after `embed.py`, check that every code block still equals its file.
 - Source text of a book in another language: read the meaning, follow the logic, and fix translation errors silently. Do NOT put translation notes ("Заметка о переводе") on the pages: the owner does not want them. Tell the lead about doubtful places in your final report instead.
 - Parallel work: one worker per chapter is fine. Workers must not edit shared files (`index.md`, `nav.mjs`, registers). They write `figures-chNN.md`, `glossary-chNN.md`, `README-chNN.md`. The lead merges them. Run `npm run build` once at the end, not in parallel.
+- Proofreading with parallel workers: each worker runs `scripts/ru-proofread/check.py` on its own chapter. The lead starts the review and flow agents (`ru-proofread` skill) after the workers finish, one agent per chapter. A worker never reviews its own text.
 
 ## Translation guide
 
 ### 1. Glossary first
 
-Before chapter 1, make `scripts/<book>-diagrams/glossary.md`: a table `English | Как пишем | Пояснение`. Add new terms for every chapter. Use the same word for the same term in all chapters.
+Before chapter 1, make `scripts/<book>-diagrams/glossary.md`: a table `English | Как пишем | Не писать | Пояснение`. Add new terms for every chapter. Use the same word for the same term in all chapters. The column `Не писать` lists wrong variants (for example `склад данных`). `check.py --glossary` fails on them. Write `—` if there is none.
+
+Technical terms stay in English. Do not translate them to be "more Russian". Make the Russian around them correct.
+
+**One form per term.** For each term the glossary gives exactly one form: English (`consumer`) or an established Russian word (`партиция`, `кэш`, `поток`). Never both on one page. `check.py` reports a page with both forms as `term-drift`. Put the other form in `Не писать`. The owner decides the form. If the glossary has no entry for a term, keep the form the book's pages use most and ask.
 
 | Kind of term | Rule | Example |
 |---|---|---|
@@ -124,7 +130,26 @@ At first use in each chapter, write: `<term> — <простое объясне�
 - Use linking words so the logic is clear: "поэтому", "но", "из-за этого", "например", "иначе говоря".
 - Use full sentences in bullets, not fragments.
 
+**Flow.** Short sentences are good. A row of short sentences with no links is not: it reads like a list of facts. Write so that each sentence follows from the one before.
+
+- Shape of a paragraph: claim, then why, then an example or a result.
+- No more than 3 short sentences in a row. Mix short ones with medium ones (10-20 words).
+- In prose every sentence has a verb. No one-word sentences like "Просто." (fine in table cells).
+- Join two halves of one thought with a colon, "и", "а", "но", "который".
+- Known first, new last: the main word of the sentence goes to the end.
+- Do not add a cause the book does not state. "Поэтому" and "потому что" are claims.
+- Check: `python3 -I scripts/ru-proofread/check.py --stats <chapter.md>`. Targets: median 8+ words per sentence, 30% or less sentences of 5 words or less, 10+ link words per 100 sentences. They are a guide. Do not pad.
+
+| Dry | Better |
+|---|---|
+| Автоматика удобна, но непредсказуема. Rebalancing нагружает сеть и узлы. Поэтому часто нужен человек в цикле. Couchbase и Riak предлагают план, но ждут подтверждения. | Автоматика удобна, но непредсказуема. К тому же rebalancing нагружает сеть и узлы. Поэтому в процессе часто оставляют человека: Couchbase и Riak сами предлагают план, но ждут подтверждения. |
+| Новичок. Читайте по порядку. Главы 1, 2, 5 дают основу. | Новичку лучше читать по порядку: главы 1, 2 и 5 дают основу. |
+
+More rules and examples: `.claude/skills/ru-proofread/references/rules.md`.
+
 ### 4. Common translation mistakes
+
+The full and growing list is in `scripts/ru-proofread/calques.tsv`, and the `ru-proofread` skill checks it. Short version:
 
 | English | Wrong | Right |
 |---|---|---|
@@ -138,6 +163,8 @@ At first use in each chapter, write: `<term> — <простое объясне�
 | it is worth noting | стоит отметить, что | (delete it, just say the fact) |
 
 Also:
+- A definition needs a dash: `Партиция — это часть данных`, not `Партиция это часть данных`.
+- Every verb needs its object and the right subject. Read each sentence and ask: who does what to whom?
 - Do not copy English word order. Put the main point at the start of the sentence.
 - Numbers: Russian format in text (`0,85`, `10 000`), but keep `.` inside code and formulas.
 - Units and money: keep the original (`$20`, `ms`), do not convert.
@@ -268,6 +295,9 @@ For each chapter, answer yes to all:
 - [ ] Every term is explained at first use, with the same word as in the glossary.
 - [ ] Hard passages have one clear sentence of explanation.
 - [ ] No paragraph is a word-by-word translation. No copied tables or figures.
+- [ ] `python3 -I scripts/ru-proofread/check.py <chapter.md>` shows no `ERROR`. Every `WARN` is fixed or judged fine. The review and flow changes are applied. Meaning risks are in the report.
+- [ ] `check.py --before <old version> <chapter.md>` passes: code, links and numbers are unchanged by proofreading.
+- [ ] `check.py --stats <chapter.md>` is `ok`, or you can say why the page stays below the targets.
 - [ ] Every figure of the book is redrawn or listed as skipped with a reason in `figures.md`. 3-4 diagrams stay on the page.
 - [ ] Every code example runs. The output on the page is the real output. `scripts/<book>-code/README.md` is all `ok`.
 - [ ] A reader who has not read the book understands the page without the original.

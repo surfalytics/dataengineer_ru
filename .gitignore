@@ -23,3 +23,6 @@ entrypoint.sh
 .dockerignore
 .playwright-mcp/
 scripts/sql-tutorial-db/.cache/
+
+# Python
+__pycache__/
