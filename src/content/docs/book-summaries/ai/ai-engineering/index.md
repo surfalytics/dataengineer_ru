@@ -3,7 +3,7 @@ title: "AI Engineering — конспект книги"
 head:
   - tag: title
     content: "AI Engineering Chip Huyen: конспект | Инжиниринг Данных"
-description: "Конспект книги AI Engineering (Chip Huyen) на русском. Foundation models, evaluation, prompt, RAG, агенты, finetuning, данные, inference: разбор 10 глав."
+description: "Подробный конспект книги AI Engineering (Chip Huyen) на русском. Foundation models, evaluation, prompt, RAG, агенты, finetuning, данные, inference: 10 глав."
 author: "Chip Huyen"
 sidebar:
   order: 0
@@ -13,11 +13,68 @@ tags:
   - ai
 ---
 
-**AI Engineering: Building Applications with Foundation Models** — книга Chip Huyen (O'Reilly, декабрь 2024). Она учит строить приложения на готовых foundation models: от выбора модели и оценки качества до RAG, агентов, finetuning и архитектуры продукта. В книге 10 глав.
+**AI Engineering: Building Applications with Foundation Models** — книга Chip Huyen (O'Reilly, декабрь 2024). Она учит строить приложения на готовых foundation models: от выбора модели и оценки качества до RAG, агентов, finetuning и архитектуры продукта. В книге 10 глав, около 150 000 слов. Автор писала её два года и опиралась на более чем 100 интервью с исследователями, разработчиками фреймворков и руководителями компаний.
 
-> Это собственный пересказ, а не перевод. За полным текстом, примерами и ссылками на исследования идите в оригинал. Схемы нарисованы заново по содержанию глав.
+> Это подробный пересказ на русском, а не перевод. За полным текстом, примерами и ссылками на исследования идите в оригинал. Схемы нарисованы заново по содержанию глав. Код в практике написан нами и проверен запуском.
 
 ![Карта книги: 10 глав в четырёх блоках](/assets/ai-engineering/ch00-book-map.png)
+
+Как читать карту. Книга идёт тем же путём, каким идёт команда, когда строит AI-приложение: понять модель, научиться измерять качество, улучшить модель, удешевить и собрать продукт.
+
+## О чём книга простыми словами
+
+Раньше, чтобы сделать AI-функцию, нужно было собрать данные и обучить свою модель. Теперь есть большие готовые модели, `foundation models`. Их можно подключить через API за один день. Порог входа упал: можно даже сделать приложение, не написав ни строки кода.
+
+Но между демо и надёжным продуктом большая дистанция. Модель выдумывает факты (`hallucinations`). Она стоит денег и отвечает не мгновенно. Её ответы трудно проверить. Её можно обмануть. Книга о том, как пройти эту дистанцию.
+
+Главная идея книги такая. Качество ответа зависит от трёх вещей, не считая настроек генерации:
+
+- **инструкции:** что мы просим модель сделать (`prompt engineering`, глава 5);
+- **контекста:** какие данные модель видит при ответе (`RAG` и агенты, глава 6);
+- **самой модели:** при необходимости её дообучают (`finetuning`, главы 7–8).
+
+Всё это нужно измерять (оценка, главы 3–4), делать быстрее и дешевле (`inference`, глава 9) и собирать в одну архитектуру с обратной связью от пользователей (глава 10).
+
+Автор подчёркивает: книга про основы, а не про конкретный инструмент. Инструменты стареют быстро, а принципы остаются дольше. Многие приёмы пришли из классического ML и поиска: системные эксперименты, строгая оценка, постоянная оптимизация. Но размер и возможности современных моделей добавляют новые проблемы, и для них нужны новые решения.
+
+На какие вопросы отвечает книга:
+
+- Стоит ли вообще строить это AI-приложение?
+- Как оценивать приложение? Можно ли использовать AI, чтобы оценивать AI?
+- Что вызывает галлюцинации? Как их находить и снижать?
+- Какие приёмы prompt engineering работают?
+- Почему работает RAG и какие у него стратегии?
+- Что такое агент, как его построить и как оценить?
+- Когда дообучать модель, а когда нет?
+- Сколько нужно данных и как проверить их качество?
+- Как сделать модель быстрее, дешевле и безопаснее?
+- Как построить петлю обратной связи, чтобы постоянно улучшать приложение?
+
+## Как автор отбирал содержание
+
+Автор объясняет, что вошло в книгу и почему:
+
+- Для каждой проблемы она спрашивала: это фундаментальное ограничение AI или оно исчезнет с лучшими моделями? Для фундаментальных проблем разбирает вызовы и решения. Часто начинает с самого простого решения и идёт к сложным.
+- Она спрашивала исследователей и инженеров, какие проблемы и решения важнее всего.
+- Иногда опиралась на закон Линди: чем дольше технология живёт, тем дольше она, скорее всего, проживёт ещё.
+- Изредка в книгу попадали и временные приёмы, если они сразу полезны или хорошо показывают способ решения.
+
+Чего в книге нет:
+
+- Это не учебник по инструментам. Есть псевдокод и названия инструментов, но нет инструкций «нажмите сюда». Вместо этого книга даёт рамку для выбора инструмента и вопросы, которые нужно задать.
+- Это не книга по теории ML. Она не объясняет, что такое нейросеть и как обучить модель с нуля. Теория есть только там, где она нужна для обсуждения.
+
+## Что нужно знать заранее
+
+Книгу можно читать без опыта в ML. Но приложения получатся лучше, если знакомы эти идеи. Если нет, в книге и в нашем пересказе есть короткие объяснения.
+
+- **Вероятность:** выборка (`sampling`), детерминизм, распределение.
+- **ML:** supervision, self-supervision, log-likelihood, градиентный спуск, backpropagation, функция потерь, подбор гиперпараметров.
+- **Архитектуры нейросетей:** feedforward, recurrent, `transformer`.
+- **Метрики:** accuracy, F1, precision, recall, `cosine similarity`, `cross entropy`.
+- **Python и SQL.** Практика в нашем пересказе написана на Python и DuckDB.
+
+Если нужна база по данным, начните с [конспекта Fundamentals of Data Engineering](/book-summaries/engineering/fundamentals-of-data-engineering/).
 
 ## Зачем читать
 
@@ -36,6 +93,8 @@ tags:
 | Адаптация модели | 5–8 | Prompt, RAG и агенты, finetuning, данные |
 | Продакшен | 9–10 | Оптимизация inference, архитектура, обратная связь |
 
+Блоки идут в порядке реального проекта. Сначала нужно решить, нужно ли приложение, и понять, как модель делает ответ (главы 1–2). Потом нужно уметь измерять качество, потому что оценка нужна на каждом следующем шаге (главы 3–4). Дальше качество улучшают: инструкциями, контекстом, дообучением модели и данными (главы 5–8). В конце ответы делают быстрее и дешевле и собирают всё в продукт с обратной связью (главы 9–10).
+
 ## Главные идеи
 
 | Идея | Где разбирается |
@@ -44,6 +103,7 @@ tags:
 | Finetune для формы, RAG для фактов | [Глава 6](/book-summaries/ai/ai-engineering/06-rag-and-agents/), [глава 7](/book-summaries/ai/ai-engineering/07-finetuning/) |
 | Сначала оценка, потом разработка (evaluation-driven development) | [Глава 4](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) |
 | Модель вероятностная, поэтому нужны sampling-настройки и проверки | [Глава 2](/book-summaries/ai/ai-engineering/02-understanding-foundation-models/) |
+| Оценка открытых ответов: точные методы, AI-судья, сравнения | [Глава 3](/book-summaries/ai/ai-engineering/03-evaluation-methodology/) |
 | Качество данных важнее их количества | [Глава 8](/book-summaries/ai/ai-engineering/08-dataset-engineering/) |
 | Prefill и decode: две разные фазы inference | [Глава 9](/book-summaries/ai/ai-engineering/09-inference-optimization/) |
 | Архитектура растёт шагами: context, guardrails, router, cache | [Глава 10](/book-summaries/ai/ai-engineering/10-architecture-and-user-feedback/) |
@@ -64,14 +124,16 @@ tags:
 
 ## Для кого
 
+Книга написана для технических ролей: AI-инженеров, ML-инженеров, data scientists, технических менеджеров и продуктовых менеджеров.
+
 | Роль | Что получит |
 |---|---|
 | Data engineer, analytics engineer | Понимание, как данные и пайплайны работают внутри AI-продуктов |
 | Разработчик AI-фич | Карту решений: модель, prompt, RAG, finetuning, оценка |
 | Аналитик | Методы оценки качества и работы с feedback |
 | Руководитель | Язык для обсуждения стоимости, рисков и сроков AI-проекта |
-
-Нужны базовые знания Python и общее представление о машинном обучении. Глубокая математика не нужна.
+| Разработчик инструментов, исследователь | Где в AI engineering мало инструментов и какие бывают сценарии |
+| Тот, кто меняет карьеру | Какие навыки нужны AI-инженеру |
 
 ## Как читать
 
@@ -88,6 +150,17 @@ tags:
 4. Глава 8: как готовить данные.
 5. Главы 9–10: как запускать и улучшать в продакшене.
 
+Книга модульная: любой раздел, который вы знаете или который вам не нужен, можно пропустить. Автор предупреждает, когда текст становится слишком техническим.
+
+## Как работать с практикой
+
+В каждой главе есть практика: код на Python и запросы SQL в DuckDB. Они повторяют идеи главы на маленьких данных, которые мы генерируем сами. Платные API не нужны: там, где книга использует модель, мы ставим простую симуляцию, а в настоящей системе её заменяет вызов модели.
+
+- Нужны Python 3.10+ и DuckDB CLI (для SQL). Блоки SQL идут по порядку в одной сессии: запустите `duckdb` в терминале или откройте [shell.duckdb.org](https://shell.duckdb.org).
+- Код Python в главах лежит в сворачиваемых блоках «Код: файл.py». Те же файлы есть в репозитории: [scripts/ai-engineering-code](https://github.com/surfalytics/dataengineer_ru/tree/main/scripts/ai-engineering-code). Запуск: `python3 scripts/ai-engineering-code/<файл>.py`.
+- Вывод под кодом настоящий: мы запускали каждый скрипт. Случайные данные генерируются с фиксированным seed, поэтому результат у вас будет тем же.
+- После вывода идёт список «Что видно»: что именно показывает результат.
+
 ## Связь с другими конспектами
 
 | | Fundamentals of Data Engineering | AI Engineering |
@@ -95,21 +168,23 @@ tags:
 | Фокус | Жизненный цикл данных | Жизненный цикл AI-приложения |
 | Вопрос | Как данные попадают к потребителю | Как из данных и модели собрать продукт |
 
-Данные для RAG, finetuning и оценки приходят из тех самых пайплайнов. Начните с [конспекта Fundamentals of Data Engineering](/book-summaries/engineering/fundamentals-of-data-engineering/), если нужна база.
+Данные для RAG, finetuning и оценки приходят из тех самых пайплайнов.
+
+Автор отдельно пишет про свою предыдущую книгу *Designing Machine Learning Systems*. Она про приложения на классических ML-моделях: размеченные таблицы, feature engineering, обучение модели. *AI Engineering* про приложения на foundation models: prompt engineering, построение контекста, параметрически эффективный finetuning. Обе книги самодостаточны и модульны. В реальной системе часто работают обе технологии вместе, поэтому полезно знать обе.
 
 ## Разбор по главам
 
-| Глава | Тема |
-|---|---|
-| [1. Введение в AI engineering](/book-summaries/ai/ai-engineering/01-intro-ai-engineering/) | Foundation models, AI-стек, планирование приложения |
-| [2. Как устроены foundation models](/book-summaries/ai/ai-engineering/02-understanding-foundation-models/) | Данные, архитектура, post-training, sampling |
-| [3. Методология оценки](/book-summaries/ai/ai-engineering/03-evaluation-methodology/) | Perplexity, exact evaluation, AI as a judge |
-| [4. Оценка AI-систем](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) | Критерии, выбор модели, пайплайн оценки |
-| [5. Prompt engineering](/book-summaries/ai/ai-engineering/05-prompt-engineering/) | Приёмы prompt, защита от атак |
-| [6. RAG и агенты](/book-summaries/ai/ai-engineering/06-rag-and-agents/) | Retrieval, chunking, tools, planning, memory |
-| [7. Finetuning](/book-summaries/ai/ai-engineering/07-finetuning/) | Когда нужен, память, LoRA, QLoRA |
-| [8. Dataset engineering](/book-summaries/ai/ai-engineering/08-dataset-engineering/) | Качество данных, синтетика, обработка |
-| [9. Оптимизация inference](/book-summaries/ai/ai-engineering/09-inference-optimization/) | Latency, KV cache, batching, quantization |
-| [10. Архитектура и feedback](/book-summaries/ai/ai-engineering/10-architecture-and-user-feedback/) | Guardrails, router, cache, мониторинг, обратная связь |
+| Глава | Какой вопрос решает | Практика |
+|---|---|---|
+| [1. Введение в AI engineering](/book-summaries/ai/ai-engineering/01-intro-ai-engineering/) | Что такое AI engineering, для чего его применяют, как спланировать приложение и из чего состоит AI-стек | Мини-модели autoregressive и masked, стоимость токенов, build vs buy в DuckDB |
+| [2. Как устроены foundation models](/book-summaries/ai/ai-engineering/02-understanding-foundation-models/) | Из чего сделана модель и как она генерирует ответ: данные, архитектура, post-training, sampling | Sampling и temperature, attention и KV cache, размер модели, FLOPs и Chinchilla, токенизатор BPE, reward model |
+| [3. Методы оценки](/book-summaries/ai/ai-engineering/03-evaluation-methodology/) | Как измерить качество открытого ответа: perplexity, тесты, similarity, AI as a judge, сравнения | Perplexity, `pass@k`, edit distance и cosine, симуляция AI-судьи, Elo и Bradley-Terry, матчи в DuckDB |
+| [4. Оценка AI-систем](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) | Как выбрать модель и собрать пайплайн оценки своего приложения | Проверка инструкций и фактов, выбор модели, contamination, bootstrap, таблицы оценок в DuckDB |
+| [5. Prompt engineering](/book-summaries/ai/ai-engineering/05-prompt-engineering/) | Как писать инструкции для модели и защищаться от атак на prompt | Сборка prompt, structured output с retry, цепочки prompt, каталог prompt, тест защиты от injection |
+| [6. RAG и агенты](/book-summaries/ai/ai-engineering/06-rag-and-agents/) | Как дать модели нужный контекст: retrieval, chunking, tools, planning, memory | Chunking, BM25 и embeddings, hybrid search, метрики поиска, цикл агента, memory, SQL по chunks |
+| [7. Finetuning](/book-summaries/ai/ai-engineering/07-finetuning/) | Когда дообучать модель, сколько это стоит по памяти и как это делают: LoRA, QLoRA, merging | Расчёт памяти GPU, форматы чисел и quantization, LoRA, merging моделей (нужен `numpy`) |
+| [8. Dataset engineering](/book-summaries/ai/ai-engineering/08-dataset-engineering/) | Откуда брать данные, как проверять их качество, синтезировать и обрабатывать | Дедупликация MinHash, синтез и проверка данных, model collapse, пайплайн очистки в DuckDB |
+| [9. Оптимизация inference](/book-summaries/ai/ai-engineering/09-inference-optimization/) | Как сделать ответы быстрее и дешевле: latency, KV cache, batching, quantization | TTFT и TPOT, MFU и MBU, KV cache, speculative decoding, batching, prompt cache, лог вызовов в DuckDB |
+| [10. Архитектура и feedback](/book-summaries/ai/ai-engineering/10-architecture-and-user-feedback/) | Как собрать всё в продукт: guardrails, router, cache, мониторинг, обратная связь пользователей | Guardrails, router и gateway, кэш, весь пайплайн с трассировкой, петля обратной связи, SQL по логам |
 
-Каждая страница содержит главную мысль, схему, ключевые термины, выводы для практики и вопросы для самопроверки.
+Каждая страница содержит главную мысль, схемы, подробный разбор, практику с проверенным кодом, ключевые термины, выводы для практики и вопросы для самопроверки.
