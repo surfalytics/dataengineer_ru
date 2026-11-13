@@ -105,6 +105,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-engineering-design-patterns' } }],
           },
+          {
+            label: 'Data Quality Fundamentals',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/data-quality-fundamentals' } }],
+          },
         ],
       },
       {

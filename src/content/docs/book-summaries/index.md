@@ -25,6 +25,7 @@ tags:
 | Инженерия | [DuckDB: Up and Running](/book-summaries/engineering/duckdb-up-and-running/) | DuckDB: CSV, Parquet, JSON, Polars, JupySQL, удалённые данные, MotherDuck. SQL-практика |
 | Инженерия | [Data Pipelines with Apache Airflow](/book-summaries/engineering/data-pipelines-with-apache-airflow/) | Airflow 3: DAG, расписания, assets, операторы, тесты, production и безопасность |
 | Инженерия | [Data Engineering Design Patterns](/book-summaries/engineering/data-engineering-design-patterns/) | Около 70 паттернов: загрузка, идемпотентность, ошибки, качество, наблюдаемость |
+| Инженерия | [Data Quality Fundamentals](/book-summaries/engineering/data-quality-fundamentals/) | Качество данных: data downtime, тесты, мониторинг, lineage, SLA, инциденты, data mesh. SQL-практика на DuckDB |
 | AI и ML | [AI Engineering](/book-summaries/ai/ai-engineering/) | Как строить приложения на foundation models: оценка, prompt, RAG, агенты, finetuning, данные, inference, архитектура |
 | AI и ML | [Machines that Think](/book-summaries/ai/machines-that-think/) | Как работают LLM и думают ли они: история AI, токены и embeddings, нейросети, transformer, ошибки, этика, влияние на работу |
 | Предпринимательство | [The Startup Owner's Manual](/book-summaries/entrepreneurship/startup-owners-manual/) | Customer Development: как найти бизнес-модель стартапа через проверку гипотез |

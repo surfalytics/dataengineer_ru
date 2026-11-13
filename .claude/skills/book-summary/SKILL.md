@@ -40,7 +40,7 @@ Good examples to copy:
 | Term glossary | `scripts/<book>-diagrams/glossary.md` (see "Glossary first") |
 | Figure list | `scripts/<book>-diagrams/figures.md` (see "Diagrams") |
 | Code from the book | `scripts/<book>-code/chNN_<name>.py` + `README.md` + `requirements.txt` |
-| Cover | `public/assets/book-covers/<book-slug>.jpg` (240px wide JPEG, under 30 KB) |
+| Cover (home page carousel thumbnail) | `public/assets/book-covers/<book-slug>.jpg` (240px wide JPEG, under 30 KB). The file name must equal the last part of the `autogenerate` directory in `src/nav.mjs`. See "Cover" below |
 
 - `<group>`: `engineering`, `business`, `entrepreneurship`, or `ai`.
 - `<book-slug>`: English title in lowercase with hyphens.
@@ -54,9 +54,25 @@ Good examples to copy:
 5. **Run and validate all code** from the chapter (see "Hands-on code from the book").
 6. **Check coverage**: every heading, figure, and code example of the book chapter has a place on our page.
 7. **Proofread the Russian** with the `ru-proofread` skill: script, correctness review, guard, flow pass, re-run. The agent that wrote the chapter does not review it. Do this before the size count: the flow pass can add up to 10%. Meaning risks go in your final report, not on the page.
-8. After all chapters: overview page, `src/nav.mjs` (`collapsed: true` item with `autogenerate`), row in `src/content/docs/book-summaries/index.md`, cover, `author:` in front matter. The home page carousel (`src/components/BookCarousel.astro`) picks the book up from `src/nav.mjs`.
+8. After all chapters: overview page, `src/nav.mjs` (`collapsed: true` item with `autogenerate`), row in `src/content/docs/book-summaries/index.md`, `author:` in front matter, and the **cover** (see "Cover" below). Never skip the cover: without the file the carousel draws a plain placeholder from the title. The home page carousel (`src/components/BookCarousel.astro`) picks the book up from `src/nav.mjs`.
 9. If the book is listed in `src/content/docs/resources/books.md`, link it to the summary.
 10. Run `npm run build`.
+
+## Cover (carousel thumbnail)
+
+Every book needs a cover file. The home page carousel (`src/components/BookCarousel.astro`) shows `public/assets/book-covers/<book-slug>.jpg` and the book title and `author:` from `index.md`. If the file is missing, the carousel shows a generated placeholder. That is a bug, not a fallback to accept.
+
+1. Get the cover image: page 1 of the PDF (`pdftoppm -f 1 -l 1 -r 150 -png <book.pdf> <scratch>/cover`), the cover file inside an EPUB, or the publisher's cover image if the user gives it. Work in the scratchpad, not in the repo.
+2. Resize and compress with `sharp`: width 240px, progressive JPEG, quality about 70, under 30 KB:
+
+```bash
+node -e "require('sharp')(process.argv[1]).resize({width:240}).jpeg({quality:70,progressive:true,mozjpeg:true}).toFile(process.argv[2])" <scratch>/cover-1.png public/assets/book-covers/<book-slug>.jpg
+```
+
+3. **Look at the JPEG** with the `Read` tool. It must show the real cover, not a blank page, a copyright page, or a crop.
+4. The file name must match the book folder name: for `book-summaries/engineering/data-quality-fundamentals` the file is `data-quality-fundamentals.jpg`. A different name means no cover.
+5. After `npm run build`, check that the book is in the carousel: `grep -c "<book-slug>.jpg" dist/index.html` must print 1 or more.
+6. If you cannot get a cover (no PDF, scanned file without a cover page), say so in the final report. Do not leave it silent.
 
 ## Keep what the project already has
 
@@ -301,4 +317,10 @@ For each chapter, answer yes to all:
 - [ ] Every figure of the book is redrawn or listed as skipped with a reason in `figures.md`. 3-4 diagrams stay on the page.
 - [ ] Every code example runs. The output on the page is the real output. `scripts/<book>-code/README.md` is all `ok`.
 - [ ] A reader who has not read the book understands the page without the original.
+
+For the whole book, answer yes to all:
+
+- [ ] `public/assets/book-covers/<book-slug>.jpg` exists, is 240px wide, under 30 KB, and you looked at it.
+- [ ] The book is listed in `src/nav.mjs` and the built `dist/index.html` contains its cover file name (the carousel shows it).
+- [ ] `index.md` has `author:` in front matter (the carousel prints it under the title).
 - [ ] `npm run build` passes.
