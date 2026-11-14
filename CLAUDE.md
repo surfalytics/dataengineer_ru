@@ -13,6 +13,7 @@ npm install        # Install dependencies (Node 22+)
 npm run dev        # Local dev server (http://localhost:4321)
 npm run build      # Build static site to dist/
 npm run preview    # Preview the built site
+npm run epub       # Build EPUB files of book summaries into public/downloads/
 ```
 
 No test suite exists — verify changes by running `npm run dev` locally and checking the site in a browser, and `npm run build` to catch schema/build errors.
@@ -49,6 +50,8 @@ We make three kinds of new content. Each has a project skill in `.claude/skills/
 | Diagram: Excalidraw for flows and architecture, Mermaid only for ER (tables) | `public/assets/<section>/` | `diagrams` |
 | Practice course: lessons with tasks on DuckDB (SQL) and Python | `practice/<course>/` | `practice-lesson` |
 
+The `book-summary` skill ends with the `book-epub` skill. It builds and checks the EPUB download of the book.
+
 Shared rules for all three:
 
 - **Own words, not translation.** Retell the source. Do not copy text or pictures.
@@ -57,6 +60,16 @@ Shared rules for all three:
 - **Every code block must run.** Check SQL with DuckDB and Python with `python3` before commit. Write the real answers into the page.
 - **Data is generated or open.** Build data in SQL (`VALUES`, `generate_series`) or with a script in `scripts/<name>/` with a fixed seed.
 - **Diagram sources live in git** under `scripts/<name>/`, so anyone can rebuild the images.
+
+### EPUB downloads
+
+`scripts/epub/build.mjs` builds one EPUB per book summary. It runs as the first step of `npm run build`.
+
+- Output: `public/downloads/<book-slug>.epub` (not in git). The site serves it as `/downloads/<book-slug>.epub`.
+- Each book overview page (`index.md`) has the link `📥 [Скачать конспект в EPUB](/downloads/<book-slug>.epub)`.
+- Each chapter in the EPUB starts and ends with the credits line: dataengineer.ru and t.me/rockyourdata.
+- In `npm run dev` the link works only after `npm run epub`.
+- Steps and checks: the `book-epub` skill.
 
 ### Front Matter Format
 
