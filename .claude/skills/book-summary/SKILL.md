@@ -24,6 +24,7 @@ We publish on a public site, and books are copyrighted. So:
 - Short quotes are fine: one sentence, in quotation marks, with "— пишет автор".
 - Do not copy tables and figures. Rebuild tables in our own form. Redraw figures as our diagrams.
 - Keep the note on the overview page: `> Это подробный пересказ на русском, а не перевод. За полным текстом идите в оригинал.`
+- Put the EPUB link right after that note: `📥 [Скачать конспект в EPUB](/downloads/<book-slug>.epub) — для телефона и электронной книги.` See the `book-epub` skill.
 
 Good examples to copy:
 - `src/content/docs/book-summaries/engineering/data-warehouse-toolkit/` (diagrams + DuckDB practice)
@@ -56,7 +57,8 @@ Good examples to copy:
 7. **Proofread the Russian** with the `ru-proofread` skill: script, correctness review, guard, flow pass, re-run. The agent that wrote the chapter does not review it. Do this before the size count: the flow pass can add up to 10%. Meaning risks go in your final report, not on the page.
 8. After all chapters: overview page, `src/nav.mjs` (`collapsed: true` item with `autogenerate`), row in `src/content/docs/book-summaries/index.md`, `author:` in front matter, and the **cover** (see "Cover" below). Never skip the cover: without the file the carousel draws a plain placeholder from the title. The home page carousel (`src/components/BookCarousel.astro`) picks the book up from `src/nav.mjs`.
 9. If the book is listed in `src/content/docs/resources/books.md`, link it to the summary.
-10. Run `npm run build`.
+10. **Build and check the EPUB** with the `book-epub` skill: link on the overview page, build, validate. Do this for a new book and after any change to a chapter.
+11. Run `npm run build`.
 
 ## Cover (carousel thumbnail)
 
@@ -323,4 +325,5 @@ For the whole book, answer yes to all:
 - [ ] `public/assets/book-covers/<book-slug>.jpg` exists, is 240px wide, under 30 KB, and you looked at it.
 - [ ] The book is listed in `src/nav.mjs` and the built `dist/index.html` contains its cover file name (the carousel shows it).
 - [ ] `index.md` has `author:` in front matter (the carousel prints it under the title).
+- [ ] The EPUB is built and checked with the `book-epub` skill, and the overview page has the download link.
 - [ ] `npm run build` passes.

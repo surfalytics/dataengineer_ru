@@ -26,3 +26,6 @@ scripts/sql-tutorial-db/.cache/
 
 # Python
 __pycache__/
+
+# EPUB конспектов: собирает scripts/epub/build.mjs
+public/downloads/

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/epub/build.mjs && astro build",
+    "epub": "node scripts/epub/build.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

@@ -17,6 +17,8 @@ tags:
 
 > Это подробный пересказ на русском, а не перевод. За полным текстом идите в оригинал.
 
+📥 [Скачать конспект в EPUB](/downloads/escaping-the-build-trap.epub) — для телефона и электронной книги.
+
 ![Карта книги: пять частей от build trap до product-led компании](/assets/escaping-the-build-trap/ch00-book-map.png)
 
 ## О чём книга простыми словами
