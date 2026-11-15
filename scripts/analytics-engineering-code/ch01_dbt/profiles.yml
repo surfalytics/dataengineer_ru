@@ -1,0 +1,7 @@
+ch01_revenue:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ch01.duckdb
+      threads: 1

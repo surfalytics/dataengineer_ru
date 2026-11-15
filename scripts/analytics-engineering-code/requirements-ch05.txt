@@ -1,0 +1,4 @@
+dbt-core==1.12.7
+dbt-duckdb==1.11.1
+dbt-metricflow==0.15.0
+metricflow==0.213.0

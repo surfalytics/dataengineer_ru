@@ -1,0 +1,8 @@
+# Подключение к локальной базе DuckDB (вместо BigQuery из книги)
+jaffle_book:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: jaffle.duckdb
+      threads: 4

@@ -1,0 +1,22 @@
+erDiagram
+  FACT_BOOK_PUBLISH }o--|| DIM_BOOKS : "book_id"
+  FACT_BOOK_PUBLISH }o--|| DIM_AUTHORS : "author_id"
+  FACT_BOOK_PUBLISH }o--|| DIM_GENRES : "genre_id"
+  FACT_BOOK_PUBLISH {
+    int book_id FK
+    int author_id FK
+    int genre_id FK
+    int publication_year
+  }
+  DIM_BOOKS {
+    int book_id PK
+    string title
+  }
+  DIM_AUTHORS {
+    int author_id PK
+    string author
+  }
+  DIM_GENRES {
+    int genre_id PK
+    string genre
+  }

@@ -1,0 +1,30 @@
+erDiagram
+  direction LR
+  FACT_SALES }o--|| DIM_LOCATION : "location_id"
+  DIM_LOCATION }o--|| DIM_CITY : "city_id"
+  DIM_CITY }o--|| DIM_STATE : "state_id"
+  DIM_STATE }o--|| DIM_COUNTRY : "country_id"
+  FACT_SALES {
+    int date_key FK
+    int location_id FK
+    decimal amount
+  }
+  DIM_LOCATION {
+    int location_id PK
+    string location_name
+    int city_id FK
+  }
+  DIM_CITY {
+    int city_id PK
+    string city
+    int state_id FK
+  }
+  DIM_STATE {
+    int state_id PK
+    string state
+    int country_id FK
+  }
+  DIM_COUNTRY {
+    int country_id PK
+    string country
+  }

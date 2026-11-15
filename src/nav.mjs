@@ -111,6 +111,11 @@ export const topics = [
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-quality-fundamentals' } }],
           },
           {
+            label: 'Analytics Engineering with SQL and dbt',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/analytics-engineering-with-sql-and-dbt' } }],
+          },
+          {
             label: 'Redefining Data Engineering with AI',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/redefining-data-engineering-with-ai' } }],

@@ -1,0 +1,5 @@
+name: ch01_revenue
+version: "1.0.0"
+profile: ch01_revenue
+model-paths: ["models"]
+seed-paths: ["seeds"]

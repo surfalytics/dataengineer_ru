@@ -1,0 +1,7 @@
+version: 2
+
+sources:
+  - name: stripe
+    schema: stripe
+    tables:
+      - name: payment

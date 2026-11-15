@@ -1,0 +1,43 @@
+erDiagram
+  CUSTOMERS ||--o{ PURCHASE_HISTORY : "покупает"
+  PRODUCTS ||--o{ PURCHASE_HISTORY : "продаётся"
+  CHANNELS ||--o{ PURCHASE_HISTORY : "через канал"
+  CUSTOMERS ||--o{ VISIT_HISTORY : "посещает"
+  CHANNELS ||--o{ VISIT_HISTORY : "канал визита"
+  CUSTOMERS {
+    int customer_id PK
+    varchar name
+    date date_birth
+    varchar email_address
+    varchar phone_number
+    varchar country
+    timestamp created_at
+    timestamp updated_at
+  }
+  PRODUCTS {
+    int product_sku PK
+    varchar product_name
+    double unit_price
+    timestamp created_at
+    timestamp updated_at
+  }
+  CHANNELS {
+    int channel_id PK
+    varchar channel_name
+    timestamp created_at
+    timestamp updated_at
+  }
+  PURCHASE_HISTORY {
+    int customer_id FK
+    int product_sku FK
+    int channel_id FK
+    int quantity
+    double discount
+    datetime order_date
+  }
+  VISIT_HISTORY {
+    int customer_id FK
+    int channel_id FK
+    timestamp visit_timestamp
+    timestamp bounce_timestamp
+  }

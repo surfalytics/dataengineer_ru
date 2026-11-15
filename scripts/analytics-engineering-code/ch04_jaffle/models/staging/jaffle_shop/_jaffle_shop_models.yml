@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: stg_jaffle_shop_customers
+    config:
+      materialized: table   # перекрывает view из dbt_project.yml
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+
+  - name: stg_jaffle_shop_orders
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: status
+        data_tests:
+          - accepted_values:
+              values: [completed, shipped, returned, placed, return_pending]
+      - name: customer_id
+        data_tests:
+          - relationships:
+              to: ref('stg_jaffle_shop_customers')
+              field: customer_id

@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: stg_jaffle_shop_customers
+    config:
+      materialized: ephemeral   # в базе объекта нет, модель станет CTE
+  - name: stg_jaffle_shop_orders
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: order_id
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+  - name: stg_stripe_order_payments
+    config:
+      materialized: view

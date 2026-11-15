@@ -1,0 +1,53 @@
+version: 2
+
+semantic_models:
+  - name: orders
+    description: Таблица фактов заказов, одна строка на заказ.
+    model: ref('fct_orders')
+    defaults:
+      agg_time_dimension: order_date
+    entities:
+      - name: order_id
+        type: primary
+      - name: customer
+        type: foreign
+        expr: customer_id
+    dimensions:
+      - name: order_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: is_order_completed
+        type: categorical
+    measures:
+      - name: total_amount
+        agg: sum
+      - name: order_count
+        expr: 1
+        agg: sum
+      - name: cash_amount
+        agg: sum
+      - name: credit_amount
+        agg: sum
+      - name: customers_with_orders
+        agg: count_distinct
+        expr: customer_id
+
+metrics:
+  - name: order_total
+    label: Order Total
+    type: simple
+    type_params:
+      measure: total_amount
+  - name: order_count
+    label: Orders
+    type: simple
+    type_params:
+      measure: order_count
+  - name: completed_orders
+    label: Completed Orders
+    type: simple
+    type_params:
+      measure: order_count
+    filter: |
+      {{ Dimension('order_id__is_order_completed') }} = 1

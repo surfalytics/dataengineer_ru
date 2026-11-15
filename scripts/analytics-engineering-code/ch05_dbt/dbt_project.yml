@@ -1,0 +1,7 @@
+name: ch05_jaffle
+version: "1.0.0"
+profile: ch05_jaffle
+model-paths: ["models"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+clean-targets: ["target", "dbt_packages"]
