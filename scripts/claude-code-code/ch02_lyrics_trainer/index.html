@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Тренажёр строк</title>
+<style>
+  body { font-family: sans-serif; max-width: 40rem; margin: 4rem auto; text-align: center; }
+  .line { font-size: 1.5rem; min-height: 4.5rem; }  /* место под 2 строки: кнопка не прыгает */
+  .counter { color: #888; }
+</style>
+</head>
+<body>
+<div class="counter" id="counter"></div>
+<div class="line" id="line"></div>
+<button id="next">Дальше</button>
+<script>
+  // Текст для запоминания: первые 4 строки сонета 18 Шекспира (общественное достояние)
+  const lines = [
+    "Shall I compare thee to a summer's day?",
+    "Thou art more lovely and more temperate:",
+    "Rough winds do shake the darling buds of May,",
+    "And summer's lease hath all too short a date;"
+  ];
+  let pos = 0;  // номер текущей строки, с нуля
+  const lineBox = document.getElementById("line");
+  const counterBox = document.getElementById("counter");
+
+  function show() {
+    lineBox.textContent = lines[pos];
+    counterBox.textContent = `Строка ${pos + 1} из ${lines.length}`;
+  }
+
+  document.getElementById("next").addEventListener("click", () => {
+    pos = (pos + 1) % lines.length;  // после последней строки снова первая
+    show();
+  });
+
+  show();
+</script>
+</body>
+</html>

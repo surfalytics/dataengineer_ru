@@ -73,7 +73,7 @@ export const topics = [
     items: [
       { label: 'Обзор', link: '/book-summaries/' },
       {
-        label: 'Инженерия',
+        label: 'Инжиниринг',
         items: [
           {
             label: 'Fundamentals of Data Engineering',
@@ -110,6 +110,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-quality-fundamentals' } }],
           },
+          {
+            label: 'Redefining Data Engineering with AI',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/redefining-data-engineering-with-ai' } }],
+          },
         ],
       },
       {
@@ -124,6 +129,11 @@ export const topics = [
             label: 'Machines that Think',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/ai/machines-that-think' } }],
+          },
+          {
+            label: 'Claude Code: Up and Running',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/ai/claude-code-up-and-running' } }],
           },
         ],
       },
