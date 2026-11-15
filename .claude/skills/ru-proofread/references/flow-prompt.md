@@ -1,6 +1,6 @@
 # Prompt for the flow pass
 
-Run it after the correctness review is applied. Copy this, fill the `<...>` parts, and send it to a fresh subagent (`general-purpose`).
+Run it after the correctness review is applied. Copy this, fill the `<...>` parts, and send it to a fresh subagent (`general-purpose`, model `opus`, effort `medium`). The agent edits the page in place, so keep `before.md` from the start of the pipeline.
 
 ---
 
@@ -30,15 +30,18 @@ Hard limits:
 - Keep the same number of lines and the same line order. Edit inside a line.
 - Length may grow by up to 10%. If a paragraph already reads well, leave it.
 
-Output:
-1. The edited file at `<output path>`. Do not edit the input file.
-2. A change log at `<log path>` as a table: `Line | Было | Стало | Тип | Почему`. Use the type `flow` and say which tool you used (link, join, unfold, vary, reorder).
-3. A list "Meaning risks" at the end of the log: places where a link word could state a cause that the text does not state.
-4. Reply with only: the number of changed paragraphs, the word count before and after, and the meaning risks.
+How to edit (this keeps the cost low):
+- Read the page once. Edit it in place with the `Edit` tool, one paragraph per edit. Never rewrite the whole file with `Write`.
+- Do not write a change log. The lead builds the diff from a copy of the page with a script.
+- Do not read the page again after your edits.
+
+Reply with only:
+1. The number of changed paragraphs and the tools you used (link, join, unfold, vary, reorder).
+2. "Meaning risks": line and text, where a link word could state a cause that the text does not state.
 
 ---
 
 Notes for the lead:
-- After the pass run `check.py --before <before.md> --max-change 10 <page.md>` and `check.py --stats`.
+- After the pass run `check.py --before <before.md> --max-change 10 <page.md>` and `check.py --stats`. The guard prints the length change.
 - Read 3–4 changed paragraphs yourself. Check every new «поэтому» and «потому что» against the text.
 - The numbers in `--stats` are a guide. A page with many definitions and steps can stay below the targets.

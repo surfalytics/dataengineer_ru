@@ -2,11 +2,13 @@
 """Build a side-by-side HTML diff: before | after, with word-level highlights and change reasons.
 
 Usage:
-  python3 -I scripts/ru-proofread/compare.py BEFORE.md AFTER.md CHANGES.md OUT.html "Title"
+  python3 -I scripts/ru-proofread/compare.py BEFORE.md AFTER.md OUT.html "Title"
+  python3 -I scripts/ru-proofread/compare.py BEFORE.md AFTER.md CHANGES.md OUT.html "Title"   # old form
 
-BEFORE and AFTER must have the same number of lines (the review agent keeps the line structure).
-CHANGES.md is the change log of the review agent: a Markdown table with the columns
-Line | Было | Стало | Тип | Почему. Line numbers refer to BEFORE.md.
+The diff is built from BEFORE and AFTER. The agents do not need to write a change log.
+BEFORE and AFTER must have the same number of lines (the agents edit inside lines).
+CHANGES.md is optional: a Markdown table Line | Было | Стало | Тип | Почему. If given, its types
+and reasons are shown next to the changed lines. Line numbers refer to BEFORE.md.
 Open OUT.html in a browser. Keep OUT.html outside the repo.
 """
 import difflib
@@ -14,13 +16,20 @@ import html
 import re
 import sys
 
-before_p, after_p, changes_p, out_p, title = sys.argv[1:6]
+args = sys.argv[1:]
+if len(args) == 4:
+    before_p, after_p, out_p, title = args
+    changes_p = None
+elif len(args) == 5:
+    before_p, after_p, changes_p, out_p, title = args
+else:
+    sys.exit(__doc__)
 A = open(before_p, encoding="utf-8").read().split("\n")
 B = open(after_p, encoding="utf-8").read().split("\n")
 
-# --- parse change log: line -> [(type, reason)]
+# --- parse change log (optional): line -> [(type, reason)]
 notes = {}
-for raw in open(changes_p, encoding="utf-8"):
+for raw in open(changes_p, encoding="utf-8") if changes_p else []:
     if not raw.startswith("|"):
         continue
     cells = [c.strip() for c in re.split(r"(?<!\\)\|", raw.strip().strip("|"))]

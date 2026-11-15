@@ -62,7 +62,7 @@ python3 -I scripts/ru-proofread/check.py --before /tmp/before.md <page>.md
 python3 -I scripts/ru-proofread/check.py --before /tmp/before.md --max-change 10 <page>.md   # after the flow pass
 
 # Step 5: compare
-python3 -I scripts/ru-proofread/compare.py /tmp/before.md <page>.md changes.md /tmp/compare.html "Title"
+python3 -I scripts/ru-proofread/compare.py /tmp/before.md <page>.md /tmp/compare.html "Title"
 open /tmp/compare.html
 ```
 
@@ -143,7 +143,9 @@ It skips headings (a changed heading changes its anchor), code, links, JSON-like
 
 **Flow pass** (`flow-prompt.md`). It links sentences, joins halves of one thought, unfolds fragments. It must not add facts or a cause the text does not state. «Поэтому» and «потому что» are claims.
 
-Both agents write a change log `Line | Было | Стало | Тип | Почему` and a list of **meaning risks**. Meaning risks go to the owner in the final report. Not on the page.
+Both agents edit the page in place with small `Edit` calls. They write no full copy and no change log, because output tokens are the most expensive part. `compare.py` builds the diff from `before.md` and the page. The agents reply with counts and a list of **meaning risks**. Meaning risks go to the owner in the final report. Not on the page.
+
+Models: the correctness review runs on `sonnet` (effort `medium`): it checks against rules. The flow pass runs on `opus` (effort `medium`): it rewrites prose.
 
 ## Grow the rules
 
@@ -166,7 +168,7 @@ Each time you find a silly mistake, add it. Use real examples.
 
 ## Limits
 
-- The agents are the same model family as the author. There is no human ground truth. Spot-check the change logs.
+- The agents are the same model family as the author. There is no human ground truth. Spot-check the diffs.
 - Meaning risks need the book. The agent often does not have it.
 - The script knows Russian only by regex. It has no morphology. `dash-before-eto` misses some definitions.
 - The rhythm numbers are a proxy for "pleasant to read". The owner decides if a page reads well.
