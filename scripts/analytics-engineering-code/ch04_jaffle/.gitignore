@@ -3,3 +3,4 @@ logs/
 dbt_packages/
 jaffle.duckdb
 jaffle.duckdb.wal
+.user.yml
