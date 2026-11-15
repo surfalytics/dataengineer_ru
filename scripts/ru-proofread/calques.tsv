@@ -6,7 +6,7 @@
 # --- calques from English: always wrong
 имеет\s+смысл	разумно / логично / так нужно	error	it makes sense
 делает\s+смысл	имеет смысл → «логично»	error	makes sense
-человек\s+в\s+цикле	участие человека	error	human in the loop
+человек[а-я]*\s+в\s+цикле	участие человека	error	human in the loop
 справедливо\s+(распредел|раздел|сбаланс)	равномерно	error	fairly
 \bлечат?\b|\bлечит\b	решают проблему	warn	heal
 лишн\w+\s+расход	накладные расходы	error	overhead
@@ -32,6 +32,7 @@
 стоит\s+отметить|следует\s+отметить|важно\s+отметить|необходимо\s+отметить	(delete, say the fact)	warn	filler
 \bпроизводить\s+(анализ|расчёт|расчет|проверк|обработк)	анализировать / считать / проверять / обрабатывать	warn	канцелярит
 в\s+целях\s	чтобы / для	warn	канцелярит
+пайплайн[а-яё]*	`pipeline`	error	site term: always `pipeline` (owner decision 2026-11-14)
 
 # --- found by the clarity pass (Analytics Engineering with SQL and dbt, 2026-11)
 помогл\w*\s+родиться	помогли появиться	warn	helped give birth to
@@ -46,3 +47,17 @@
 настоящая\s+сила	главная польза	warn	the real power
 код\w*\s+становится\s+структурным	структурированным	warn	structural vs structured
 голый\s+data\s+lake	data lake без хранилища	warn	bare data lake
+
+# --- found by the clarity pass (Claude AI Bible, 2026-11)
+гоня\w*\s+(\S+\s+)?через	отправлять в / пропускать через	warn	slang: run everything through
+заши\w*\s+(\S+\s+)?верси	жёстко прописать версию	warn	slang: hard-code a version
+сре(зают|зать|зал)\w*\s+угл	спешат / делают кое-как	warn	calque: cut corners
+теря\w*\s+нить	начинает путаться / забывает ход задачи	warn	calque: loses the thread
+заби(вает|вают|ть|л)\w*\s+(контекст|памят)	заполняет контекст	warn	slang: clogs the context
+тяжёл\w+\s+модел	самые мощные модели	warn	calque: heavy models
+крут(ится|ятся|ить)\s+(в\s+)?цикл	повторяет цикл	warn	slang: spins in a loop
+тихо\s+(врёт|врут|лжёт)	незаметно ошибается	warn	calque: silently lies
+попутн\w+\s+ветер	преимущество	warn	metaphor
+гас(ить|ит|ят)\s+галлюцинац	защищаться от галлюцинаций	warn	odd verb
+(возможност|функци|настройк)\w*\s+жив(ёт|ут)\s+в	находится в / есть в	warn	calque: lives in
+сыр(ая|ой|ые)\s+платформ	базовая платформа	warn	calque: raw platform

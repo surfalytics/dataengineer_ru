@@ -1,10 +1,10 @@
 ---
-title: Compose для пайплайна
+title: Compose для pipeline
 # SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
 head:
   - tag: title
-    content: "Docker Compose для пайплайна: Postgres и dbt | Инжиниринг Данных"
-description: "Собираем пайплайн в Docker Compose: build, healthcheck и depends_on, файл .env с паролем, profiles для dbt, команды run и config. Пример с Postgres и dbt."
+    content: "Docker Compose для pipeline: Postgres и dbt | Инжиниринг Данных"
+description: "Собираем pipeline в Docker Compose: build, healthcheck и depends_on, файл .env с паролем, profiles для dbt, команды run и config. Пример с Postgres и dbt."
 sidebar:
   order: 12
 tags:
@@ -12,7 +12,7 @@ tags:
   - practice
 ---
 
-Теперь соберём настоящий пайплайн: Postgres, загрузчик CSV и dbt. Для этого нужны пять приёмов Compose: `build`, `command`, `healthcheck`, `.env` и `profiles`.
+Теперь соберём настоящий `pipeline`: Postgres, загрузчик CSV и dbt. Для этого нужны пять приёмов Compose: `build`, `command`, `healthcheck`, `.env` и `profiles`.
 
 ## Цель
 

@@ -42,6 +42,29 @@ Second test: "Claude Code: Up and Running" (Early Release, chapters 1-4, 17,300 
 
 Found after the run and fixed in the workflow: a duplicate diagram in two chapters, arrow labels hiding short arrows (`excb.py` now fails on this), a draft Russian title that no step checked, first drafts far above 40% (`words.py --sections` now gives a budget per section).
 
+Third run: "Claude AI Bible" (22 chapters, 94,000 source words), 2026-11-14. First full-size book.
+
+| Step | Model | Agents | Est. $ | Note |
+|---|---|---|---|---|
+| Split + glossary (66 terms) | sonnet | 2 | 0.49 | |
+| Status | haiku | 1 | 0.01 | |
+| Write 22 chapters | opus/high | 22 | 34.63 | $0.37 per 1,000 source words |
+| Review | sonnet/medium | 22 | 2.95 | 0-7 changes per chapter |
+| Flow | opus/medium | 2 | 0.68 | Only ch4 and ch6 were LOW |
+| Book + build | opus + sonnet | 2 | 2.85 | Aligned 14 chapter titles, removed 1 duplicate diagram, settled glossary clashes |
+| **Total** | | **51** | **41.61** | 19 minutes for Part 2 |
+
+Section budgets did not stop long drafts: 6 writers report first drafts of 53-74%. All final pages are 36-40%.
+
+Clarity pass added later (from #103), run on the finished 22 chapters, 2026-11-15:
+
+| Step | Model | Agents | Est. $ | Note |
+|---|---|---|---|---|
+| Clarity | opus/high | 22 | 10.93 | $0.50 per chapter. 319 changes (8-23 per chapter), 0 deletions. Pages grew 2-8% |
+| Status | haiku | 1 | 0.01 | |
+
+The review had made 0-7 changes per chapter. The clarity pass found 8-23 more: vague sentences, unclear «это», slang and calques the script did not know. 12 repeatable ones went to `calques.tsv`.
+
 What we learned:
 
 - Writers are 64% of the cost. In a writer, output is about 43% of the cost, cache writes 29%, cache reads 28%.
