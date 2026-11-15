@@ -1,0 +1,54 @@
+erDiagram
+  DIM_CUSTOMERS ||--o{ FCT_PURCHASE_HISTORY : "sk_customer"
+  DIM_PRODUCTS ||--o{ FCT_PURCHASE_HISTORY : "sk_product"
+  DIM_CHANNELS ||--o{ FCT_PURCHASE_HISTORY : "sk_channel"
+  DIM_DATE ||--o{ FCT_PURCHASE_HISTORY : "дата"
+  DIM_CUSTOMERS ||--o{ FCT_VISIT_HISTORY : "sk_customer"
+  DIM_CHANNELS ||--o{ FCT_VISIT_HISTORY : "sk_channel"
+  DIM_DATE ||--o{ FCT_VISIT_HISTORY : "дата"
+  FCT_PURCHASE_HISTORY {
+    string sk_customer FK
+    string sk_channel FK
+    string sk_product FK
+    date sk_order_date FK
+    int mtr_quantity
+    float mtr_discount
+    float mtr_unit_price
+    float mtr_total_amount_gross
+    float mtr_total_amount_net
+  }
+  FCT_VISIT_HISTORY {
+    string sk_customer FK
+    string sk_channel FK
+    date sk_date_visit FK
+    date sk_date_bounce
+    datetime dt_visit_timestamp
+    datetime dt_bounce_timestamp
+    int mtr_length_of_stay_minutes
+  }
+  DIM_CUSTOMERS {
+    string sk_customer PK
+    int nk_customer_id
+    string dsc_name
+    date dt_date_birth
+    string dsc_email_address
+    string dsc_phone_number
+    string dsc_country
+  }
+  DIM_PRODUCTS {
+    string sk_product PK
+    int nk_product_sku
+    string dsc_product_name
+    float mtr_unit_price
+  }
+  DIM_CHANNELS {
+    string sk_channel PK
+    int nk_channel_id
+    string dsc_channel_name
+  }
+  DIM_DATE {
+    date date_day PK
+    int month_of_year
+    int quarter_of_year
+    int year_number
+  }

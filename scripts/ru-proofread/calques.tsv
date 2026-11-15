@@ -32,3 +32,17 @@
 стоит\s+отметить|следует\s+отметить|важно\s+отметить|необходимо\s+отметить	(delete, say the fact)	warn	filler
 \bпроизводить\s+(анализ|расчёт|расчет|проверк|обработк)	анализировать / считать / проверять / обрабатывать	warn	канцелярит
 в\s+целях\s	чтобы / для	warn	канцелярит
+
+# --- found by the clarity pass (Analytics Engineering with SQL and dbt, 2026-11)
+помогл\w*\s+родиться	помогли появиться	warn	helped give birth to
+доступн\w+\s+приложени	приложение, которое даёт доступ к …	warn	accessible application (reads as cheap)
+правильн\w+\s+задач\w*\s+на\s+правильн	нужную задачу на нужных данных	warn	right problem on the right data
+(сыграл|играет|играют)\w*\s+ключев\w+\s+рол	сильно помог / важен (say how)	warn	AI slop: plays a key role
+(закрыва\w+\s+(нишу|шаг|потребност|боль)|нишу\s+закрыва)	решает задачу / отвечает за шаг	warn	slang: closes the niche
+веша\w+\s+ограничени	задают ограничение	warn	slang: hang a constraint
+держ\w+\s+качество	сохраняют качество	warn	keep quality
+(дают|даёт|давать)\s+бизнесу\s+ценность	приносит бизнесу пользу	warn	deliver value
+вырастить\s+бизнес	помочь бизнесу расти	warn	grow the business
+настоящая\s+сила	главная польза	warn	the real power
+код\w*\s+становится\s+структурным	структурированным	warn	structural vs structured
+голый\s+data\s+lake	data lake без хранилища	warn	bare data lake

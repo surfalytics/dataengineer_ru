@@ -41,5 +41,5 @@ Notes for the lead:
 - Run this on one chapter per agent. Run agents in parallel for many chapters.
 - After the review run the guard: `python3 -I scripts/ru-proofread/check.py --before <before.md> <page.md>`.
 - To see what changed: `diff <before.md> <page.md>` or the HTML page from `compare.py`.
-- Then run the flow pass (`flow-prompt.md`) if `check.py --stats` shows `LOW`.
+- Then run the flow pass (`flow-prompt.md`) if `check.py --stats` shows `LOW`. Then always run the clarity pass (`clarity-prompt.md`).
 - Compare the diff to the script output. If the agent found a new repeatable error, add it to `scripts/ru-proofread/calques.tsv` or `rules.md`.

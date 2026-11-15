@@ -1,0 +1,12 @@
+# Две среды в одном файле DuckDB: dev (разработка) и deploy (рабочая)
+ch05_jaffle:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ch05.duckdb
+      schema: main
+    deploy:
+      type: duckdb
+      path: ch05.duckdb
+      schema: main

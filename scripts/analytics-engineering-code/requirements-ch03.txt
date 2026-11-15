@@ -1,0 +1,9 @@
+# Глава 3. Python 3.13. duckdb 1.1.3: fugue 0.9.1 не работает с duckdb 1.4
+duckdb==1.1.3
+pandas==2.2.3
+polars==1.31.0
+pyarrow==20.0.0
+fastapi==0.115.6
+httpx==0.28.1
+fugue[duckdb,sql]==0.9.1
+setuptools<81

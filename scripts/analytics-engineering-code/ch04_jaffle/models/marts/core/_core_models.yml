@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: Заказы для анализа, один заказ на строку.
+    columns:
+      - name: order_id
+        description: Первичный ключ заказа.
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: Внешний ключ на dim_customers.
+      - name: total_amount
+        description: Сумма успешных платежей по заказу.
+      - name: is_order_completed
+        description: "{{ doc('is_order_completed_docblock') }}"
+
+  - name: dim_customers
+    description: Клиенты. Через неё факты анализируют в разрезе клиента.
+    columns:
+      - name: customer_id
+        description: Первичный ключ клиента.

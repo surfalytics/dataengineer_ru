@@ -1,0 +1,23 @@
+erDiagram
+    CUSTOMERS ||--o{ ORDERS : "делает"
+    ORDERS ||--o{ PAYMENT : "оплачивается"
+    CUSTOMERS {
+        int id PK
+        string first_name
+        string last_name
+    }
+    ORDERS {
+        int id PK
+        int user_id FK
+        date order_date
+        string status
+        timestamp _etl_loaded_at
+    }
+    PAYMENT {
+        int id PK
+        int orderid FK
+        string paymentmethod
+        string status
+        int amount
+        date created
+    }

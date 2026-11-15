@@ -1,0 +1,21 @@
+name: jaffle_book
+version: "1.0.0"
+config-version: 2
+profile: jaffle_book
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages", "logs"]
+
+# Настройки по умолчанию для каждого слоя
+models:
+  jaffle_book:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table

@@ -1,0 +1,26 @@
+erDiagram
+  CATEGORY ||--o{ BOOKS : "classifies"
+  BOOKS ||--o{ PUBLISHES : "book_id"
+  AUTHORS ||--o{ PUBLISHES : "author_id"
+  CATEGORY {
+    int category_id PK
+    string category_name
+  }
+  BOOKS {
+    int book_id PK
+    string isbn
+    string title
+    string summary
+    int category_id FK
+  }
+  AUTHORS {
+    int author_id PK
+    string author_name
+    date date_birth
+  }
+  PUBLISHES {
+    int book_id PK, FK
+    int author_id PK, FK
+    date publish_date
+    date planned_publish_date
+  }
