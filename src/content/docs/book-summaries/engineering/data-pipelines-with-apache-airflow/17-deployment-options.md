@@ -14,11 +14,11 @@ tags:
   - deployment
 ---
 
-**Главная мысль:** Docker Compose годится для разработки, но не для production. Есть два пути. Купить managed сервис и отдать ему работу. Или развернуть Airflow в Kubernetes самим и получить больше контроля. Какой путь лучше, зависит от команды, облака и бюджета.
+**Главная мысль:** Docker Compose годится для разработки, но не для production. Есть два пути: купить managed сервис и отдать провайдеру работу с инфраструктурой или развернуть Airflow в Kubernetes самим и получить больше контроля. Какой путь лучше, зависит от команды, облака и бюджета.
 
 ## О чём глава
 
-До сих пор все примеры шли в Docker Compose. Для production он не подходит. Глава отвечает, где и как запускать Airflow дальше. Она идёт после [главы 16](/book-summaries/engineering/data-pipelines-with-apache-airflow/16-securing-airflow/) о безопасности. Темы: managed сервисы, Helm Chart в Kubernetes, доставка DAG и библиотек, несколько executors, выбор стратегии.
+До сих пор все примеры шли в Docker Compose, но для production он не подходит. Поэтому глава отвечает, где и как запускать Airflow дальше. Она идёт после [главы 16](/book-summaries/engineering/data-pipelines-with-apache-airflow/16-securing-airflow/) о безопасности. Темы: managed сервисы, Helm Chart в Kubernetes, доставка DAG и библиотек, несколько executors, выбор стратегии.
 
 ![Выбор развёртывания: managed сервис или свой Kubernetes с Helm Chart](/assets/data-pipelines-with-apache-airflow/ch17-deploy-choice.png)
 
@@ -28,25 +28,25 @@ tags:
 
 ### Astronomer
 
-Astronomer занимается только Airflow. Люди компании входят в Airflow PMC и сильно участвовали в разработке Airflow 3. Её сервис Astro работает в Azure, AWS и Google Cloud. Deployments создают через UI, Astro CLI, REST API или Terraform. Один UI показывает все deployments и их стоимость. Для нескольких команд это удобно.
+Astronomer занимается только Airflow. Люди компании входят в Airflow PMC и активно участвовали в разработке Airflow 3. Сервис компании под названием Astro работает в Azure, AWS и Google Cloud, а deployments создают через UI, Astro CLI, REST API или Terraform. Один UI показывает все deployments и их стоимость: для нескольких команд это удобно.
 
 Кроме хостинга есть Astro CLI для локальной разработки, Astro IDE (редактор в браузере), Cosmos (запуск проектов `dbt Core` как DAG) и Astro Observe: здоровье pipelines, lineage, SLA, качество данных и стоимость.
 
 ### Google Cloud Composer
 
-Composer почти в один клик ставит Airflow в GCP. Он работает на Google Kubernetes Engine (GKE) и тесно связан с BigQuery, Cloud Storage и другими сервисами GCP. Плата идёт за сам environment и за GKE и Cloud Storage. Операторы Google для её сервисов работают и вне Composer.
+Composer почти в один клик ставит Airflow в GCP. Он работает на Google Kubernetes Engine (GKE) и тесно связан с BigQuery, Cloud Storage и другими сервисами GCP. Плата идёт за сам environment и за GKE и Cloud Storage. Операторы Google для сервисов GCP можно использовать и без Composer, в любом Airflow с нужными правами.
 
 ### Amazon MWAA
 
-MWAA похож на Composer, но живёт в AWS. Он интегрирован с S3, Redshift, SageMaker, CloudWatch и IAM. Он использует `CeleryExecutor` и сам масштабирует workers. DAG загружают в S3 bucket. Цена: базовая плата за environment, плата за каждый worker и плата за хранение metastore.
+MWAA похож на Composer, но живёт в AWS. Он интегрирован с S3, Redshift, SageMaker, CloudWatch и IAM, использует `CeleryExecutor` и сам масштабирует workers. DAG загружают в S3 bucket. Цена: базовая плата за environment, плата за каждый worker и плата за хранение metastore.
 
 ## Airflow в Kubernetes
 
-Нужен кластер Kubernetes. Для примеров автор берёт k3s в Docker Compose: он поднимает кластер, внешний PostgreSQL и Docker registry. Airflow ставят внутрь кластера. `kubectl` смотрит ресурсы кластера. `helm` ставит приложения: это package manager для Kubernetes, а пакеты называются charts.
+Нужен кластер Kubernetes: для примеров автор запускает k3s через Docker Compose: он поднимает кластер, внешний PostgreSQL и Docker registry. Airflow ставят внутрь кластера. `kubectl` показывает ресурсы кластера, а `helm` ставит приложения: это package manager для Kubernetes, его пакеты называются charts.
 
 ### Официальный Helm Chart
 
-Сначала ставят официальный chart с настройками по умолчанию. Одна правка: `apiServer.service.type=LoadBalancer`, чтобы UI был виден снаружи. В списке pods видна архитектура из главы 1.
+Сначала ставят официальный chart с настройками по умолчанию и одной правкой: `apiServer.service.type=LoadBalancer`, чтобы UI был виден снаружи. Список pods после установки повторяет компоненты архитектуры из главы 1.
 
 | Pod | Роль |
 |---|---|
@@ -62,11 +62,11 @@ MWAA похож на Composer, но живёт в AWS. Он интегриров
 
 Настройки меняют через values-файлы. Значения по умолчанию показывает `helm show values apache-airflow/airflow`. Вы пишете файл с правками и запускаете `helm upgrade --install ... -f values.yaml`.
 
-Есть ловушка: helm не помнит прошлые файлы. Поэтому каждый следующий файл в книге содержит новую правку и все прежние. Иначе они откатятся к значениям по умолчанию.
+Есть ловушка: helm не помнит прошлые файлы. Поэтому каждый следующий файл в книге содержит новую правку и все прежние, иначе прежние правки откатятся к значениям по умолчанию.
 
 ![Четыре values-файла: каждый повторяет правки предыдущих](/assets/data-pipelines-with-apache-airflow/ch17-values-layers.png)
 
-Скрипт показывает это на урезанных значениях, кластер не нужен.
+Скрипт ниже показывает это на урезанном наборе настроек, кластер для него не нужен.
 
 ```python
 """Глава 17: как helm собирает настройки. Чистый Python + PyYAML 6.0.3, кластер не нужен.
@@ -133,19 +133,19 @@ show("Файл 03 только с новой правкой:", release(FILE_03_D
 
 ### Шаги настройки
 
-1. **Свой начальный пользователь.** Блок `webserver.defaultUser`. Старый остаётся, если базу не пересоздавали.
+1. **Свой начальный пользователь.** Его задают в блоке `webserver.defaultUser`, но старый пользователь тоже остаётся: deployment только обновили, а не пересоздали.
 2. **Статичный secret key для api-server.** По умолчанию chart генерирует новый ключ при каждом обновлении, и компоненты лишний раз перезапускаются. Создайте Kubernetes secret и сошлитесь на него через `apiSecretKeySecretName`. Автор предупреждает: так хранить ключ всё ещё небезопасно. Для production берите внешний store: Key Vault, HashiCorp Vault или Secret Manager.
-3. **Внешняя база для metadata.** Это лучший вариант для production: вы сами настраиваете доступ, backup и восстановление. Параметры подключения кладут в Kubernetes secret, потом отключают встроенный PostgreSQL (`postgresql.enabled: false`) и задают `data.metadataSecretName`. База новая, прежнего пользователя в ней нет. Совет автора: для PostgreSQL включите PgBouncer. Airflow открывает много соединений, а пул их сокращает.
+3. **Внешняя база для metadata.** Это лучший вариант для production: вы сами настраиваете доступ, backup и восстановление. Параметры подключения кладут в Kubernetes secret, потом отключают встроенный PostgreSQL (`postgresql.enabled: false`) и задают `data.metadataSecretName`. База новая, поэтому прежнего пользователя в ней нет. Совет автора: для PostgreSQL включите PgBouncer, потому что Airflow открывает много соединений, а пул сокращает их число.
 
 ## Как доставить DAG
 
-Нужно доставить DAG во все компоненты Airflow. Есть три способа.
+Нужно доставить DAG во все компоненты Airflow, и для этого есть три способа.
 
 ![Три способа доставки DAG: image, persistent volume и git-sync](/assets/data-pipelines-with-apache-airflow/ch17-dag-delivery.png)
 
-**DAG в image.** Файлы запекают в image строкой `COPY dags` в Dockerfile. Любая правка требует нового image, поэтому версия кода всегда ясна. Так делает и Astronomer. Апгрейд Airflow сводится к смене тега базового image. Image кладут в registry и прописывают в `images.airflow.repository` и `images.airflow.tag`. Минус: неудобно, если DAG пишут несколько команд.
+**DAG в image.** Файлы запекают в image строкой `COPY dags` в Dockerfile. Любая правка требует нового image, поэтому версия кода всегда ясна. Так делает и Astronomer. К тому же апгрейд Airflow сводится к смене тега базового image. Image кладут в registry и прописывают в `images.airflow.repository` и `images.airflow.tag`. Минус: неудобно, если DAG пишут несколько команд.
 
-**Persistent volume.** Это абстракция Kubernetes над хранилищем: общий том монтируется в pods. Способ подходит для нескольких команд. Сложнее всего CI/CD: код надо копировать в том, а решение зависит от типа тома.
+**Persistent volume.** Это абстракция Kubernetes над хранилищем: общий том монтируется в pods. Способ подходит для нескольких команд, но сложнее всего здесь настроить CI/CD: том обычно не умеет принимать код напрямую, его надо копировать туда отдельно, а решение зависит от типа тома.
 
 **Git-sync.** В pod dag-processor появляется sidecar-контейнер `git-sync`. Он тянет DAG из Git и обновляет их при новой версии. В values задают репозиторий, ветку, глубину клона и `subPath` с DAG.
 
@@ -167,15 +167,15 @@ dags:
 
 ## Как доставить Python-библиотеки
 
-Для DAG нужны ещё pandas или providers. Переменная `_PIP_ADDITIONAL_REQUIREMENTS` ставит пакеты при старте. Это удобно в разработке, но не для production. Для production пакеты ставят в image (`FROM apache/airflow:<версия>`, `RUN pip install ...`) и прописывают его в `images.airflow.*`.
+DAG нужны ещё Python-библиотеки, например pandas или providers. Их может поставить при старте переменная `_PIP_ADDITIONAL_REQUIREMENTS`: это удобно в разработке, но не для production. Для production пакеты ставят в image (`FROM apache/airflow:<версия>`, `RUN pip install ...`) и прописывают его в `images.airflow.*`.
 
-Минус: у всех worker один набор зависимостей. Если Airflow делят несколько команд, зависимости конфликтуют. Выход: несколько очередей `CeleryExecutor`, у каждой свой worker и свой image. Другой путь изоляции описан в [главе 11](/book-summaries/engineering/data-pipelines-with-apache-airflow/11-tasks-in-containers/).
+Минус: у всех worker один набор зависимостей. Если Airflow делят несколько команд, зависимости конфликтуют, а выход — несколько очередей `CeleryExecutor`, у каждой свой worker и свой image. Другой путь изоляции описан в [главе 11](/book-summaries/engineering/data-pipelines-with-apache-airflow/11-tasks-in-containers/).
 
 ## Несколько executors
 
-В Airflow 2 для этого был `CeleryKubernetesExecutor`. В Airflow 3 он устарел. Теперь можно включить несколько executors и выбирать нужный для каждой task. Функция ещё экспериментальная.
+В Airflow 2 Celery и Kubernetes в одном Airflow совмещал `CeleryKubernetesExecutor`: часть tasks он отдавал в очередь kubernetes, а не в Celery worker. В Airflow 3 он устарел. Теперь можно включить несколько executors и выбирать нужный для каждой task, хотя функция ещё экспериментальная.
 
-В values ставят `executor: "CeleryExecutor,KubernetesExecutor"`. Книга собирает три image: общий для Celery (без TensorFlow), по умолчанию для `KubernetesExecutor` (с TensorFlow) и ещё один со старой версией TensorFlow, который задаёт сама task. DAG печатает версию TensorFlow. Task на Celery падает: библиотеки нет. Две task на `KubernetesExecutor` проходят.
+В values ставят `executor: "CeleryExecutor,KubernetesExecutor"`. Книга собирает три image: общий для Celery (без TensorFlow), по умолчанию для `KubernetesExecutor` (с TensorFlow) и ещё один со старой версией TensorFlow, который задаёт сама task. DAG печатает версию TensorFlow. Task на Celery падает, потому что библиотеки нет, а две task на `KubernetesExecutor` проходят.
 
 ![Две tasks с разными executors: Celery падает без библиотеки, Kubernetes запускает pod со своим image](/assets/data-pipelines-with-apache-airflow/ch17-multi-executor.png)
 
@@ -222,16 +222,16 @@ on_celery: executor=CeleryExecutor, image=по умолчанию
 on_k8s: executor=KubernetesExecutor, image=registry:5000/team-a/airflow-libs:1.0
 ```
 
-Проверено на Airflow 3.4.0 и `apache-airflow-providers-cncf-kubernetes==11.0.0`: DAG разбирается, вывод одинаков при шести запусках. Сами tasks и `airflow dags test` не запускали: нужны Celery worker и Kubernetes. Если executor нет в `[core] executor`, Airflow отклоняет DAG при разборе (`UnknownExecutorException`). Это мы проверили. Список проверок в [README.md](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/README.md).
+Проверено на Airflow 3.4.0 и `apache-airflow-providers-cncf-kubernetes==11.0.0`: DAG разбирается, вывод одинаков при шести запусках. Сами tasks и `airflow dags test` не запускали: нужны Celery worker и Kubernetes. Если executor нет в `[core] executor`, Airflow отклоняет DAG при разборе (`UnknownExecutorException`), и это мы проверили. Список проверок в [README.md](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/README.md).
 
 ## Как выбрать стратегию
 
 Свой deployment гибче, но требует опыта, особенно для безопасности и стоимости. Managed решение снимает эти заботы, но может быть негибким. Пять вопросов автора:
 
-- **Нужен ли Kubernetes?** Astronomer и GCP дают простой путь. Можно и поставить Airflow в свой кластер.
-- **К каким сервисам идут DAG?** В GCP очевидный выбор Composer. Для on-premise или других облаков менее логичен.
-- **Как доставлять DAG?** Astronomer даёт CLI, Composer даёт bucket. Подумайте о CI/CD.
-- **Сколько платить?** Kubernetes бывает дорогим из-за кластера. SaaS вроде Astronomer бывает дешевле. Если кластер уже есть, запускайте Airflow в нём.
+- **Нужен ли Kubernetes?** Astronomer и GCP дают простой путь к Airflow на Kubernetes, но можно и поставить Airflow в свой кластер.
+- **К каким сервисам идут DAG?** Если вы плотно работаете с GCP, очевидный выбор — Composer. Если DAG ходят к on-premise сервисам или в другие облака, Composer менее логичен.
+- **Как доставлять DAG?** Astronomer даёт CLI, а Composer — bucket. Подумайте, как связать это с CI/CD, чтобы новые версии DAG выкладывались автоматически.
+- **Сколько платить?** Kubernetes бывает дорогим из-за кластера, а SaaS вроде Astronomer бывает дешевле. Если кластер уже есть, запускайте Airflow в нём.
 - **Нужен ли тонкий контроль?** Тогда свой deployment, но с затратами на поддержку.
 
 ## Итоги главы

@@ -161,17 +161,31 @@ def load_term_pairs():
     return [(c[0].lower(), c[1].lower()) for c in read_tsv("term-pairs.tsv", 2)]
 
 
+# Case endings only. A free "any 4 letters" tail made bans hit other words:
+# «линидж» matched «линии», «исход» matched «исходя», «задание» matched «заданный».
+_VOWELS = "аеёиоуыэюяьй"
+_HARD_ENDINGS = r"(?:а|у|е|ом|ем|ы|и|ов|ев|ей|ам|ами|ах|ой|ою)?"   # after a consonant: контейнер-а, -ом, -ами, линидж-ем
+_SOFT_ENDINGS = r"(?:[аеёиоуыэюяьй][а-яё]{0,2})"       # after the stem of a vowel word: задани-е, -я, -ем, -ями
+
+
 def stem_regex(phrase):
     """Regex for a phrase that also matches its inflected forms: потребитель -> потребителей."""
     parts = []
     for w in phrase.split():
         if re.fullmatch(r"[А-Яа-яЁё-]+", w):
-            if len(w) >= 6:
-                parts.append(re.escape(w[:-2]) + r"[а-яё]{0,4}")
-            elif len(w) == 5 and w[-1] in "аеёиоуыэюяьй":
-                parts.append(re.escape(w[:-1]) + r"[а-яё]{0,3}")
+            low = w.lower()
+            if low[-1] in _VOWELS and len(low) >= 4:
+                # adjective endings lose two letters (размерн-ое), other words one (задани-е)
+                if low.endswith("ие") and len(low) >= 5:
+                    # задани-е / задани-ями and больш-ие / больш-их: the ending starts with «и»
+                    parts.append(re.escape(w[:-2]) + r"и[а-яё]{0,3}")
+                    continue
+                cut = 2 if re.search(r"(ая|яя|ое|ее|ые|ый|ой|ий)$", low) and len(low) >= 5 else 1
+                parts.append(re.escape(w[:-cut]) + _SOFT_ENDINGS)
+            elif low[-1] in _VOWELS:
+                parts.append(re.escape(w) + r"[а-яё]{0,2}")
             else:
-                parts.append(re.escape(w) + r"[а-яё]{0,3}")
+                parts.append(re.escape(w) + _HARD_ENDINGS)
         else:
             parts.append(re.escape(w))
     return re.compile(r"(?<![\w-])" + r"\s+".join(parts) + r"(?![\w-])", re.IGNORECASE)
