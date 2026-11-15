@@ -56,6 +56,15 @@ Third run: "Claude AI Bible" (22 chapters, 94,000 source words), 2026-11-14. Fir
 
 Section budgets did not stop long drafts: 6 writers report first drafts of 53-74%. All final pages are 36-40%.
 
+Clarity pass added later (from #103), run on the finished 22 chapters, 2026-11-15:
+
+| Step | Model | Agents | Est. $ | Note |
+|---|---|---|---|---|
+| Clarity | opus/high | 22 | 10.93 | $0.50 per chapter. 319 changes (8-23 per chapter), 0 deletions. Pages grew 2-8% |
+| Status | haiku | 1 | 0.01 | |
+
+The review had made 0-7 changes per chapter. The clarity pass found 8-23 more: vague sentences, unclear «это», slang and calques the script did not know. 12 repeatable ones went to `calques.tsv`.
+
 What we learned:
 
 - Writers are 64% of the cost. In a writer, output is about 43% of the cost, cache writes 29%, cache reads 28%.
