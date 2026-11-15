@@ -13,11 +13,11 @@ tags:
   - security
 ---
 
-**Главная мысль:** Airflow имеет доступ ко многим системам, поэтому это цель для атаки. Защита не одна кнопка. Нужно несколько слоёв: роли, шифрование секретов, шифрование трафика и внешнее хранилище секретов.
+**Главная мысль:** Airflow имеет доступ ко многим системам, поэтому это цель для атаки. Но защита — это не одна настройка, а несколько слоёв: роли, шифрование секретов, шифрование трафика и внешнее хранилище секретов.
 
 ## О чём глава
 
-Предыдущая [глава 15](/book-summaries/engineering/data-pipelines-with-apache-airflow/15-operating-in-production/) учила запускать Airflow в production. Эта отвечает на вопрос: как закрыть его от чужих. Пять тем:
+Предыдущая [глава 15](/book-summaries/engineering/data-pipelines-with-apache-airflow/15-operating-in-production/) учила запускать Airflow в production. Эта глава отвечает на вопрос, как закрыть его от чужих. В ней пять тем:
 
 - роли пользователей в UI (RBAC);
 - шифрование секретов в базе ключом Fernet;
@@ -29,9 +29,9 @@ tags:
 
 ## Роли в UI (RBAC)
 
-Откройте `http://localhost:8080`. Airflow просит логин и пароль. Это интерфейс RBAC (role-based access control).
+Откройте `http://localhost:8080`, и Airflow попросит логин и пароль. Это интерфейс RBAC (role-based access control).
 
-В модели RBAC у каждого пользователя ровно одна роль. Роль состоит из прав (permissions). Право разрешает операцию над частью UI. Пример: `can edit on ConnectionModelView` разрешает менять connections.
+В модели RBAC у каждого пользователя ровно одна роль, а роль состоит из прав (permissions). Каждое право разрешает операцию над частью UI. Например, `can edit on ConnectionModelView` разрешает менять connections.
 
 Пользователя создают командой. Без флага `--password` Airflow спросит пароль:
 
@@ -50,33 +50,33 @@ airflow users create --role Admin --username bobsmith \
 | User | Разработчик без доступа к секретам | Как Viewer, плюс clear, trigger, pause |
 | Op | Разработчик DAG | Как User, плюс connections, pools, variables, XCom, config |
 
-- Права очень мелкие: у каждого пункта меню своё. Нужное право проще найти в других ролях.
-- `Admin` в production давайте с осторожностью.
+- Права очень мелкие: у каждого пункта меню своё. Чтобы найти нужное право, проще всего посмотреть права других ролей.
+- `Admin` в production выдавайте с осторожностью.
 
-RBAC построен на Flask-AppBuilder (FAB). Настройки лежат в `webserver_config.py` в `$AIRFLOW_HOME`. Если файла нет, Airflow создаст его сам. В нём и безопасность, и мелочи, например тема `APP_THEME`.
+RBAC построен на Flask-AppBuilder (FAB), а его настройки лежат в `webserver_config.py` в `$AIRFLOW_HOME`. Если файла нет, Airflow создаст его сам. В нём лежат все настройки интерфейса, а не только безопасность. Например, тему задаёт `APP_THEME`.
 
 > **Пояснение:** В Airflow 3 FAB вынесен в отдельный provider. По умолчанию работает `SimpleAuthManager` (проверили в Airflow 3.4.0). Чтобы получить роли и LDAP из книги, поставьте provider FAB и включите `FabAuthManager`.
 
 ## Шифрование данных в базе
 
-Сначала сократите attack surface: откройте наружу как можно меньше. Каждый открытый компонент это путь для чужого. Если UI нужен снаружи, не делайте его публичным: в облаке не давайте внешний IP или пускайте только свой диапазон адресов.
+Сначала сократите attack surface: откройте наружу как можно меньше. Каждый открытый компонент — это путь для чужого. Если UI нужен снаружи, не делайте его публичным: в облаке не давайте внешний IP или пускайте только свой диапазон адресов.
 
-Затем защитите данные на случай взлома. Без шифрования пароли и connections лежат в базе открытым текстом. Любой, кто читает базу, их видит. Включите шифрование до создания первых пользователей и connections.
+Затем защитите данные на случай взлома. Без шифрования пароли и connections лежат в базе открытым текстом, и любой, кто читает базу, их видит. Поэтому включите шифрование до создания первых пользователей и connections.
 
 Airflow шифрует секреты ключом Fernet. Это symmetric encryption: один ключ и шифрует, и расшифровывает.
 
 - Ключ задаёт `AIRFLOW__CORE__FERNET_KEY`.
 - Он защищает connections, variables и пароли пользователей.
 - Потеряли ключ, и секреты не расшифровать. Украли ключ, и секреты прочитают.
-- Чтобы не держать ключ в переменной открытым текстом, задайте `AIRFLOW__CORE__FERNET_KEY_CMD=cat /path/to/secret`. Файл с ключом открывайте только нужным пользователям или группам.
+- Чтобы не держать ключ в переменной открытым текстом, задайте `AIRFLOW__CORE__FERNET_KEY_CMD=cat /path/to/secret`. Доступ к файлу с ключом давайте только нужным пользователям или группам.
 
 ## Вход через LDAP
 
-Большинство компаний уже имеет каталог пользователей. Airflow может проверять логин в нём. Пользователь создаётся один раз для всех приложений.
+В большинстве компаний уже есть каталог пользователей, и Airflow может проверять логин в нём. Тогда пользователь создаётся один раз для всех приложений.
 
-Directory service хранит сведения о людях, устройствах и сервисах. Примеры: Microsoft Entra ID, OpenLDAP. LDAP (Lightweight Directory Access Protocol) это протокол запросов к нему. Связь такая же, как у SQL и базы данных. Но цель другая: база нужна для транзакций, каталог для частого чтения редко меняющихся данных, например учётных записей.
+Directory service хранит сведения о людях, устройствах и сервисах. Например, это Microsoft Entra ID и OpenLDAP. LDAP (Lightweight Directory Access Protocol) — это протокол запросов к нему. Связь между ними такая же, как у SQL и базы данных. Но цель другая: база нужна для транзакций, каталог — для частого чтения редко меняющихся данных, например учётных записей.
 
-Данные в каталоге образуют дерево DIT (directory information tree). Каждый узел это entry: набор пар атрибут-значение. Уникальное имя записи это DN (distinguished name). Сокращения в DN: `dc` domain component (домен делят по точкам), `ou` organizational unit, `cn` common name.
+Данные в каталоге образуют дерево DIT (directory information tree). Каждый узел — это entry: набор пар атрибут-значение. Уникальное имя записи — это DN (distinguished name). Сокращения в DN: `dc` domain component (домен компании делят по точкам, например apacheairflow и com), `ou` organizational unit, `cn` common name.
 
 ![Дерево каталога LDAP и DN записи Боба](/assets/data-pipelines-with-apache-airflow/ch16-ldap-dit.png)
 
@@ -84,7 +84,7 @@ Directory service хранит сведения о людях, устройст�
 
 | Операция | Что делает |
 |---|---|
-| bind | Входит в каталог под нужным пользователем. Первое соединение анонимное |
+| bind | Первое соединение с каталогом анонимное. Bind меняет его на нужного пользователя |
 | search | Ищет записи по фильтру, например `uid=bsmith` |
 | unbind | Закрывает соединение |
 
@@ -96,13 +96,13 @@ Directory service хранит сведения о людях, устройст�
 - `AUTH_LDAP_UID_FIELD`: поле с логином;
 - `AUTH_USER_REGISTRATION = True` и `AUTH_USER_REGISTRATION_ROLE`: роль по умолчанию для каждого, кто вошёл.
 
-Книга предупреждает: переноса LDAP-групп в роли RBAC нет. Роль можно поменять вручную в таблице `ab_user_role` в metastore.
+Книга предупреждает: связать LDAP-группы с ролями RBAC нельзя. Но после первого входа роль можно поменять вручную в таблице `ab_user_role` в metastore.
 
 ## Шифрование трафика (HTTPS)
 
-Данные могут утечь и в пути. При атаке man-in-the-middle (MITM) чужой стоит между браузером и сервером, читает сообщения и пересылает их дальше. Заметить это трудно. Но можно сделать перехваченные данные бесполезными: зашифровать их.
+Данные могут утечь и в пути. При атаке man-in-the-middle (MITM) чужой стоит между браузером и сервером, читает сообщения и пересылает их дальше. Заметить это трудно, но можно сделать перехваченные данные бесполезными: зашифровать их.
 
-HTTP не проверяет собеседника и передаёт всё открытым текстом. HTTPS использует TLS. TLS сочетает два вида шифрования.
+При HTTP ни браузер, ни сервер не проверяют, с кем идёт связь, и всё передаётся открытым текстом. А HTTPS использует TLS, который сочетает два вида шифрования.
 
 | Вид | Ключи | Как работает |
 |---|---|---|
@@ -111,15 +111,15 @@ HTTP не проверяет собеседника и передаёт всё �
 
 ![Рукопожатие HTTPS: certificate, session key и шифрование трафика](/assets/data-pipelines-with-apache-airflow/ch16-https-handshake.png)
 
-Certificate это файл с public key. Private key знает только сервер. Поэтому никому не передавайте его: кто его имеет, расшифрует трафик.
+Certificate — это файл с public key. Private key знает только сервер. Поэтому никому не передавайте его: у кого он есть, тот расшифрует трафик.
 
-Для Airflow нужны private key и certificate. Их выдаёт certificate authority, либо вы делаете self-signed certificate командой `openssl req -x509`. Современные браузеры требуют в нём расширение SAN (subjectAltName), например `DNS:localhost,IP:127.0.0.1`. Пути к файлам задают `AIRFLOW__API__SSL_CERT` и `AIRFLOW__API__SSL_KEY`. Они относятся к api-server, публичной точке Airflow. После запуска UI доступен по `https://localhost:8080`.
+Для Airflow нужны private key и certificate. Их выдаёт certificate authority, либо вы делаете self-signed certificate командой `openssl req -x509`. Современные браузеры требуют в нём расширение SAN (subjectAltName), например `DNS:localhost,IP:127.0.0.1`. Пути к файлам задают `AIRFLOW__API__SSL_CERT` и `AIRFLOW__API__SSL_KEY`, они относятся к api-server, публичной точке входа Airflow. После запуска UI доступен по `https://localhost:8080`.
 
-Браузер сначала предупредит о self-signed certificate. У системы есть список доверенных центров, и вашего в нём нет. Нужно добавить certificate в доверенные вручную. Для общего адреса так делать неудобно. Возьмите certificate у доверенного центра, например Let's Encrypt.
+Браузер сначала предупредит о self-signed certificate: у системы есть список доверенных центров, и вашего в нём нет. Поэтому certificate нужно добавить в доверенные вручную. Если Airflow открыт не только на localhost, это придётся делать каждому пользователю. Поэтому возьмите certificate у доверенного центра, например Let's Encrypt.
 
 ## Secrets backend
 
-Многие компании держат секреты в одной системе: HashiCorp Vault, Azure Key Vault, AWS SSM, Google Cloud Secret Manager. Там есть ротация и версии, которых в Airflow нет. Secrets backend даёт Airflow брать connections и variables оттуда. В коде DAG ничего не меняется.
+Многие компании держат секреты в одной системе: HashiCorp Vault, Azure Key Vault, AWS SSM, Google Cloud Secret Manager. В них есть ротация и версии секретов, которых в Airflow нет. Secrets backend даёт Airflow брать connections и variables оттуда, при этом в коде DAG ничего не меняется.
 
 ```python
 import pendulum
@@ -139,25 +139,25 @@ with DAG(
     )
 ```
 
-Здесь нет слова Vault. Оператор знает только `conn_id`. Раньше URL лежал бы в connection Airflow, теперь он может лежать в Vault. Условия для Vault backend:
+Здесь нет слова Vault: оператор знает только `conn_id`. Раньше URL лежал бы в connection Airflow, а теперь он может лежать в Vault. Условия для Vault backend:
 
 - он включается через `AIRFLOW__SECRETS__BACKEND` (класс) и `AIRFLOW__SECRETS__BACKEND_KWARGS` (адрес, токен, `connections_path`);
 - у всех секретов общий prefix (по умолчанию `secret`);
 - connection лежит в ключе `conn_uri`, variable в ключе `value`;
-- имя секрета это путь: `secret/connections/partner_api`.
+- имя секрета — это путь: `secret/connections/partner_api`.
 
 Connection записывают как URI, например `http://secure_api:5000?token=supersecret`. Классы backend: `VaultBackend` (HashiCorp), `SecretsManagerBackend` (AWS), `CloudSecretManagerBackend` (Google), `AzureKeyVaultBackend` (Azure). Их `BACKEND_KWARGS` ищите в документации provider.
 
 ![Порядок поиска секрета: secrets backend, переменные среды, metastore](/assets/data-pipelines-with-apache-airflow/ch16-secrets-lookup.png)
 
-Backend не заменяет другие места, а добавляет ещё одно. Порядок поиска: secrets backend, переменные среды (`AIRFLOW_CONN_*`, `AIRFLOW_VAR_*`), metastore. Секрет хранится в одном месте, поэтому риск утечки ниже.
+Backend не заменяет другие места, а добавляет ещё одно. Порядок поиска: secrets backend, переменные среды (`AIRFLOW_CONN_*`, `AIRFLOW_VAR_*`), metastore. Секрет хранится в одном месте, а не копируется в много систем, поэтому attack surface меньше.
 
 ## Итоги главы
 
-- Безопасность это несколько уровней. Цель: уменьшить attack surface.
+- Безопасность — это несколько слоёв. Цель: уменьшить attack surface.
 - RBAC даёт каждому пользователю одну роль с набором мелких прав.
 - LDAP убирает отдельное управление пользователями в Airflow.
-- Fernet key делает пароли в metastore нечитаемыми. Ключ нельзя терять и нельзя открывать.
+- Fernet key делает пароли в metastore нечитаемыми. Ключ нельзя терять и нельзя раскрывать.
 - HTTPS (TLS) делает перехваченный трафик бесполезным для атакующего.
 - Secrets backend хранит секреты в одной системе. Порядок поиска: backend, env, metastore.
 - Обновляйте Airflow: в релизах есть security-патчи.
@@ -213,7 +213,7 @@ only_env    -> env-host
 nowhere     -> AirflowNotFoundException
 ```
 
-**Certificate и настройки.** Команда `openssl` делает self-signed certificate. DAG из примера разбирается без ошибок. Скрипты: [ch16_tls_auth.py](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/ch16_tls_auth.py) и [ch16_check.py](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/ch16_check.py).
+**Certificate и настройки.** Команда `openssl` делает self-signed certificate, а DAG из примера разбирается без ошибок. Скрипты: [ch16_tls_auth.py](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/ch16_tls_auth.py) и [ch16_check.py](https://github.com/surfalytics/dataengineer.ru/tree/main/scripts/airflow-code/ch16_check.py).
 
 ```text
 subject: CN=localhost

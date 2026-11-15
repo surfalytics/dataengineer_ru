@@ -5,13 +5,15 @@ import io
 import logging
 import os
 import subprocess
+import tempfile
 import sys
 from pathlib import Path
 
 os.environ.setdefault("AIRFLOW__CORE__LOAD_EXAMPLES", "False")
 logging.disable(logging.CRITICAL)
 folder = Path(__file__).resolve().parent
-os.environ["AIRFLOW__CORE__DAGS_FOLDER"] = str(folder / "_dags_ch05")
+dags = Path(tempfile.mkdtemp(prefix="dags_ch05_"))
+os.environ["AIRFLOW__CORE__DAGS_FOLDER"] = str(dags)
 
 with contextlib.redirect_stdout(io.StringIO()):
     from airflow.dag_processing.dagbag import DagBag
@@ -24,13 +26,11 @@ for t in dag.tasks:
     print(f"template_fields у {t.task_id}: {list(t.template_fields)[:3]}")
 
 import shutil
-shutil.rmtree(folder / "_dags_ch05", ignore_errors=True)
-(folder / "_dags_ch05").mkdir()
-shutil.copy(folder / "ch05_stocksense_dag.py", folder / "_dags_ch05")
+shutil.copy(folder / "ch05_stocksense_dag.py", dags)
 airflow = str(Path(sys.executable).parent / "airflow")
 for task in ("show_name", "get_data"):
     r = subprocess.run([airflow, "tasks", "render", "stocksense_templating", task, "2025-04-24T22:00:00"],
                        capture_output=True, text=True, env=os.environ)
-    lines = [l for l in r.stdout.splitlines() if l.strip() and not l.startswith("#") and l.strip() not in ("None", "()")]
+    lines = [l for l in r.stdout.splitlines() if l.strip() and not l.startswith("#") and l.strip() not in ("None", "()") and "[warning" not in l]
     print(f"render {task}:", " ".join(lines))
-shutil.rmtree(folder / "_dags_ch05", ignore_errors=True)
+shutil.rmtree(dags, ignore_errors=True)
