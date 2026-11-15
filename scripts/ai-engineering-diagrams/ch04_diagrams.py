@@ -36,7 +36,7 @@ D["ch04-chapter-map"] = dict(items=(
      N("t3", "3. Evaluation pipeline:\nкак измерять", 960, 0, "n", 330, 90),
      Z("Что важно для приложения", -20, 110, 340, 560),
      Z("От широкого к узкому", 460, 110, 340, 700),
-     Z("Шаги пайплайна", 940, 110, 370, 700)]
+     Z("Шаги pipeline", 940, 110, 370, 700)]
     + stack("c", ["Domain-specific\ncapability\n(код, SQL, право)", "Generation capability\n(факты, безопасность)",
                   "Instruction-following\n(формат, ограничения)", "Cost и latency\n(цена, скорость)"],
             0, 170, "p", 300, 100, 120)

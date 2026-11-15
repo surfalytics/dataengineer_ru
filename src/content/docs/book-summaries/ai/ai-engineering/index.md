@@ -91,7 +91,7 @@ tags:
 | Блок | Главы | О чём |
 |---|---|---|
 | Основы | 1–2 | Что такое AI engineering, как устроены foundation models |
-| Оценка | 3–4 | Методы evaluation, выбор модели, пайплайн оценки |
+| Оценка | 3–4 | Методы evaluation, выбор модели, `pipeline` оценки |
 | Адаптация модели | 5–8 | Prompt, RAG и агенты, finetuning, данные |
 | Продакшен | 9–10 | Оптимизация inference, архитектура, обратная связь |
 
@@ -130,7 +130,7 @@ tags:
 
 | Роль | Что получит |
 |---|---|
-| Data engineer, analytics engineer | Понимание, как данные и пайплайны работают внутри AI-продуктов |
+| Data engineer, analytics engineer | Понимание, как данные и `pipeline` работают внутри AI-продуктов |
 | Разработчик AI-фич | Карту решений: модель, prompt, RAG, finetuning, оценка |
 | Аналитик | Методы оценки качества и работы с feedback |
 | Руководитель | Язык для обсуждения стоимости, рисков и сроков AI-проекта |
@@ -141,7 +141,7 @@ tags:
 
 - **Новичок.** Читайте по порядку. Главы 1, 2, 5 дают основу. Главу 9 оставьте на второй проход.
 - **Analytics engineer.** Главы 3, 4, 8, 10: оценка, данные, feedback.
-- **Data engineer.** Главы 6, 8, 9, 10: RAG-пайплайн, датасеты, serving, мониторинг.
+- **Data engineer.** Главы 6, 8, 9, 10: RAG `pipeline`, датасеты, serving, мониторинг.
 - **Руководитель.** Главы 1, 4, 7, 10: планирование, оценка, build vs buy, архитектура.
 
 Предлагаемый порядок:
@@ -169,7 +169,7 @@ tags:
 | Фокус | Жизненный цикл данных | Жизненный цикл AI-приложения |
 | Вопрос | Как данные попадают к потребителю | Как из данных и модели собрать продукт |
 
-Данные для RAG, finetuning и оценки приходят из тех самых пайплайнов.
+Данные для RAG, finetuning и оценки приходят из тех самых `pipeline`.
 
 Автор отдельно пишет про свою предыдущую книгу *Designing Machine Learning Systems*. Она про приложения на классических ML-моделях: размеченные таблицы, feature engineering, обучение модели. *AI Engineering* про приложения на foundation models: prompt engineering, построение контекста, параметрически эффективный finetuning. Обе книги самодостаточны и модульны. В реальной системе часто работают обе технологии вместе, поэтому полезно знать обе.
 
@@ -180,12 +180,12 @@ tags:
 | [1. Введение в AI engineering](/book-summaries/ai/ai-engineering/01-intro-ai-engineering/) | Что такое AI engineering, для чего его применяют, как спланировать приложение и из чего состоит AI-стек | Мини-модели autoregressive и masked, стоимость токенов, build vs buy в DuckDB |
 | [2. Как устроены foundation models](/book-summaries/ai/ai-engineering/02-understanding-foundation-models/) | Из чего сделана модель и как она генерирует ответ: данные, архитектура, post-training, sampling | Sampling и temperature, attention и KV cache, размер модели, FLOPs и Chinchilla, токенизатор BPE, reward model |
 | [3. Методы оценки](/book-summaries/ai/ai-engineering/03-evaluation-methodology/) | Как измерить качество открытого ответа: perplexity, тесты, similarity, AI as a judge, сравнения | Perplexity, `pass@k`, edit distance и cosine, симуляция AI-судьи, Elo и Bradley-Terry, матчи в DuckDB |
-| [4. Оценка AI-систем](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) | Как выбрать модель и собрать пайплайн оценки своего приложения | Проверка инструкций и фактов, выбор модели, contamination, bootstrap, парадокс Симпсона в DuckDB |
+| [4. Оценка AI-систем](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) | Как выбрать модель и собрать `pipeline` оценки своего приложения | Проверка инструкций и фактов, выбор модели, contamination, bootstrap, парадокс Симпсона в DuckDB |
 | [5. Prompt engineering](/book-summaries/ai/ai-engineering/05-prompt-engineering/) | Как писать инструкции для модели и защищаться от атак на prompt | Сборка prompt, structured output с retry, цепочки prompt, каталог prompt, тест защиты от injection |
 | [6. RAG и агенты](/book-summaries/ai/ai-engineering/06-rag-and-agents/) | Как дать модели нужный контекст: retrieval, chunking, tools, planning, memory | Chunking, BM25 и embeddings, hybrid search, метрики поиска, цикл агента, memory, RRF и метрики контекста в DuckDB |
 | [7. Finetuning](/book-summaries/ai/ai-engineering/07-finetuning/) | Когда дообучать модель, сколько это стоит по памяти и как это делают: LoRA, QLoRA, merging | Расчёт памяти GPU, форматы чисел и quantization, LoRA, merging моделей (нужен `numpy`) |
-| [8. Dataset engineering](/book-summaries/ai/ai-engineering/08-dataset-engineering/) | Откуда брать данные, как проверять их качество, синтезировать и обрабатывать | Дедупликация MinHash, синтез и проверка данных, model collapse, пайплайн очистки в DuckDB |
+| [8. Dataset engineering](/book-summaries/ai/ai-engineering/08-dataset-engineering/) | Откуда брать данные, как проверять их качество, синтезировать и обрабатывать | Дедупликация MinHash, синтез и проверка данных, model collapse, `pipeline` очистки в DuckDB |
 | [9. Оптимизация inference](/book-summaries/ai/ai-engineering/09-inference-optimization/) | Как сделать ответы быстрее и дешевле: latency, KV cache, batching, quantization | TTFT и TPOT, MFU и MBU, KV cache, speculative decoding, batching, prompt cache, TTFT и перцентили в DuckDB |
-| [10. Архитектура и feedback](/book-summaries/ai/ai-engineering/10-architecture-and-user-feedback/) | Как собрать всё в продукт: guardrails, router, cache, мониторинг, обратная связь пользователей | Guardrails, router и gateway, кэш, весь пайплайн с трассировкой, петля обратной связи, срез логов по версиям в DuckDB |
+| [10. Архитектура и feedback](/book-summaries/ai/ai-engineering/10-architecture-and-user-feedback/) | Как собрать всё в продукт: guardrails, router, cache, мониторинг, обратная связь пользователей | Guardrails, router и gateway, кэш, весь `pipeline` с трассировкой, петля обратной связи, срез логов по версиям в DuckDB |
 
 Каждая страница содержит главную мысль, схемы, подробный разбор, практику с проверенным кодом, ключевые термины, выводы для практики и вопросы для самопроверки.

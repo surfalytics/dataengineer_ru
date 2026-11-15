@@ -135,6 +135,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/ai/claude-code-up-and-running' } }],
           },
+          {
+            label: 'Claude AI Bible',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/ai/claude-ai-bible' } }],
+          },
         ],
       },
       {

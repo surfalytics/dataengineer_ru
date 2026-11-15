@@ -17,7 +17,7 @@ tags:
 
 ## О чём глава
 
-Как измерить качество, если ответ это свободный текст? В [главе 2](/book-summaries/ai/ai-engineering/02-understanding-foundation-models/) мы разобрали, как модели генерируют текст. Теперь нужно понять, хорош ли он. Сначала автор объясняет, почему оценка трудна, потом идут метрики языковой модели, exact evaluation с `embeddings`, `AI as a judge` и рейтинг моделей по парным сравнениям. [Глава 4](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) соберёт эти методы в пайплайн оценки.
+Как измерить качество, если ответ это свободный текст? В [главе 2](/book-summaries/ai/ai-engineering/02-understanding-foundation-models/) мы разобрали, как модели генерируют текст. Теперь нужно понять, хорош ли он. Сначала автор объясняет, почему оценка трудна, потом идут метрики языковой модели, exact evaluation с `embeddings`, `AI as a judge` и рейтинг моделей по парным сравнениям. [Глава 4](/book-summaries/ai/ai-engineering/04-evaluate-ai-systems/) соберёт эти методы в `pipeline` оценки.
 
 ![Карта методов оценки: exact evaluation (functional correctness, сравнение с эталоном) и subjective evaluation (AI as a judge, comparative evaluation)](/assets/ai-engineering/ch03-evaluation-methods.png)
 

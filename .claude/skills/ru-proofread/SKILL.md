@@ -7,12 +7,13 @@ description: Proofread Russian text on dataengineer.ru so it reads clearly and p
 
 Goal: the page reads like it was written in Russian, not translated. The reader should feel no friction.
 
-There are two different jobs. Do both.
+There are three different jobs. Do all of them.
 
 | Job | What it fixes | Who does it |
 |---|---|---|
 | Correctness | Dashes, calques, broken sentences, wrong terms, typography | Script + correctness review |
 | Flow | Choppy rhythm, no links between sentences, telegraphic fragments | Flow pass |
+| Clarity | Vague or empty sentences, AI slop, unclear «это», contradictions inside the page | Clarity pass |
 
 Technical terms stay in English (`grain`, `hot spot`, `scatter/gather`). We do not translate them. We only make the Russian around them correct and smooth.
 
@@ -24,7 +25,7 @@ Guide for humans, with test results: `scripts/ru-proofread/README.md`.
 - On any page the user calls "rough", "like a translation", "dry", or "silly mistakes".
 - The agent that wrote the text does not review it. With parallel chapter workers, the **lead** starts the review agents after the workers finish.
 
-## The pipeline (5 steps, in this order)
+## The pipeline (6 steps, in this order)
 
 Keep a copy of the page before you start: `cp <page>.md <scratch>/before.md`.
 
@@ -75,7 +76,19 @@ Targets for `--stats` (from our best-reading summary, Data Warehouse Toolkit):
 
 The numbers are a guide, not a goal. Do not pad sentences to hit them.
 
-### Step 5. Re-run and report
+### Step 5. Clarity pass (fresh agent, always)
+
+Prompt: `references/clarity-prompt.md`. Model: `opus`, effort `high`. It always runs, because `--stats` cannot see vague text. It reads the whole page as a newcomer and checks meaning against the source.
+
+- It fixes empty sentences, AI slop and filler, slang, unclear references, contradictions, and promises that do not match the content («в два шага», then four steps).
+- It may delete up to 3 low-value sentences. It never deletes a definition, number, warning or argument.
+- It must fix the places the writer or the review flagged as unclear.
+- It replies with `New patterns`. Add the repeatable ones to `scripts/ru-proofread/calques.tsv`.
+- Then run the guard: `check.py --before <scratch>/before.md --max-change 10 <page.md>`.
+
+Why: on the first book with this pipeline (Analytics Engineering with SQL and dbt) the review made 1-2 edits per chapter, and the flow pass never ran. A human read of chapter 1 still found 8 unclear sentences.
+
+### Step 6. Re-run and report
 
 1. Run step 1 again. No `ERROR` is left.
 2. Build the compare page for the owner when they ask for it: `python3 -I scripts/ru-proofread/compare.py <scratch>/before.md <page.md> <scratch>/compare.html "Title"`. The diff comes from the two files, so no change log is needed.

@@ -29,17 +29,17 @@ tags:
 |---|---|---|
 | Разовый инструмент | Запустить команду и забыть | `docker run --rm ...` |
 | Сервис | База, BI, оркестратор. Работает долго | `compose.yaml`, `docker compose up -d` |
-| Своя задача | Ваш пайплайн или скрипт | `Dockerfile` и `docker build` |
+| Своя задача | Ваш `pipeline` или скрипт | `Dockerfile` и `docker build` |
 
 ## Что запускают в Docker
 
 | Инструмент | Образ | Для чего |
 |---|---|---|
-| Postgres | `postgres:17` | База данных для пайплайнов и тестов |
+| Postgres | `postgres:17` | База данных для `pipeline` и тестов |
 | Adminer | `adminer:5` | Лёгкий веб-клиент для баз |
 | Metabase | `metabase/metabase:v0.65.4` | BI: графики и дашборды |
 | Superset | `apache/superset:6.1.0` | BI. Нужна дополнительная настройка |
-| Airflow | официальный `docker-compose.yaml` | Оркестрация пайплайнов |
+| Airflow | официальный `docker-compose.yaml` | Оркестрация `pipeline` |
 | dbt | свой образ (ниже) | Трансформации в SQL |
 | Jupyter | `quay.io/jupyter/scipy-notebook:python-3.12` | Ноутбуки для анализа |
 | ClickHouse | `clickhouse/clickhouse-server:26.8` | Колоночная база для аналитики |
@@ -176,7 +176,7 @@ docker compose run --rm dbt run
 Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=1
 ```
 
-Полный пример со всеми файлами — в уроке [Compose для пайплайна](/practice/docker/compose-stack/).
+Полный пример со всеми файлами — в уроке [Compose для `pipeline`](/practice/docker/compose-stack/).
 
 ## Стартеры: оркестраторы и ELT
 
@@ -188,7 +188,7 @@ Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=1
 | **Prefect** | Оркестратор на Python | `prefecthq/prefect:3-latest` | Да |
 | **Dagster** | Оркестратор, ориентирован на данные | Официальный пример [deploy_docker](https://github.com/dagster-io/dagster/tree/master/examples/deploy_docker) | Да |
 | **Kestra** | Оркестратор, потоки в YAML | Официальный [docker-compose.yml](https://raw.githubusercontent.com/kestra-io/kestra/develop/docker-compose.yml) | Да |
-| **Mage** | Пайплайны в ноутбуке | `mageai/mageai`, [инструкция](https://docs.mage.ai/getting-started/setup) | Да |
+| **Mage** | `Pipeline` в ноутбуке | `mageai/mageai`, [инструкция](https://docs.mage.ai/getting-started/setup) | Да |
 | **Meltano** | ELT на Singer | `meltano/meltano` | Да |
 | **dbt** | Трансформации в SQL | `ghcr.io/dbt-labs/dbt-core`, `dbt-postgres`, `dbt-snowflake`, `dbt-bigquery` | **Нет, только amd64.** Соберите свой образ |
 | **Superset** | BI | `apache/superset:6.1.0`, [репозиторий](https://github.com/apache/superset) | Да |
@@ -245,7 +245,7 @@ curl -s localhost:4200/api/health
 
 ## Docker в CI и в команде
 
-- **Тесты пайплайна.** CI запускает тот же образ, что и продакшен. Тест проходит в том же окружении.
+- **Тесты `pipeline`.** CI запускает тот же образ, что и продакшен. Тест проходит в том же окружении.
 - **Тесты с базой.** В CI поднимают `postgres:17` как сервис, грузят тестовые данные, проверяют SQL.
 - **Новый коллега.** `git clone`, `cp .env.example .env`, `docker compose up`. Через пять минут всё работает.
 

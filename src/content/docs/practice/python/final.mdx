@@ -480,7 +480,7 @@ uv run python -c "import duckdb; print(duckdb.sql(\"select count(*), min(done_pc
 
 ## Где это в работе
 
-Это скелет настоящего пайплайна:
+Это скелет настоящего `pipeline`:
 
 - raw-слой, потом очищенный слой, потом витрина;
 - отдельные функции для каждого шага;
@@ -496,7 +496,7 @@ uv run python -c "import duckdb; print(duckdb.sql(\"select count(*), min(done_pc
 
 ### Задание 1
 
-Запустите пайплайн. Откройте `data/out/user_summary.parquet` через DuckDB. Сколько в нём строк, какое минимальное и максимальное `done_pct`?
+Запустите `pipeline`. Откройте `data/out/user_summary.parquet` через DuckDB. Сколько в нём строк, какое минимальное и максимальное `done_pct`?
 
 **Проверка:** `10`, `30.0`, `60.0`.
 
@@ -541,7 +541,7 @@ def test_clean_columns():
 <details>
 <summary>Решение</summary>
 
-Запустите из корня проекта (после хотя бы одного запуска пайплайна):
+Запустите из корня проекта (после хотя бы одного запуска `pipeline`):
 
 ```python
 import polars as pl
@@ -617,7 +617,7 @@ def test_validate_ok():
     validate_todos(pl.DataFrame({"todo_id": [1, 2]}))
 ```
 
-Вызовите `transform.validate_todos(todos)` в `pipeline.py` после `clean_todos`. Тогда плохие данные остановят пайплайн, а не попадут в Parquet.
+Вызовите `transform.validate_todos(todos)` в `pipeline.py` после `clean_todos`. Тогда плохие данные остановят `pipeline`, а не попадут в Parquet.
 
 </details>
 

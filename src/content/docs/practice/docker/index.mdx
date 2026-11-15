@@ -22,14 +22,14 @@ import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
 - **Любой инструмент данных запускается одной командой.** Postgres, Airflow, Metabase, Kafka, ClickHouse, Jupyter. Не нужно ставить и настраивать их вручную.
 - **Одинаковая среда у всех.** Новый коллега делает `git clone` и `docker compose up`. Не нужно неделю собирать окружение.
 - **Изолированные задачи.** Airflow, dbt и BI-инструмент не мешают друг другу и вашему ноутбуку. У каждого своя версия Python, и они не конфликтуют. Ненужное удаляется одной командой.
-- **Продакшен.** Пайплайны в продакшене почти всегда работают как контейнеры: AWS ECS, Google Cloud Run, Azure Container Apps, Kubernetes. Образ, который вы проверили локально, запускается в облаке без изменений.
+- **Продакшен.** `Pipeline` в продакшене почти всегда работают как контейнеры: AWS ECS, Google Cloud Run, Azure Container Apps, Kubernetes. Образ, который вы проверили локально, запускается в облаке без изменений.
 - **Открытые проекты.** У каждого популярного open source проекта есть готовый образ. Попробовать новый инструмент можно за пять минут.
 
 ## Как Docker используют в работе
 
 | Кто | Задачи |
 |---|---|
-| Инженер данных | Пишет `Dockerfile` для пайплайна, запускает Postgres, Airflow, Kafka локально, собирает образы в CI, деплоит контейнеры в облако |
+| Инженер данных | Пишет `Dockerfile` для `pipeline`, запускает Postgres, Airflow, Kafka локально, собирает образы в CI, деплоит контейнеры в облако |
 | Аналитик данных | Поднимает локальную базу или Metabase, запускает `dbt` без установки Python, воспроизводит чужой проект |
 | Инженер ML | Упаковывает модель и её зависимости, запускает MLflow и Jupyter |
 
@@ -54,7 +54,7 @@ import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
 | [Хороший образ](/practice/docker/build-better/) | Кэш слоёв, `.dockerignore`, не root, версии, секреты |
 | [Сети](/practice/docker/networks/) | Как контейнеры находят друг друга. Ловушка `localhost` |
 | [Docker Compose](/practice/docker/compose/) | Один файл вместо длинных команд. Postgres + Adminer |
-| [Compose для пайплайна](/practice/docker/compose-stack/) | `build`, `depends_on`, `healthcheck`, `.env`, `profiles`, dbt |
+| [Compose для `pipeline`](/practice/docker/compose-stack/) | `build`, `depends_on`, `healthcheck`, `.env`, `profiles`, dbt |
 | [Open source за минуты](/practice/docker/use-cases/) | Airflow, dbt, Metabase, Jupyter, ClickHouse, Kafka |
 | [Контейнеры в продакшене](/practice/docker/production/) | Реестры, CI, ECS, Cloud Run, правила для продакшена |
 | [Нужен ли Kubernetes](/practice/docker/kubernetes/) | Что это, сколько стоит и когда хватит контейнеров |

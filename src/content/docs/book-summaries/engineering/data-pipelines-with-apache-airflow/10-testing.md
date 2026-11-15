@@ -20,7 +20,7 @@ tags:
 
 Как убедиться, что код верен до выкладки в production? Нужно проверить и обычный сценарий (`happy flow`), и крайние случаи. Прошлая тема: [свои операторы и sensors](/book-summaries/engineering/data-pipelines-with-apache-airflow/09-custom-operators-sensors/).
 
-![Пайплайн CI/CD для Airflow: проверки стиля, DAG integrity test, unit и integration тесты, затем merge](/assets/data-pipelines-with-apache-airflow/ch10-ci-pipeline.png)
+![Pipeline CI/CD для Airflow: проверки стиля, DAG integrity test, unit и integration тесты, затем merge](/assets/data-pipelines-with-apache-airflow/ch10-ci-pipeline.png)
 
 ## Уровни тестов
 
