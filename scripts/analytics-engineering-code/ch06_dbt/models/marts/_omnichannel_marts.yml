@@ -1,0 +1,13 @@
+version: 2
+models:
+  - name: dim_customers
+    columns:
+      - name: sk_customer
+        tests: [unique, not_null]
+  - name: fct_purchase_history
+    columns:
+      - name: sk_customer
+        tests:
+          - relationships:
+              to: ref('dim_customers')
+              field: sk_customer

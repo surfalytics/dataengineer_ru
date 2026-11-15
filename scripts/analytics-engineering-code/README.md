@@ -11,8 +11,8 @@ Python-скрипты запускаются с `python3 -I`, детермини
 | 1 | Example 1-1: ETL на хранимой процедуре, наш вариант на DuckDB (temp table, UPDATE, INSERT) | на странице, блок `sql` | ok: `check_sql.py` OK (DuckDB CLI), вывод настоящий |
 | 1 | Практика в DuckDB: raw_orders, stg_orders, выручка, проверка уникальности | на странице, блоки `sql` | ok: `check_sql.py` OK |
 | 1 | Example 1-2: DAG Airflow из двух задач, обновлён под Airflow 3 | ch01_simple_dag.py | ok: DagBag без ошибок (Airflow 3.1.0, Python 3.12 venv) |
-| 1 | Проверка DAG через DagBag | ch01_check_dag.py | ok (same_output x6 из venv с `apache-airflow==3.1.0`) |
-| 1 | Example 1-3: dbt-модель total_revenue (`config`, `ref`) на seed orders.csv | ch01_dbt/, ch01_dbt_run.sh | ok: `dbt seed` + `dbt run`, dbt-core 1.12.7, dbt-duckdb 1.11.1; результат 500.0 / 5 |
+| 1 | Проверка DAG через DagBag | ch01_check_dag.py | ok (same_output x6 из venv с `apache-airflow==3.1.0`), зависимости: `requirements-ch01-airflow.txt` |
+| 1 | Example 1-3: dbt-модель total_revenue (`config`, `ref`) на seed orders.csv | ch01_dbt/, ch01_dbt_run.sh | ok: `dbt seed` + `dbt run`, dbt-core 1.12.7, dbt-duckdb 1.11.1; результат 500.0 / 5, зависимости: `requirements-ch01-dbt.txt` |
 
 ## Глава 2
 
@@ -99,7 +99,7 @@ SQL-блоки «Практики в DuckDB» проверяет `python3 script
 |---|---|---|---|
 | 6 | 6-1...6-3: DDL операционной базы (MySQL) | SQL-блок на странице, диалект DuckDB | ok (check_sql.py) |
 | 6 | 6-4...6-8: ETL MySQL → BigQuery (pandas, pandas_gbq) | `ch06_etl.py`: SQLite → SQLite, только стандартная библиотека | ok, same x6 |
-| 6 | 6-10, 6-16, 6-21, 6-24, 6-28: YAML dbt | YAML-блоки на странице | не запускается: нет проекта dbt и BigQuery; синтаксис как в книге |
-| 6 | 6-11...6-23: модели dbt (Jinja) | `jinja`-блоки на странице + скомпилированный аналог в «Практике в DuckDB» | jinja: не запускается без dbt; аналог в DuckDB ok |
-| 6 | 6-25...6-27: singular-тесты | `jinja`-блок + тесты-запросы в практике | ok (аналог в DuckDB) |
+| 6 | 6-10, 6-16, 6-21, 6-24, 6-28: YAML dbt | `ch06_dbt/` (sources, packages, `_omnichannel_marts.yml`), запуск `ch06_run.sh` | ok (dbt build на DuckDB: PASS=15). Из `source` убрана строка `database`. Предупреждение dbt 1.12: аргументы generic-теста надо класть в `arguments` |
+| 6 | 6-11...6-23: модели dbt (Jinja) | `ch06_dbt/models/` (блоки страницы + остальные staging, dim, fct) | ok (dbt build на DuckDB). `dim_date`: макрос `dbt_date` падает на DuckDB (`to_char`), в файле SQL-аналог; в блок `fct_purchase_history` добавлен опущенный CTE |
+| 6 | 6-25...6-27: singular-тесты | `ch06_dbt/tests/assert_mtr_length_of_stay_is_positive.sql` | ok (PASS в dbt build) |
 | 6 | 6-29...6-32: аналитические запросы | Практика в DuckDB (шаг 4, задания 1-2) | ok (check_sql.py) |

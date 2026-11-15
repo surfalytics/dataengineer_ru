@@ -55,7 +55,7 @@
 | ephemeral model | `ephemeral`-модель | — | Не создаёт объект в базе, встраивается как CTE |
 | seed | `seed` | сид | CSV-файл в проекте, который `dbt` загружает как таблицу |
 | snapshot | `snapshot` | снимок | Хранит историю изменений строк (как SCD2) |
-| source | `source` | источник | Объявленная в YAML исходная таблица |
+| source | `source` | — | Объявленная в YAML исходная таблица |
 | macro | `macro` | макрос | Функция на Jinja для повторного SQL-кода |
 | Jinja | Jinja | — | Шаблонизатор в `dbt` |
 | generic test | `generic test` | общий тест | Готовый переиспользуемый тест: `unique`, `not_null` |
@@ -70,7 +70,7 @@
 | pull request | `pull request` | — | Запрос на слияние ветки с обзором кода |
 | CI/CD | `CI/CD` | — | Непрерывная интеграция и доставка кода |
 | deployment | развёртывание (`deploy`) | — | Запуск проекта в рабочей среде |
-| job | `job` | задание | Запланированный запуск команд `dbt` в `dbt Cloud` |
+| job | `job` | — | Запланированный запуск команд `dbt` в `dbt Cloud` |
 | DDL / DML / DCL | `DDL` / `DML` / `DCL` | — | Язык определения / изменения данных / управления доступом |
 | DAG | `DAG` | — | Направленный граф зависимостей без циклов: задачи в Airflow, модели в `dbt` |
 | data platform engineer | дата-инженер платформы | инженер платформы данных | Строит платформу и загружает сырые данные |
@@ -88,7 +88,7 @@
 | orchestration | оркестрация | — | Запуск задач по расписанию и зависимостям (Airflow, Dagster, Prefect) |
 | modern data stack | modern data stack | — | Airflow, `dbt`, Looker и облачные хранилища |
 | gemba | гемба | — | «Настоящее место», где создаётся ценность |
-| source system | исходная система | источник | Глоссарий запрещает «источник» (это `source` в `dbt`), поэтому общий смысл пишем «исходная система» |
+| source system | исходная система | — | Общий смысл. «Источник данных» тоже можно, а объявленная в YAML таблица — это `source` |
 | entity | сущность | — | Объект реального мира в модели: книга, автор |
 | attribute | атрибут | — | Свойство сущности, потом столбец таблицы |
 | entity-relationship diagram | ERD | — | Диаграмма «сущность — связь» |
@@ -123,7 +123,7 @@
 | lazy evaluation | `lazy evaluation` (ленивое выполнение) | — | Сначала план и оптимизация, потом расчёт |
 | endpoint | `endpoint` | — | Адрес API, который отдаёт данные |
 | execution engine | движок выполнения (`ExecutionEngine`) | — | Где Fugue выполняет код: pandas, DuckDB, Spark, Dask, Ray |
-| exercise (practice heading) | упражнения | задания | «Задание» в глоссарии занято под `job` |
+| exercise (practice heading) | задания | — | Заголовок практики «### Задания», как на всём сайте |
 | dbt Core | dbt Core | — | CLI-инструмент dbt с открытым кодом (название продукта) |
 | source freshness | `source freshness` | свежесть источника | Проверка возраста сырых данных по полю времени загрузки |
 | cascading scope priority | `cascading scope priority` | — | Более конкретная настройка перекрывает общую: проект, затем YAML папки, затем `config()` в модели |
@@ -134,7 +134,7 @@
 | ref() / source() | `ref()` / `source()` | — | Функции Jinja: ссылка на модель / на объявленную сырую таблицу |
 | threads | `threads` | — | Сколько моделей `dbt` строит параллельно |
 | profile / target | `profile` / `target` | — | Профиль подключения в `profiles.yml` / среда внутри профиля (`dev`, `prod`) |
-| environment (development / deployment) | среда (development / deployment) | окружение | Где выполняется код: среда разработки или рабочая среда |
+| environment (development / deployment) | среда (development / deployment) | — | Где выполняется код: среда разработки или рабочая среда |
 | EL tool | EL-инструмент | — | Инструмент, который извлекает и загружает данные без трансформации |
 | data platform | платформа данных | — | BigQuery, Snowflake, Databricks, Redshift и другие |
 | service account | сервисный аккаунт | — | Технический аккаунт Google Cloud, через который `dbt` подключается к BigQuery |
@@ -166,6 +166,6 @@
 | naming convention | соглашение об именах | — | Префиксы `stg`, `dim`, `fct`, `sk`, `nk`, `mtr`, `dsc`, `dt` |
 | ERD | `ERD` | — | Entity-relationship diagram: диаграмма сущностей и связей |
 | referential integrity | ссылочная целостность | — | Внешний ключ ссылается только на существующие строки |
-| environment (dbt Cloud) | среда (`environment`) | окружение | Набор настроек запуска: development или production |
+| environment (dbt Cloud) | среда (`environment`) | — | Набор настроек запуска: development или production |
 | business process | бизнес-процесс | — | Операция бизнеса, которую описывает таблица фактов |
 | cross-sell / upsell | `cross-sell` / `upsell` | — | Продажа сопутствующих / более дорогих товаров |

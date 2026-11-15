@@ -256,7 +256,6 @@ def pipeline(source, target):
 version: 2
 sources:
   - name: omnichannel
-    database: my-gcp-project      # ваш проект BigQuery
     schema: omnichannel_raw
     tables:
       - name: Channels
@@ -265,6 +264,8 @@ sources:
       - name: VisitHistory
       - name: PurchaseHistory
 ```
+
+> **Пояснение:** в книге у `source` есть строка `database: my-gcp-project` (проект BigQuery). Мы её убрали: в DuckDB нет такого проекта, и `dbt` берёт текущую базу.
 
 Для каждой сырой таблицы есть своя `staging`-модель. Все пять устроены одинаково: `CTE` выбирает нужные колонки через `source()`, а внешний `SELECT` отдаёт результат.
 
@@ -322,7 +323,17 @@ packages:
 Например, 2 куртки по 129,99 со скидкой 0,15 дают 259,98 без скидки и 220,98 со скидкой.
 
 ```jinja
--- models/marts/fct_purchase_history.sql (CTE stg_fct_purchase_history опущен)
+-- models/marts/fct_purchase_history.sql
+with stg_fct_purchase_history as (
+    select
+        customer_id             as nk_customer_id,
+        channel_id              as nk_channel_id,
+        product_sku             as nk_product_sku,
+        cast(order_date as date) as dt_order_date,
+        quantity                as mtr_quantity,
+        discount                as mtr_discount
+    from {{ ref('stg_purchase_history') }}
+)
 select
     coalesce(dcust.sk_customer, '-1') as sk_customer,
     coalesce(dchan.sk_channel, '-1')  as sk_channel,
@@ -341,7 +352,7 @@ left join {{ ref('dim_products') }}  as dprod on fct.nk_product_sku = dprod.nk_p
 
 `fct_visit_history` отвечает на второй процесс — визиты и отказы. Так же, как таблица покупок, она соединяется с измерениями клиентов и каналов и хранит дату и время визита и отказа. Метрика `mtr_length_of_stay_minutes` — это длительность визита в минутах от визита до отказа, в BigQuery её считает `DATE_DIFF(..., MINUTE)`. Она помогает понять, где люди уходят быстро, и снизить долю отказов.
 
-> **Пояснение:** у `COALESCE(..., '-1')` есть подвох. В измерениях из книги нет строки с ключом `'-1'`, поэтому такой заказ провалит тест `relationships` из следующего раздела. Обычно в каждое измерение добавляют строку «неизвестно» с этим ключом. Это можно проверить в упражнении 3 ниже.
+> **Пояснение:** у `COALESCE(..., '-1')` есть подвох. В измерениях из книги нет строки с ключом `'-1'`, поэтому такой заказ провалит тест `relationships` из следующего раздела. Обычно в каждое измерение добавляют строку «неизвестно» с этим ключом. Это можно проверить в задании 3 ниже.
 
 ## Тесты, документация и развёртывание
 
@@ -642,7 +653,7 @@ ORDER BY avg_length_of_stay_minutes DESC;
 
 Как и в книге, дольше всего люди остаются на сайте. Визит без отказа (`NULL`) `AVG` пропускает.
 
-### Упражнения
+### Задания
 
 **1.** Посчитайте сумму продаж со скидкой по годам и кварталам. Какой квартал лучший?
 

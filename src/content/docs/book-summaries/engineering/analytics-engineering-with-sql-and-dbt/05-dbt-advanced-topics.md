@@ -630,7 +630,7 @@ UNION ALL SELECT 'payments', count(*) FROM payments;
 └───────────────┴───┘
 ```
 
-### Задачи
+### Задания
 
 **1.** Сделайте то, что делает `incremental_strategy: merge`: влейте `orders_batch` в `orders` по `order_id`. Известные заказы обновите, новые добавьте.
 

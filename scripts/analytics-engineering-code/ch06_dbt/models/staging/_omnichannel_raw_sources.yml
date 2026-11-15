@@ -1,0 +1,10 @@
+version: 2
+sources:
+  - name: omnichannel
+    schema: omnichannel_raw
+    tables:
+      - name: Channels
+      - name: Customers
+      - name: Products
+      - name: VisitHistory
+      - name: PurchaseHistory

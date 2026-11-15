@@ -1,0 +1,12 @@
+name: omnichannel
+version: "1.0.0"
+profile: omnichannel
+model-paths: ["models"]
+test-paths: ["tests"]
+clean-targets: ["target", "dbt_packages"]
+models:
+  omnichannel:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

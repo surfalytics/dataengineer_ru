@@ -1,0 +1,4 @@
+# Глава 1, DAG Airflow (ch01_simple_dag.py, ch01_check_dag.py). Python 3.12.
+# Ставить с файлом ограничений Airflow:
+# pip install -r requirements-ch01-airflow.txt --constraint https://raw.githubusercontent.com/apache/airflow/constraints-3.1.0/constraints-3.12.txt
+apache-airflow==3.1.0

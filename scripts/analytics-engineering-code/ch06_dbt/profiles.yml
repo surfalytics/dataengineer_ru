@@ -1,0 +1,8 @@
+# Подключение к локальной базе DuckDB (вместо BigQuery из книги)
+omnichannel:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: omnichannel.duckdb
+      threads: 1
