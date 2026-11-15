@@ -1,6 +1,6 @@
 # Prompt for the correctness review
 
-Copy this, fill the `<...>` parts, and send it to a fresh subagent (`general-purpose`). Do not tell it what you expect to find.
+Copy this, fill the `<...>` parts, and send it to a fresh subagent (`general-purpose`, model `sonnet`, effort `medium`). Do not tell it what you expect to find. Before you start it, save a copy of the page as `before.md`: the agent edits the page in place.
 
 ---
 
@@ -24,16 +24,22 @@ Hard limits:
 - If a fix changes what the sentence claims, do NOT apply it. List it under "Meaning risks".
 - If you are not sure a text is wrong, leave it and list it under "Doubtful".
 
-Output:
-1. The corrected file at `<output path>` (same Markdown, same line structure). Do not edit the input file.
-2. A change log at `<log path>` as a table: `Line | Было | Стало | Тип | Почему`. Types: `spelling`, `punctuation`, `grammar`, `calque`, `term`, `meaning`, `flow`, `typography`.
-3. Two short lists at the end of the log: `Meaning risks` (with the line and both readings) and `Doubtful`.
-4. Reply with only: the number of changes per type, and the meaning risks.
+How to edit (this keeps the cost low):
+- Read the page once. Fix it in place with the `Edit` tool: one small edit per sentence or line. Never rewrite the whole file with `Write`.
+- Keep the same number of lines and the same line order. Edit inside a line.
+- Do not write a change log. The lead builds the diff from a copy of the page with a script.
+- Do not read the page again after your edits.
+
+Reply with only:
+1. The number of changes per type: `spelling`, `punctuation`, `grammar`, `calque`, `term`, `meaning`, `typography`.
+2. `Meaning risks`: line, the text, and both readings.
+3. `Doubtful`: line and why.
 
 ---
 
 Notes for the lead:
 - Run this on one chapter per agent. Run agents in parallel for many chapters.
 - After the review run the guard: `python3 -I scripts/ru-proofread/check.py --before <before.md> <page.md>`.
+- To see what changed: `diff <before.md> <page.md>` or the HTML page from `compare.py`.
 - Then run the flow pass (`flow-prompt.md`) if `check.py --stats` shows `LOW`.
-- Compare the log to the script output. If the agent finds a new repeatable error, add it to `scripts/ru-proofread/calques.tsv` or `rules.md`.
+- Compare the diff to the script output. If the agent found a new repeatable error, add it to `scripts/ru-proofread/calques.tsv` or `rules.md`.

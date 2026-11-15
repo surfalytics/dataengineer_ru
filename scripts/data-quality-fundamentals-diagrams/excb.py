@@ -51,7 +51,30 @@ def Z(text, x, y, w, h):  # dashed zone + title
 def T(text, x, y, size=18, color="#868e96"):  # free text note
     return dict(note=True, text=text, x=x, y=y, size=size, color=color)
 
+def check_labels(spec):
+    """Fail if an arrow label is wider than the gap between its boxes: the label then hides the arrow."""
+    box = {it["id"]: it for it in spec["items"] if "id" in it}
+    bad = []
+    for e in spec["edges"]:
+        if not e["label"]:
+            continue
+        a, b = box[e["a"]], box[e["b"]]
+        lines = e["label"].split("\n")
+        if a["y"] < b["y"] + b["h"] and b["y"] < a["y"] + a["h"]:    # side by side: horizontal gap
+            gap = max(b["x"] - (a["x"] + a["w"]), a["x"] - (b["x"] + b["w"]))
+            need = max(len(l) for l in lines) * FONT * 0.55 + 60
+        elif a["x"] < b["x"] + b["w"] and b["x"] < a["x"] + a["w"]:  # stacked: vertical gap
+            gap = max(b["y"] - (a["y"] + a["h"]), a["y"] - (b["y"] + b["h"]))
+            need = len(lines) * FONT * 1.4 + 60
+        else:
+            continue  # diagonal arrow: the label has room
+        if gap < need:
+            bad.append(f'{e["a"]} -> {e["b"]} "{e["label"]}": gap {gap:.0f}px, needs {need:.0f}px')
+    if bad:
+        raise SystemExit("Arrow labels hide their arrows. Move the boxes apart or shorten the label:\n  " + "\n  ".join(bad))
+
 def build(spec):
+    check_labels(spec)
     els = []
     for it in spec["items"]:
         if it.get("zone"):

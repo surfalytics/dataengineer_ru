@@ -12,7 +12,7 @@ A book summary is a detailed Russian retelling of a book. It is a folder with an
 - **Reader:** a Russian-speaking data engineer who has NOT read the book and may not know its field.
 - **Goal:** the reader gets the full core content of the book in clear Russian. After a chapter page they understand the chapter almost as well as after reading the original.
 - **Detailed summary, not a translation.** Keep every main idea, argument, definition, number, and warning of the chapter. Keep the order of the book. Cut repeats, side stories, and long listings.
-- **Size target: 20-40% of the book chapter, aim for 30%.** Count words of the prose on the page (code blocks and their output do not count). Count words of the book chapter without code. Example: a 4,900-word chapter gives a 1,000-2,000-word page. Below 20% the page is too thin. Above 40% it is too long: cut. Count words with a script (strip code blocks and `<details>`), not by eye.
+- **Size target: 20-40% of the book chapter, aim for 30%.** Count words of the prose on the page (code blocks and their output do not count). Count words of the book chapter without code. Example: a 4,900-word chapter gives a 1,000-2,000-word page. Below 20% the page is too thin. Above 40% it is too long: cut. Count words with `python3 -I scripts/book-tools/words.py --source <chNN.txt> <page.md>`, not by eye.
 - **Clear first, within the target.** If a sentence is not clear to a newcomer, add one short sentence or one small example. Do not add long explanations. Mark our own additions with `> **Пояснение:**`, at most 3 per chapter.
 
 ### Translation vs retelling
@@ -41,40 +41,65 @@ Good examples to copy:
 | Term glossary | `scripts/<book>-diagrams/glossary.md` (see "Glossary first") |
 | Figure list | `scripts/<book>-diagrams/figures.md` (see "Diagrams") |
 | Code from the book | `scripts/<book>-code/chNN_<name>.py` + `README.md` + `requirements.txt` |
-| Cover (home page carousel thumbnail) | `public/assets/book-covers/<book-slug>.jpg` (240px wide JPEG, under 30 KB). The file name must equal the last part of the `autogenerate` directory in `src/nav.mjs`. See "Cover" below |
+| Cover (home page carousel thumbnail) | `public/assets/book-covers/<book-slug>.jpg` (240px wide JPEG, under 30 KB). The file name must equal the last part of the `autogenerate` directory in `src/nav.mjs`. See `references/lead.md` |
+| Book text (not in git) | `<scratch>/src/chNN.txt` from `scripts/book-tools/split_source.py` |
 
 - `<group>`: `engineering`, `business`, `entrepreneurship`, or `ai`.
 - `<book-slug>`: English title in lowercase with hyphens.
 
-## Steps
+## Roles and models
 
-1. **Read the whole chapter first.** Write down its full heading tree (all H2 and H3 headings of the book).
-2. **Update the glossary** with new terms of the chapter (see below).
-3. **Write the chapter page** section by section, using the translation guide.
+| Role | Who | Model, effort | Reads |
+|---|---|---|---|
+| Lead | Main session | `opus`, `high` | This file + `references/lead.md` |
+| Chapter worker | One subagent per chapter | `opus`, `high` | This file. `references/duckdb-practice.md` only if the chapter gets DuckDB practice |
+| Correctness review | Fresh subagent per chapter | `sonnet`, `medium` | `ru-proofread` skill |
+| Flow pass (only if `--stats` shows `LOW`) | Fresh subagent per chapter | `opus`, `medium` | `ru-proofread` skill |
+
+- When the lead starts an agent, it sets these models and effort levels on the Agent call.
+- Do not use `haiku` for Russian text. Do not use `xhigh` or `max`: a summary is reading and writing, not hard reasoning.
+- If you work alone (no workers), you are the lead. Do the chapter steps for each chapter, then the lead steps.
+
+## Run a whole book as a workflow
+
+For a new book (or many chapters), the lead runs two saved workflows from `.claude/workflows/` instead of starting agents by hand. They run every step in a fixed order with the models above.
+
+| Step | Run | Result |
+|---|---|---|
+| 1. Prepare | `Workflow({name: "book-prep", args: {source: "<abs path to pdf/epub>", slug, group, scratch: "<abs scratch dir>", scriptsPrefix?}})` | `chNN.txt` files, word counts, `glossary.md`, `book-plan.json`, and `next.args` |
+| 2. Owner check | Show the owner the chapter list (pages, words, skipped parts) and the glossary `openQuestions`. Fix the plan or glossary if needed. | Confirmed plan |
+| 3. Run | `Workflow({name: "book-summary", args: <next.args from step 1>})` | All chapters written, size-checked, reviewed, flow-edited; overview, nav, cover, EPUB, build. Report with sizes and meaning risks |
+
+- **Rerun or continue:** run step 3 again with the same args. Stages that are done have marker files in `<scratch>/state/` and are skipped. Add `"redo": true` to ignore the markers.
+- **Some chapters only:** add `"only": [3, 5]`. Book steps (overview, build) are skipped in a partial run.
+- **Test first:** run step 3 with `"only": [1]` and read the page before you run the whole book.
+- **Record the cost** after each run: `python3 -I scripts/book-tools/token_usage.py <transcript dir of each run>`. The transcript dir is printed when the workflow starts. Add a row to "Measured cost" in `scripts/book-tools/README.md` when the numbers differ a lot.
+- **Look at the result:** `npm run dev`, open the overview page, check every diagram. `npm run epub` first if you want the EPUB link to work.
+- If the workflow name is not found, start a new session or pass `scriptPath: ".claude/workflows/<name>.js"`.
+
+## Save tokens
+
+Output tokens cost 5 times more than input tokens. Most waste comes from writing the same text twice and from reading PDF pages.
+
+- **Read the book as text, never as PDF pages.** The lead splits the book once: `python3 -I scripts/book-tools/split_source.py <book.pdf|book.epub> <scratch>/src [--chapters "1:15-40,..."]`. A worker reads only its own `chNN.txt`. Open a PDF page as an image only to look at one figure you redraw: `pdftoppm -f N -l N -r 80 -png <book.pdf> <scratch>/fig`.
+- **Write the page once, at the right size.** Get the budget per section before you start: `python3 -I scripts/book-tools/words.py --sections <scratch>/src/chNN.txt`. Plan about 30% of each section. Check the draft with `words.py --source <chNN.txt> <page.md>`. If the draft is too long, cut with `Edit`. Do not write the page again.
+- **After the first `Write`, change files only with `Edit`.** Never rewrite a whole page to fix a few lines.
+- **Do not read a file again right after you wrote it.** Read it again only if a script reports a problem.
+- **Keep command output short.** `npm run build 2>&1 | tail -20`. Check that code is deterministic with `same_output.py` (see "Tooling"). Do not print all the output of every run.
+- **Run `check.py` yourself before you hand the page on.** Fix every `ERROR`. Then the review agent has fewer edits to make.
+
+## Chapter steps (worker)
+
+1. **Read the whole chapter first** (`chNN.txt`). Write down its full heading tree (all H2 and H3 headings of the book).
+2. **Add new terms** of the chapter to `glossary-chNN.md` (or straight to the glossary if you work alone; see below).
+3. **Write the chapter page** section by section, using the translation guide. Aim for 30% of the source size.
 4. **Redraw the book's figures** with the `diagrams` skill (see "Diagrams").
 5. **Run and validate all code** from the chapter (see "Hands-on code from the book").
 6. **Check coverage**: every heading, figure, and code example of the book chapter has a place on our page.
-7. **Proofread the Russian** with the `ru-proofread` skill: script, correctness review, guard, flow pass, re-run. The agent that wrote the chapter does not review it. Do this before the size count: the flow pass can add up to 10%. Meaning risks go in your final report, not on the page.
-8. After all chapters: overview page, `src/nav.mjs` (`collapsed: true` item with `autogenerate`), row in `src/content/docs/book-summaries/index.md`, `author:` in front matter, and the **cover** (see "Cover" below). Never skip the cover: without the file the carousel draws a plain placeholder from the title. The home page carousel (`src/components/BookCarousel.astro`) picks the book up from `src/nav.mjs`.
-9. If the book is listed in `src/content/docs/resources/books.md`, link it to the summary.
-10. **Build and check the EPUB** with the `book-epub` skill: link on the overview page, build, validate. Do this for a new book and after any change to a chapter.
-11. Run `npm run build`.
+7. **Run the proofread script** on your page: `python3 -I scripts/ru-proofread/check.py --glossary <glossary.md> <page.md>` and `--stats`. Fix every `ERROR`. Do not start review agents: the lead runs the `ru-proofread` review and flow agents after all workers finish. The agent that wrote the chapter does not review it.
+8. **Report** to the lead in a few lines: source words, page words and %, diagrams drawn and skipped, code status, doubtful places in the book. Meaning risks go in the report, not on the page.
 
-## Cover (carousel thumbnail)
-
-Every book needs a cover file. The home page carousel (`src/components/BookCarousel.astro`) shows `public/assets/book-covers/<book-slug>.jpg` and the book title and `author:` from `index.md`. If the file is missing, the carousel shows a generated placeholder. That is a bug, not a fallback to accept.
-
-1. Get the cover image: page 1 of the PDF (`pdftoppm -f 1 -l 1 -r 150 -png <book.pdf> <scratch>/cover`), the cover file inside an EPUB, or the publisher's cover image if the user gives it. Work in the scratchpad, not in the repo.
-2. Resize and compress with `sharp`: width 240px, progressive JPEG, quality about 70, under 30 KB:
-
-```bash
-node -e "require('sharp')(process.argv[1]).resize({width:240}).jpeg({quality:70,progressive:true,mozjpeg:true}).toFile(process.argv[2])" <scratch>/cover-1.png public/assets/book-covers/<book-slug>.jpg
-```
-
-3. **Look at the JPEG** with the `Read` tool. It must show the real cover, not a blank page, a copyright page, or a crop.
-4. The file name must match the book folder name: for `book-summaries/engineering/data-quality-fundamentals` the file is `data-quality-fundamentals.jpg`. A different name means no cover.
-5. After `npm run build`, check that the book is in the carousel: `grep -c "<book-slug>.jpg" dist/index.html` must print 1 or more.
-6. If you cannot get a cover (no PDF, scanned file without a cover page), say so in the final report. Do not leave it silent.
+Lead steps (cover, overview page, `nav.mjs`, EPUB, build): `references/lead.md`.
 
 ## Keep what the project already has
 
@@ -101,12 +126,12 @@ Rules learned the hard way:
 - **Look at every PNG.** Another program can draw on the shared canvas, and the export then shows foreign content. Re-run that diagram.
 - Do not draw with the `excalidraw` MCP tools while a build runs.
 - Arrows must not cross other boxes. Lay nodes out in rows and columns.
+- A label on a short arrow hides the arrow. `excb.py` stops with "Arrow labels hide their arrows" when the gap between two boxes is too small for the label. Move the boxes apart or shorten the label. Copy `excb.py` from `scripts/data-quality-fundamentals-diagrams/`: it has this check.
 - Never type script output by hand. Use `embed.py`. SQL output comes from a real `duckdb` run.
-- Code must be deterministic for every Python hash seed. Never depend on the order of a `set` (use `dict.fromkeys` or `sorted`). Test each script 5-6 times with `python3 -I` (it keeps hash randomization on) and compare the outputs. Running twice can pass by luck.
+- Code must be deterministic for every Python hash seed. Never depend on the order of a `set` (use `dict.fromkeys` or `sorted`). Test each script 6 times with `python3 -I scripts/book-tools/same_output.py <script.py>` (add `--python <venv>/bin/python` if the folder has a venv). It runs with hash randomization on and prints one line: `same x6` or the first diff. Running twice can pass by luck.
 - Never run regex clean-ups over a whole page: code blocks have meaningful blank lines. If you edit a page after `embed.py`, check that every code block still equals its file.
 - Source text of a book in another language: read the meaning, follow the logic, and fix translation errors silently. Do NOT put translation notes ("Заметка о переводе") on the pages: the owner does not want them. Tell the lead about doubtful places in your final report instead.
-- Parallel work: one worker per chapter is fine. Workers must not edit shared files (`index.md`, `nav.mjs`, registers). They write `figures-chNN.md`, `glossary-chNN.md`, `README-chNN.md`. The lead merges them. Run `npm run build` once at the end, not in parallel.
-- Proofreading with parallel workers: each worker runs `scripts/ru-proofread/check.py` on its own chapter. The lead starts the review and flow agents (`ru-proofread` skill) after the workers finish, one agent per chapter. A worker never reviews its own text.
+- Parallel work: you write only your chapter page, your images, your scripts, and `figures-chNN.md`, `glossary-chNN.md`, `README-chNN.md`. Never edit shared files (`index.md`, `nav.mjs`, registers) and never run `npm run build`. The lead does that.
 
 ## Translation guide
 
@@ -217,23 +242,6 @@ Placement:
 - `alt` in Russian, describing what the diagram shows.
 - Use the `diagrams` skill: Excalidraw for flows and architecture, Mermaid only for ER.
 
-## Overview page (`index.md`)
-
-Front matter: `sidebar.order: 0`, `sidebar.label: "Обзор книги"`, `author: "<Имя Автора>"`, `tags: [books, ...]`.
-
-Sections, in this order:
-1. First paragraph: full title, authors, publisher, year. What the book is about. How many chapters.
-2. Note: `> Это подробный пересказ на русском, а не перевод. За полным текстом идите в оригинал.`
-3. Book map diagram.
-4. `## О чём книга простыми словами` - 2-4 paragraphs. What problem the book solves. Who has this problem. The main mental model of the book.
-5. `## Что нужно знать заранее` - bullets, with links to our pages if they exist.
-6. `## Зачем читать` - 4-6 bullets.
-7. `## Как устроена книга` - table: Часть | Главы | О чём. Then a few sentences on how the parts connect.
-8. `## Главные идеи` - table: Идея | Глава (with link).
-9. `## Как читать` - reading paths per role (новичок, analytics engineer, data engineer, руководитель).
-10. If there is practice: `## Как работать с практикой`.
-11. `## Разбор по главам` - table with a link to every chapter and one sentence on what the chapter answers.
-
 ## Chapter page
 
 Front matter:
@@ -263,7 +271,7 @@ Body, in this order:
    Then `## Что изменилось к 2026 году` if the old page had it (see "Keep what the project already has").
 6. `## Ключевые термины` - table: Термин | Значение. Same words as in the glossary.
 7. `## Что это значит на практике` - bullets for a data engineer's daily work.
-8. Practice: 1-3 short code snippets of the chapter with their real output, and, for technical books, a short `## Практика в DuckDB` with 2-3 tasks (see below). Full scripts live in `scripts/<book>-code/` and the page links to them. Do not embed whole scripts in `<details>`.
+8. Practice: 1-3 short code snippets of the chapter with their real output, and, for technical books, a short `## Практика в DuckDB` with 2-3 tasks (read `references/duckdb-practice.md` first). Full scripts live in `scripts/<book>-code/` and the page links to them. Do not embed whole scripts in `<details>`.
 9. `## Вопросы для самопроверки` - 4-6 numbered questions. Ask "why" and "when", not only "what".
 10. Last line: `Предыдущая: [..](..). Следующая: [..](..).` with root-absolute links and a trailing slash.
 
@@ -285,18 +293,6 @@ If the chapter has code (SQL, Python, shell, config), it goes on our page, and i
 6. **Fix what does not run.** If book code is outdated (old library API), update it to the current version. Add `> **Пояснение:** в книге используется <старый API>, здесь код обновлён под <версию>.`
 7. **Keep the code list** in `scripts/<book>-code/README.md`: `Глава | Пример | Файл | Статус (ok / не запускается: причина)`. Every row must be `ok` before commit, or have a clear reason (for example, it needs a GPU).
 
-## DuckDB practice inside a chapter
-
-Use it for technical books where SQL shows the idea (modeling, SQL, ETL).
-
-- Start: `Запустите \`duckdb\` в терминале или откройте [shell.duckdb.org](https://shell.duckdb.org). Блоки идут по порядку.`
-- `### Шаг 1. Создаём ...` - create small tables with `VALUES` and `generate_series`. No files to download.
-- `### Шаг 2. Проверяем` - a sanity query (row counts, "this must return 0 rows").
-- Keep it short: one setup block, one check, 2-3 tasks.
-- `### Задания` - 2-3 tasks. Each solution is in `<details><summary>Решение</summary> ... </details>`, with one line that explains the result.
-- All blocks run top to bottom in one in-memory session.
-- Check the chapter: `python3 scripts/kimball-diagrams/check_sql.py <chapter.md>` (needs DuckDB CLI). It must print `OK`.
-
 ## Format rules
 
 - No `#` headings in the body. Start at `##`.
@@ -308,22 +304,14 @@ Use it for technical books where SQL shows the idea (modeling, SQL, ETL).
 For each chapter, answer yes to all:
 
 - [ ] Every H2/H3 of the book chapter has a section on our page (very short ones may be joined).
-- [ ] Prose size is 20-40% of the book chapter (words without code). Report both numbers.
+- [ ] Prose size is 20-40% of the book chapter: `words.py --source <chNN.txt> <page.md>` prints `ok`. Report both numbers.
 - [ ] Every main definition, argument, number, and warning of the chapter is there.
 - [ ] Every term is explained at first use, with the same word as in the glossary.
 - [ ] Hard passages have one clear sentence of explanation.
 - [ ] No paragraph is a word-by-word translation. No copied tables or figures.
-- [ ] `python3 -I scripts/ru-proofread/check.py <chapter.md>` shows no `ERROR`. Every `WARN` is fixed or judged fine. The review and flow changes are applied. Meaning risks are in the report.
-- [ ] `check.py --before <old version> <chapter.md>` passes: code, links and numbers are unchanged by proofreading.
+- [ ] `python3 -I scripts/ru-proofread/check.py <chapter.md>` shows no `ERROR`. Every `WARN` is fixed or judged fine. Meaning risks are in the report.
+- [ ] Lead only, after the review and flow agents: `check.py --before <old version> <chapter.md>` passes, so code, links and numbers are unchanged by proofreading.
 - [ ] `check.py --stats <chapter.md>` is `ok`, or you can say why the page stays below the targets.
 - [ ] Every figure of the book is redrawn or listed as skipped with a reason in `figures.md`. 3-4 diagrams stay on the page.
 - [ ] Every code example runs. The output on the page is the real output. `scripts/<book>-code/README.md` is all `ok`.
 - [ ] A reader who has not read the book understands the page without the original.
-
-For the whole book, answer yes to all:
-
-- [ ] `public/assets/book-covers/<book-slug>.jpg` exists, is 240px wide, under 30 KB, and you looked at it.
-- [ ] The book is listed in `src/nav.mjs` and the built `dist/index.html` contains its cover file name (the carousel shows it).
-- [ ] `index.md` has `author:` in front matter (the carousel prints it under the title).
-- [ ] The EPUB is built and checked with the `book-epub` skill, and the overview page has the download link.
-- [ ] `npm run build` passes.

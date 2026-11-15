@@ -46,7 +46,7 @@ python3 -I scripts/ru-proofread/check.py --stats <page.md>        # rhythm numbe
 
 Prompt: `references/review-prompt.md`. Give the agent the page, `references/rules.md`, the glossary, and the output of step 1.
 
-It does two passes: meaning (who does what to whom), then terms, calques and punctuation. It returns a corrected file, a change log `Line | Было | Стало | Тип | Почему`, and a list of **meaning risks**.
+Model: `sonnet`, effort `medium`. It does two passes: meaning (who does what to whom), then terms, calques and punctuation. It fixes the page in place with small `Edit` calls. It writes no full copy and no change log. It replies with counts per type and a list of **meaning risks**.
 
 ### Step 3. Guard
 
@@ -58,7 +58,7 @@ Code blocks, inline code, links, numbers, headings and front matter must be the 
 
 ### Step 4. Flow pass (fresh agent)
 
-Run it when `--stats` shows `LOW` or the script reports `choppy`. Prompt: `references/flow-prompt.md`.
+Run it when `--stats` shows `LOW` or the script reports `choppy`. Otherwise skip it. Prompt: `references/flow-prompt.md`. Model: `opus`, effort `medium`. It edits paragraphs in place, with no change log.
 
 - It works on paragraphs, not on single words. It links sentences and fixes the rhythm.
 - It adds no facts and no new cause-and-effect claims.
@@ -78,7 +78,7 @@ The numbers are a guide, not a goal. Do not pad sentences to hit them.
 ### Step 5. Re-run and report
 
 1. Run step 1 again. No `ERROR` is left.
-2. Build the compare page for the owner: `python3 -I scripts/ru-proofread/compare.py before.md after.md changes.md out.html "Title"`.
+2. Build the compare page for the owner when they ask for it: `python3 -I scripts/ru-proofread/compare.py <scratch>/before.md <page.md> <scratch>/compare.html "Title"`. The diff comes from the two files, so no change log is needed.
 3. Put **meaning risks** in your final report, not on the page. The owner does not want translation notes on pages.
 
 ## What counts as a meaning risk
