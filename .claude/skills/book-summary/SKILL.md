@@ -13,7 +13,7 @@ A book summary is a detailed Russian retelling of a book. It is a folder with an
 - **Goal:** the reader gets the full core content of the book in clear Russian. After a chapter page they understand the chapter almost as well as after reading the original.
 - **Detailed summary, not a translation.** Keep every main idea, argument, definition, number, and warning of the chapter. Keep the order of the book. Cut repeats, side stories, and long listings.
 - **Size target: 20-40% of the book chapter, aim for 30%.** Count words of the prose on the page (code blocks and their output do not count). Count words of the book chapter without code. Example: a 4,900-word chapter gives a 1,000-2,000-word page. Below 20% the page is too thin. Above 40% it is too long: cut. Count words with `python3 -I scripts/book-tools/words.py --source <chNN.txt> <page.md>`, not by eye.
-- **Clear first, within the target.** If a sentence is not clear to a newcomer, add one short sentence or one small example. Do not add long explanations. Mark our own additions with `> **Пояснение:**`, at most 3 per chapter.
+- **Clear first.** Clarity beats brevity. If a sentence is not clear to a newcomer, add one short sentence or one small example. Do not add long explanations. The clarity pass may take a page up to 50% when the extra words make it clearer. Mark our own additions with `> **Пояснение:**`, at most 3 per chapter.
 
 ### Translation vs retelling
 
@@ -55,6 +55,7 @@ Good examples to copy:
 | Chapter worker | One subagent per chapter | `opus`, `high` | This file. `references/duckdb-practice.md` only if the chapter gets DuckDB practice |
 | Correctness review | Fresh subagent per chapter | `sonnet`, `medium` | `ru-proofread` skill |
 | Flow pass (only if `--stats` shows `LOW`) | Fresh subagent per chapter | `opus`, `medium` | `ru-proofread` skill |
+| Clarity pass (always, last) | Fresh subagent per chapter | `opus`, `high` | `ru-proofread/references/clarity-prompt.md` |
 
 - When the lead starts an agent, it sets these models and effort levels on the Agent call.
 - Do not use `haiku` for Russian text. Do not use `xhigh` or `max`: a summary is reading and writing, not hard reasoning.
@@ -68,11 +69,12 @@ For a new book (or many chapters), the lead runs two saved workflows from `.clau
 |---|---|---|
 | 1. Prepare | `Workflow({name: "book-prep", args: {source: "<abs path to pdf/epub>", slug, group, scratch: "<abs scratch dir>", scriptsPrefix?}})` | `chNN.txt` files, word counts, `glossary.md`, `book-plan.json`, and `next.args` |
 | 2. Owner check | Show the owner the chapter list (pages, words, skipped parts) and the glossary `openQuestions`. Fix the plan or glossary if needed. | Confirmed plan |
-| 3. Run | `Workflow({name: "book-summary", args: <next.args from step 1>})` | All chapters written, size-checked, reviewed, flow-edited; overview, nav, cover, EPUB, build. Report with sizes and meaning risks |
+| 3. Run | `Workflow({name: "book-summary", args: <next.args from step 1>})` | All chapters written, size-checked, reviewed, flow-edited, clarity-edited; overview, nav, cover, EPUB, build. Report with sizes and meaning risks |
 
 - **Rerun or continue:** run step 3 again with the same args. Stages that are done have marker files in `<scratch>/state/` and are skipped. Add `"redo": true` to ignore the markers.
 - **Some chapters only:** add `"only": [3, 5]`. Book steps (overview, build) are skipped in a partial run.
 - **Test first:** run step 3 with `"only": [1]` and read the page before you run the whole book.
+- **Check code (optional):** add `"checkCode": true`. A `sonnet` agent per chapter runs every code example (SQL, Python, dbt) and replaces any output on the page that differs from the real one. Use it for technical books. A chapter that already passed the other stages runs only this step.
 - **Record the cost** after each run: `python3 -I scripts/book-tools/token_usage.py <transcript dir of each run>`. The transcript dir is printed when the workflow starts. Add a row to "Measured cost" in `scripts/book-tools/README.md` when the numbers differ a lot.
 - **Look at the result:** `npm run dev`, open the overview page, check every diagram. `npm run epub` first if you want the EPUB link to work.
 - If the workflow name is not found, start a new session or pass `scriptPath: ".claude/workflows/<name>.js"`.
