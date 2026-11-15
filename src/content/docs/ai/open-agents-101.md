@@ -947,7 +947,7 @@ OpenCode — через своего субагента:
 
 Pi — через шаблон: `/dbt-review models/marts/fct_orders.sql`.
 
-### 4. Ошибка в пайплайне
+### 4. Ошибка в `pipeline`
 
 ```text
 Задача Airflow load_orders упала. Лог: logs/load_orders_2026-11-02.log.

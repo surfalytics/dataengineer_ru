@@ -3,7 +3,7 @@ title: "Data Engineering Design Patterns, глава 3: Паттерны обр�
 head:
   - tag: title
     content: "Dead-Letter, дедупликация, late data, checkpoint | Инжиниринг Данных"
-description: "Конспект главы 3 Data Engineering Design Patterns на русском. Dead-Letter, дедупликация, late data, фильтрация и checkpoint для надёжных пайплайнов."
+description: "Конспект главы 3 Data Engineering Design Patterns на русском. Dead-Letter, дедупликация, late data, фильтрация и checkpoint для надёжных pipeline."
 sidebar:
   order: 3
   label: "3. Обработка ошибок"
@@ -13,7 +13,7 @@ tags:
   - data-engineering-design-patterns
 ---
 
-**Главная мысль:** Ошибки в пайплайнах неизбежны: плохие записи, дубли, опоздавшие данные, сбои задач. Паттерны главы не убирают ошибки. Они делают так, чтобы пайплайн жил с ними и данные не портились.
+**Главная мысль:** Ошибки в `pipeline` неизбежны: плохие записи, дубли, опоздавшие данные, сбои задач. Паттерны главы не убирают ошибки. Они делают так, чтобы `pipeline` жил с ними и данные не портились.
 
 ## О чём глава
 
@@ -121,10 +121,10 @@ FROM (SELECT order_id, raw_price, TRY_CAST(raw_price AS DECIMAL(10, 2)) AS price
 
 ## Опоздавшие данные
 
-Опоздавшие данные звучат безобидно, но сильно влияют на пайплайны. Важно различать два времени:
+Опоздавшие данные звучат безобидно, но сильно влияют на `pipeline`. Важно различать два времени:
 
 - `event time`: когда событие произошло.
-- `processing time`: когда пайплайн его увидел. Оно никогда не опаздывает.
+- `processing time`: когда `pipeline` его увидел. Оно никогда не опаздывает.
 
 ### `Late Data Detector`
 
@@ -292,8 +292,8 @@ WHERE last_update_time > last_processed_time
 | Nontransient error | Постоянная ошибка. Нужна ручная работа |
 | Poison pill message | Запись, которую нельзя обработать. Останавливает job |
 | Dead-letter storage | Отдельное хранилище для плохих записей |
-| Replay pipeline | Пайплайн, который возвращает записи из dead-letter в поток |
-| Snowball backfilling | Backfill одного пайплайна вызывает backfill всех потребителей |
+| Replay pipeline | `Pipeline`, который возвращает записи из dead-letter в поток |
+| Snowball backfilling | Backfill одного `pipeline` вызывает backfill всех потребителей |
 | State store | Хранилище состояния streaming job |
 | Event time / processing time | Время события / время обработки |
 | Watermark | Граница `event time`. Раньше неё записи считаются опоздавшими |

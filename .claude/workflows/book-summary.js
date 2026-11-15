@@ -18,7 +18,8 @@ export const meta = {
 // args: the "next.args" object returned by book-prep:
 // { slug, group, scratch, source, scriptsPrefix, title, author, technical, glossary,
 //   chapters: [{ n, title, titleRu, file, src, pages, words, oldPage }],
-//   only?: [n, ...], skipBook?: false, redo?: false, checkCode?: false }
+//   only?: [n, ...], skipBook?: false, redo?: false, checkCode?: false,
+//   reviewOnly?: false }  // reviewOnly: pages exist; skip write and size, run review/flow/clarity/code, skip book steps
 const a = args || {}
 const missing = ['slug', 'group', 'scratch', 'title', 'glossary', 'chapters'].filter(k => !a[k])
 if (missing.length) {
@@ -34,7 +35,8 @@ const pad = n => String(n).padStart(2, '0')
 const url = c => `${urlBase}/${c.file.replace(/\.md$/, '')}/`
 const page = c => `${bookDir}/${c.file}`
 
-const all = [...a.chapters].sort((x, y) => x.n - y.n)
+// src may be a bare file name (ch01.txt): resolve it against <scratch>/src
+const all = a.chapters.map(c => ({ ...c, src: c.src.startsWith('/') ? c.src : `${a.scratch}/src/${c.src.replace(/^.*\//, '')}` })).sort((x, y) => x.n - y.n)
 const todo = a.only ? all.filter(c => a.only.includes(c.n)) : all
 if (!todo.length) return { error: 'no chapters selected', only: a.only }
 
@@ -142,7 +144,7 @@ const chapterResults = await pipeline(
   // Stage 1: write
   async (_, c) => {
     const s = st(c.n)
-    if (s.done.includes('write')) return { c, write: { page: page(c), pct: s.pct, reused: true } }
+    if (s.done.includes('write') || a.reviewOnly) return { c, write: { page: page(c), pct: s.pct, reused: true } }
     const i = all.findIndex(x => x.n === c.n)
     const prev = all[i - 1], next = all[i + 1]
     const write = await agent(`Write chapter ${c.n} of the Russian summary of "${a.title}" (${a.author}).
@@ -181,7 +183,7 @@ ${COMMON}`, { label: `write ch${c.n}`, phase: 'Write', schema: WRITE, model: 'op
   async (r) => {
     if (!r) return r
     const pct = r.write.pct
-    if (st(r.c.n).done.includes('review') || (pct >= 20 && pct <= 40)) return r
+    if (a.reviewOnly || st(r.c.n).done.includes('review') || (pct >= 20 && pct <= 40)) return r
     const size = await agent(`The page ${page(r.c)} is ${pct}% of the book chapter ${r.c.src}. The target is 20-40%, aim for 30%.
 ${pct > 40 ? 'Cut it: drop repeats, side examples and minor details. Keep every main idea, definition, number and warning.' : 'It is too thin: add the main ideas, arguments and examples of the book that are missing. Read the book chapter for them.'}
 Change the page only with \`Edit\`. Do not touch code blocks, links, front matter, or headings.
@@ -297,8 +299,8 @@ const report = {
 }
 
 // ---------- Whole book (needs all chapters: a real barrier)
-if (a.skipBook || a.only || failed.length) {
-  log(a.only || a.skipBook ? 'book steps skipped (partial run)' : 'book steps skipped: some chapters failed')
+if (a.skipBook || a.only || a.reviewOnly || failed.length) {
+  log(a.only || a.skipBook || a.reviewOnly ? 'book steps skipped (partial or review-only run)' : 'book steps skipped: some chapters failed')
   return report
 }
 

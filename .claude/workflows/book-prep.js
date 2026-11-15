@@ -88,6 +88,7 @@ Chapter text files: ${src}/ch*.txt. Skim them for terms; you do not need every d
 Write ${glossaryPath} as a table \`English | Как пишем | Не писать | Пояснение\`. If the file exists, keep its rows and add new ones.
 Only terms that need a rule get a row: the term has a wrong form to avoid, or there is a choice between English and a Russian word, or the book uses it in a special sense. Skip plain words and product names. Aim for 30-60 rows.
 Reuse before you decide: read the glossaries of other books (\`ls scripts/*-diagrams/glossary.md\`, read 2-3 that are close to this topic) and take their forms. Do not grep all summary pages.
+Site-wide forms win over everything: \`scripts/ru-proofread/calques.tsv\` lists them (for example \`pipeline\`, never пайплайн). Never put a form from that file into "Как пишем".
 One form per term. When you are not sure which form the owner wants (English or an established Russian word), take the form from the other glossaries and list the term under openQuestions.
 Return the path, the number of terms, and the open questions.`, { label: 'glossary', phase: 'Glossary', schema: GLOSS, model: 'sonnet', effort: 'medium' })
 

@@ -74,6 +74,7 @@ For a new book (or many chapters), the lead runs two saved workflows from `.clau
 - **Rerun or continue:** run step 3 again with the same args. Stages that are done have marker files in `<scratch>/state/` and are skipped. Add `"redo": true` to ignore the markers.
 - **Some chapters only:** add `"only": [3, 5]`. Book steps (overview, build) are skipped in a partial run.
 - **Test first:** run step 3 with `"only": [1]` and read the page before you run the whole book.
+- **Review an existing book:** run `book-prep` (it keeps the glossary and sets `oldPage`), then `book-summary` with `"reviewOnly": true`. It does not write or resize pages. It runs review, flow (if `LOW`), clarity, and code (with `checkCode`). Book steps are skipped: run `npm run epub` and `npm run build` yourself.
 - **Check code (optional):** add `"checkCode": true`. A `sonnet` agent per chapter runs every code example (SQL, Python, dbt) and replaces any output on the page that differs from the real one. Use it for technical books. A chapter that already passed the other stages runs only this step.
 - **Record the cost** after each run: `python3 -I scripts/book-tools/token_usage.py <transcript dir of each run>`. The transcript dir is printed when the workflow starts. Add a row to "Measured cost" in `scripts/book-tools/README.md` when the numbers differ a lot.
 - **Look at the result:** `npm run dev`, open the overview page, check every diagram. `npm run epub` first if you want the EPUB link to work.
