@@ -4,3 +4,4 @@ logs/
 package-lock.yml
 *.duckdb
 *.duckdb.wal
+.user.yml

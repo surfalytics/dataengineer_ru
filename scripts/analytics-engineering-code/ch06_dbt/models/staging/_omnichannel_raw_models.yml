@@ -1,0 +1,7 @@
+version: 2
+models:
+  - name: stg_channels
+  - name: stg_customers
+  - name: stg_products
+  - name: stg_purchase_history
+  - name: stg_visit_history
