@@ -6,7 +6,7 @@
 # --- calques from English: always wrong
 имеет\s+смысл	разумно / логично / так нужно	error	it makes sense
 делает\s+смысл	имеет смысл → «логично»	error	makes sense
-человек\s+в\s+цикле	участие человека	error	human in the loop
+человек[а-я]*\s+в\s+цикле	участие человека	error	human in the loop
 справедливо\s+(распредел|раздел|сбаланс)	равномерно	error	fairly
 \bлечат?\b|\bлечит\b	решают проблему	warn	heal
 лишн\w+\s+расход	накладные расходы	error	overhead

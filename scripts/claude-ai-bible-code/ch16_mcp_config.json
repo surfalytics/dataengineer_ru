@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "project-files": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/me/projects/atlas"],
+      "env": {}
+    },
+    "orders-db": {
+      "command": "npx",
+      "args": ["-y", "@example/postgres-mcp-server"],
+      "env": {
+        "DATABASE_URL": "postgres://readonly_user:***@db.internal:5432/orders"
+      }
+    }
+  }
+}

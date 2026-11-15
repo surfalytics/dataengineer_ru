@@ -30,6 +30,7 @@ tags:
 | AI и ML | [AI Engineering](/book-summaries/ai/ai-engineering/) | Как строить приложения на foundation models: оценка, prompt, RAG, агенты, finetuning, данные, inference, архитектура |
 | AI и ML | [Machines that Think](/book-summaries/ai/machines-that-think/) | Как работают LLM и думают ли они: история AI, токены и embeddings, нейросети, transformer, ошибки, этика, влияние на работу |
 | AI и ML | [Claude Code: Up and Running](/book-summaries/ai/claude-code-up-and-running/) | Agent-Driven Development с Claude Code: масштабы проекта, prompt, plan mode, тесты, CLAUDE.md, память и контекст. Early Release, вышли главы 1–4 |
+| AI и ML | [Claude AI Bible](/book-summaries/ai/claude-ai-bible/) | Вся экосистема Claude: модели, prompt, Projects, Cowork, Claude Code, skills, MCP, API, Agent SDK, агенты и риски |
 | Предпринимательство | [The Startup Owner's Manual](/book-summaries/entrepreneurship/startup-owners-manual/) | Customer Development: как найти бизнес-модель стартапа через проверку гипотез |
 | Предпринимательство | [The Mom Test](/book-summaries/entrepreneurship/mom-test/) | Как говорить с клиентами и не получать ложных ответов |
 | Предпринимательство | [The Diary of a CEO](/book-summaries/entrepreneurship/diary-of-a-ceo/) | 33 закона бизнеса и жизни: личность, история, философия, команда |
