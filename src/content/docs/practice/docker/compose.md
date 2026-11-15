@@ -268,4 +268,4 @@ docker compose exec db psql -U postgres -d shop -tc "select count(*) from t"
 
 </details>
 
-Дальше: [Compose для пайплайна](/practice/docker/compose-stack/).
+Дальше: [Compose для `pipeline`](/practice/docker/compose-stack/).

@@ -8,7 +8,7 @@ D = {}
 D["ch05-reliability-map"] = dict(items=[
     T("Где защищаем данные", 0, -50, 22, "#1971c2"),
     N("s1", "Загрузка\n(ingestion)", 0, 0, "p", 330, 90),
-    N("s2", "Внутри пайплайна\n(in production)", 420, 0, "p", 330, 90),
+    N("s2", "Внутри pipeline\n(in production)", 420, 0, "p", 330, 90),
     N("s3", "На выходе\n(analytics layer)", 840, 0, "p", 330, 90),
     N("d1", "Очистка, обогащение\nи тесты: unique, not_null,\nдиапазон, свежесть, объём", 0, 170, "g", 330, 130),
     N("d2", "Data observability:\nfreshness, distribution,\nvolume, schema, lineage", 420, 170, "g", 330, 130),

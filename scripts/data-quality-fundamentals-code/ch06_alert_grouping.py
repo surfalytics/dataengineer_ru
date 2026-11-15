@@ -31,6 +31,6 @@ def group(alerts):
 incidents = group(ALERTS)
 print(f"алертов: {len(ALERTS)}, инцидентов после группировки: {len(incidents)}")
 for n, inc in enumerate(incidents, 1):
-    route = "эскалация: on-call + BI-команда" if inc["pipe"] in CRITICAL else "on-call владельца пайплайна"
+    route = "эскалация: on-call + BI-команда" if inc["pipe"] in CRITICAL else "on-call владельца pipeline"
     kinds = ", ".join(inc["alerts"])
     print(f"#{n} {inc['pipe']:<12} с минуты {inc['first']:>3}, алертов {len(inc['alerts'])} ({kinds}) -> {route}")
