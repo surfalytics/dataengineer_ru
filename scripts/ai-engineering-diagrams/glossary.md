@@ -557,7 +557,7 @@
 | drift | `drift` | Незаметное изменение prompt, поведения пользователей или модели |
 | MTTD, MTTR, CFR | `MTTD`, `MTTR`, `CFR` | Время обнаружения, время исправления, доля неудачных изменений |
 | north star | `north star` | Главная метрика продукта (DAU, подписки) |
-| orchestrator | `orchestrator` | Компонент, который задаёт компоненты и порядок шагов пайплайна |
+| orchestrator | `orchestrator` | Компонент, который задаёт компоненты и порядок шагов `pipeline` |
 | chaining | `chaining` | Соединение шагов в цепочку (композиция функций) |
 | explicit feedback | `explicit feedback` | Явная обратная связь: лайки, звёзды, ответы на вопросы |
 | implicit feedback | `implicit feedback` | Неявная обратная связь: выводится из слов и действий |

@@ -348,7 +348,7 @@ docker compose run --rm loader
 
 ### Задание 6 (по желанию)
 
-Добавьте в стек службу `dbt` из урока [«Compose для пайплайна»](/practice/docker/compose-stack/). Запустите `docker compose run --rm dbt run`. В Metabase обновите список таблиц базы `shop` (Admin → Databases → Sync database schema). Появилась ли схема `analytics`?
+Добавьте в стек службу `dbt` из урока [«Compose для `pipeline`»](/practice/docker/compose-stack/). Запустите `docker compose run --rm dbt run`. В Metabase обновите список таблиц базы `shop` (Admin → Databases → Sync database schema). Появилась ли схема `analytics`?
 
 **Проверка:** dbt пишет `PASS=1 WARN=0 ERROR=0`. В Metabase в схеме **Analytics** есть таблица **Revenue By Channel**. Metabase показывает имена так: с большой буквы и без `_`.
 

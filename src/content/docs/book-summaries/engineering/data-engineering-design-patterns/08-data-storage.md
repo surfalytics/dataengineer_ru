@@ -189,9 +189,9 @@ WHEN NOT MATCHED THEN INSERT (user_id, visits_count) VALUES (i.user_id, i.visits
 - **Как работает.** Файлы листят один раз или совсем не листят, если продюсер записывает имена заранее.
   - Табличные форматы Delta Lake, Iceberg и Hudi делают это сами. Они пишут список файлов транзакции в commit log. Читатель берёт список оттуда, без листинга. Commit log в этом смысле служит manifest.
   - Ручные manifest полезны, когда с одним датасетом работают многие читатели, например при fan-out ([глава 6](/book-summaries/engineering/data-engineering-design-patterns/06-data-flow/)).
-  - Manifest помогает и при записи. В Redshift `COPY` берёт manifest, и для каждой загрузки можно задать свой список файлов. Повтор загрузит те же файлы, и пайплайн идемпотентен ([глава 4](/book-summaries/engineering/data-engineering-design-patterns/04-idempotency/)). Похоже работает Storage Transfer Service в GCP.
+  - Manifest помогает и при записи. В Redshift `COPY` берёт manifest, и для каждой загрузки можно задать свой список файлов. Повтор загрузит те же файлы, и `pipeline` идемпотентен ([глава 4](/book-summaries/engineering/data-engineering-design-patterns/04-idempotency/)). Похоже работает Storage Transfer Service в GCP.
 - **Цена:**
-  - **Complexity.** Шаг создания manifest усложняет пайплайн. Но создать manifest (список недавно записанных файлов) проще, чем многократно выполнять медленный и непредсказуемый листинг.
+  - **Complexity.** Шаг создания manifest усложняет `pipeline`. Но создать manifest (список недавно записанных файлов) проще, чем многократно выполнять медленный и непредсказуемый листинг.
   - **Size.** Manifest может вырасти до нескольких гигабайт при мелких файлах или непрерывном streaming. У реализаций бывает лимит размера или retention записей. В ранних версиях Spark Structured Streaming manifest рос так, что job иногда не мог перезапуститься (исправлено, SPARK-27188).
 - **Примеры.** Первый: внешняя таблица в BigQuery для Delta Lake. Delta Lake генерирует manifest со списком файлов последней версии таблицы, и внешняя таблица ссылается на него в `uris`. Второй: в Redshift manifest из двух файлов создают до загрузки и привязывают к запуску. При повторе job берёт тот же файл.
 
