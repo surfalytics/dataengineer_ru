@@ -116,3 +116,17 @@ api-дизайн	дизайн API / проектирование API	warn	calque
 (?<!«)последн\w+\s+мил[ьяиюе]	последний шаг	warn	the last mile
 как\s+устроен\w*\s+игр[аы]\s+в\s+компани	как устроена политика в компании	warn	how the game works
 идентичност\w*\s+(человека|руководител|сотрудник|ваш)	кто вы есть / ваш опыт и взгляды	warn	identity of a person
+
+# --- found in the clarity pass of The Manager's Path, 2026-11-16
+«прода\w*»\s+(\w+\s+)?компани	убедить прийти в компанию	warn	sell the company (to a candidate)
+развива\w*\s+взгляд\w*\s+со\s+стороны	учится смотреть глазами других	warn	develop an outside view
+(уход|ушл|уйти|уйд)\w*\s+в\s+людей	занимаются только людьми	warn	go into people (management)
+внутри\s+(\w+\s+)?менеджер(ов|а)\b	в командах ваших менеджеров	warn	within your managers (orgs)
+как\s+выгляд\w+\s+(вы|вас)\b	как оценивают вас	warn	how you look (are judged)
+\bставк\w*\s+(был\w*\s+)?правильн	вкладывать в правильные проекты	warn	the right bets
+затрат\w*\s+вперёд	вложение, которое окупится позже	warn	upfront cost
+шаблон\w*\s+(для\s+)?(узнаван|распознаван)	учит узнавать	warn	patterns to recognize
+доверие\s+второго	ещё одно доверие (к чему именно)	warn	second kind of trust
+(помога|помоч|помогл|помогу)\w*\s+(\w+\s+){0,3}случить	помогает выполнить / сделать	warn	help make X happen
+состояни\w*\s+мира	данные в реальном времени / как обстоят дела	warn	state of the world
+(стоит|стоят|стоять|стоял\w*)\s+на\s+критическом\s+пути	задерживает каждое изменение / без этого шага работа не закончится	warn	is on the critical path

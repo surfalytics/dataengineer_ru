@@ -180,6 +180,21 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/business/escaping-the-build-trap' } }],
           },
+          {
+            label: "The Manager's Path",
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/managers-path' } }],
+          },
+          {
+            label: 'Staff Engineer',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/staff-engineer' } }],
+          },
+          {
+            label: "The Staff Engineer's Path",
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/staff-engineers-path' } }],
+          },
         ],
       },
     ],

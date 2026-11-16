@@ -37,6 +37,7 @@ tags:
 | Предпринимательство | [The Diary of a CEO](/book-summaries/entrepreneurship/diary-of-a-ceo/) | 33 закона бизнеса и жизни: личность, история, философия, команда |
 | Бизнес и Soft Skills | [Lean Analytics](/book-summaries/business/lean-analytics/) | Как измерять стартап, метрики по бизнес-моделям и стадиям |
 | Бизнес и Soft Skills | [Escaping the Build Trap](/book-summaries/business/escaping-the-build-trap/) | Как строится продукт: роль PM, стратегия, Product Kata, product-led компания |
+| Бизнес и Soft Skills | [The Manager's Path](/book-summaries/business/managers-path/) | Путь от ментора и техлида до CTO: встречи 1:1, команды, менеджеры, стратегия, культура |
 
 ## Как устроен конспект
 
