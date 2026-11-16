@@ -10,7 +10,7 @@ One row per book. Update it after every run or PR. `python3 -I scripts/book-tool
 
 | Book | Folder | Chapters | Status | Last revision | PR | What is left |
 |---|---|---|---|---|---|---|
-| Fundamentals of Data Engineering | `engineering/fundamentals-of-data-engineering` | 12 | needs review | 2026-11-13 | #96 | review, flow, clarity |
+| Fundamentals of Data Engineering | `engineering/fundamentals-of-data-engineering` | 12 | needs review | 2026-11-13 | #96 | rewrite ch 8-11 (8-18% of the book); review ch 1-7; full source is the iCloud PDF |
 | The Data Warehouse Toolkit | `engineering/data-warehouse-toolkit` | 21 | done | 2026-11-15 | #105 | — |
 | Designing Data-Intensive Applications, 2nd ed. | `engineering/designing-data-intensive-applications` | 14 | done | 2026-11-15 | #106 | — |
 | DuckDB: Up and Running | `engineering/duckdb-up-and-running` | 9 | needs review | 2026-11-12 | #95 | review, flow, clarity, code check |
@@ -23,11 +23,11 @@ One row per book. Update it after every run or PR. `python3 -I scripts/book-tool
 | Machines that Think | `ai/machines-that-think` | 8 | needs review | 2026-11-13 | #96 | review, flow, clarity |
 | Claude Code: Up and Running | `ai/claude-code-up-and-running` | 4 | done | 2026-11-15 | #103 | Early Release: add chapters when they come out |
 | Claude AI Bible | `ai/claude-ai-bible` | 22 | done | 2026-11-15 | #101 | — |
-| The Startup Owner's Manual | `entrepreneurship/startup-owners-manual` | 16 | needs review | 2026-11-13 | #96 | review, flow, clarity |
+| The Startup Owner's Manual | `entrepreneurship/startup-owners-manual` | 16 | done | 2026-11-16 | #96 | — |
 | The Mom Test | `entrepreneurship/mom-test` | 9 | needs review | 2026-11-13 | #96 | review, flow, clarity |
 | The Diary of a CEO | `entrepreneurship/diary-of-a-ceo` | 33 | needs review | 2026-11-13 | #96 | review, flow, clarity |
 | Lean Analytics | `business/lean-analytics` | 31 | done | 2026-11-15 | #104 | — |
-| Escaping the Build Trap | `business/escaping-the-build-trap` | 26 | done | 2026-11-15 | #104 | — |
+| Escaping the Build Trap | `business/escaping-the-build-trap` | 26 | done | 2026-11-15 | #104 | — (checked 2026-11-16: all chapters 31-51%; pages are short because the book chapters are short) |
 | The Staff Engineer's Path | `business/staff-engineers-path` | 10 | done | 2026-11-16 | #107 | — |
 | Staff Engineer: Leadership beyond the management track | `business/staff-engineer` | 8 | done | 2026-11-16 | #107 | — |
 | The Manager's Path | `business/managers-path` | 10 | done | 2026-11-16 | #107 | — |
