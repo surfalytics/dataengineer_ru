@@ -4,11 +4,11 @@ export const meta = {
   whenToUse: 'After book-prep, with its "next.args". Also to redo some chapters: pass "only": [3, 5]. Chapters already done are skipped, so a rerun continues where it stopped.',
   phases: [
     { title: 'Status', detail: 'which chapter stages are already done (haiku)', model: 'haiku' },
-    { title: 'Write', detail: 'one writer per chapter (opus, high)', model: 'opus' },
+    { title: 'Write', detail: 'one writer per chapter (sonnet, high)', model: 'sonnet' },
     { title: 'Size', detail: 'fix pages outside 20-40% (max one retry)', model: 'opus' },
     { title: 'Review', detail: 'correctness review (sonnet, medium)', model: 'sonnet' },
     { title: 'Flow', detail: 'flow pass only when --stats is LOW (opus, medium)', model: 'opus' },
-    { title: 'Clarity', detail: 'final read: vague text, AI slop, contradictions (opus, high)', model: 'opus' },
+    { title: 'Clarity', detail: 'final read: vague text, AI slop, contradictions (opus, medium)', model: 'opus' },
     { title: 'Code', detail: 'optional (checkCode: true): run every code example, match outputs (sonnet, medium)', model: 'sonnet' },
     { title: 'Book', detail: 'registers, overview, nav, cover (opus, high)', model: 'opus' },
     { title: 'Build', detail: 'EPUB, npm run build, carousel check (sonnet)', model: 'sonnet' },
@@ -22,7 +22,7 @@ export const meta = {
 //   bookNotes?: "text for the Book step" (overview page, registers),
 //   only?: [n, ...], skipBook?: false, redo?: false, checkCode?: false,
 //   reviewOnly?: false,
-//   models?: { write: 'sonnet/high', clarity: 'opus/medium', ... } }  // per-stage model/effort override  // reviewOnly: pages exist; skip write and size, run review/flow/clarity/code, skip book steps
+//   models?: { write: 'opus/high', ... } }  // per-stage model/effort override  // reviewOnly: pages exist; skip write and size, run review/flow/clarity/code, skip book steps
 const a = args || {}
 const missing = ['slug', 'group', 'scratch', 'title', 'glossary', 'chapters'].filter(k => !a[k])
 if (missing.length) {
@@ -31,8 +31,8 @@ if (missing.length) {
 
 const prefix = a.scriptsPrefix || a.slug
 
-// Model per stage. Defaults are below; args.models overrides them, for example
-// { write: 'sonnet/high', clarity: 'opus/medium' }. Never use haiku for Russian text.
+// Model per stage. Defaults are below (write on sonnet since 2026-11-16, to save quota).
+// args.models overrides them for one run, for example { write: 'opus/high', clarity: 'opus/high' }. Never use haiku for Russian text.
 const M = (stage, model, effort) => {
   const o = (a.models || {})[stage]
   if (!o) return { model, effort }
@@ -186,7 +186,7 @@ At the end:
 2. \`python3 -I scripts/ru-proofread/check.py --glossary ${a.glossary} ${page(c)}\`, fix every ERROR.
 3. \`mkdir -p ${stateDir} && touch ${stateDir}/ch${pad(c.n)}.write.done\`
 
-${COMMON}`, { label: `write ch${c.n}`, phase: 'Write', schema: WRITE, ...M('write', 'opus', 'high') })
+${COMMON}`, { label: `write ch${c.n}`, phase: 'Write', schema: WRITE, ...M('write', 'sonnet', 'high') })
     if (!write) throw new Error(`writer failed for chapter ${c.n}`)
     return { c, write }
   },
@@ -256,7 +256,7 @@ ${COMMON}`, { label: `flow ch${r.c.n}`, phase: 'Flow', schema: FLOW, ...M('flow'
 3. Size: \`python3 -I scripts/book-tools/words.py --source ${r.c.src} ${page(r.c)}\`. Take the %. Clarity beats brevity: up to 50% is fine when your additions make the page clearer.
 4. \`touch ${stateDir}/ch${pad(r.c.n)}.clarity.done\`
 
-${COMMON}`, { label: `clarity ch${r.c.n}`, phase: 'Clarity', schema: CLARITY, ...M('clarity', 'opus', 'high') })
+${COMMON}`, { label: `clarity ch${r.c.n}`, phase: 'Clarity', schema: CLARITY, ...M('clarity', 'opus', 'medium') })
     if (!clarity) log(`chapter ${r.c.n}: clarity pass failed`)
     return { ...r, clarity }
   },

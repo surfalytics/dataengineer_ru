@@ -6,7 +6,7 @@ Read this file only if you are the lead (the main session). Chapter workers do n
 
 1. **Prepare the source.** Split the book into chapter text files (see "Save tokens" in `SKILL.md`). Count the words of each chapter with `words.py`.
 2. **Make the glossary** `scripts/<book>-diagrams/glossary.md` before chapter 1.
-3. **Start one worker per chapter** (model `opus`, effort `high`). Give each worker only: the path to its `chNN.txt`, the book slug, the glossary path, the chapter number and title, the source word count and the size target, the previous and next chapter URLs, and the path of the old page if one exists. Do not paste book text or the skill into the prompt: the worker loads the skill itself.
+3. **Start one worker per chapter** (model `sonnet`, effort `high`). Give each worker only: the path to its `chNN.txt`, the book slug, the glossary path, the chapter number and title, the source word count and the size target, the previous and next chapter URLs, and the path of the old page if one exists. Do not paste book text or the skill into the prompt: the worker loads the skill itself.
 4. **When the workers finish,** run the `ru-proofread` review and flow agents, one agent per chapter (see the `ru-proofread` skill for models). A worker never reviews its own text.
 5. **Merge** `figures-chNN.md`, `glossary-chNN.md`, `README-chNN.md` into the registers.
 6. Overview page, `src/nav.mjs` (`collapsed: true` item with `autogenerate`), row in `src/content/docs/book-summaries/index.md`, `author:` in front matter, and the **cover** (see below). Never skip the cover: without the file the carousel draws a plain placeholder from the title. The home page carousel (`src/components/BookCarousel.astro`) picks the book up from `src/nav.mjs`.
