@@ -28,6 +28,6 @@ One row per book. Update it after every run or PR. `python3 -I scripts/book-tool
 | The Diary of a CEO | `entrepreneurship/diary-of-a-ceo` | 33 | needs review | 2026-11-13 | #96 | review, flow, clarity |
 | Lean Analytics | `business/lean-analytics` | 31 | done | 2026-11-15 | #104 | — |
 | Escaping the Build Trap | `business/escaping-the-build-trap` | 26 | done | 2026-11-15 | #104 | — |
-| The Staff Engineer's Path | `business/staff-engineers-path` | 2/10 done | in progress | 2026-11-16 | #107 (draft) | review + clarity: ch 8; write: ch 2-7, 9; overview, nav, cover, EPUB |
+| The Staff Engineer's Path | `business/staff-engineers-path` | 10 | done | 2026-11-16 | #107 (draft) | — |
 | Staff Engineer: Leadership beyond the management track | `business/staff-engineer` | 8 | done | 2026-11-16 | #107 (draft) | — |
 | The Manager's Path | `business/managers-path` | 10 | done | 2026-11-16 | #107 (draft) | — |

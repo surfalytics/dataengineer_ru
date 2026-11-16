@@ -146,3 +146,28 @@ api-дизайн	дизайн API / проектирование API	warn	calque
 где\s+болит	какие проблемы появляются	warn	where it hurts
 (пада|упа\w|попада|попа\w|провалива)\w*\s+в\s+щел(и|ях)\s+между	не принадлежит ни одной из / никто не отвечает за	warn	fall through the cracks
 сход\w+\s+к\s+(\w+\s+)?решени\w*	прийти к решению	warn	converge on a solution
+(памят\w*\s+(\w+\s+)?«?не\s+липк)|(«?не\s+липк\w*»?\s+памят)	плохо запоминается	warn	calque: not sticky (memory)
+застав\w*\s+(\w+\s+)?заботит	сделать так, чтобы было не всё равно	warn	calque: make someone care
+хеджир	перестраховка	warn	calque: hedging (outside finance)
+хорош\w*\s+прогресс	вы уже сильно продвинулись	warn	calque: good progress
+иска\w*\s+положительн\w*\s+обратн\w*\s+связ	искал положительный цикл	warn	calque: looking for a positive feedback loop
+наслед\w*\s+от\s+(\w+\s+)?документ	опираться на документы	warn	calque: inherit from documents
+оптимизиру\w*\s+.{0,40}даже\s+важнее	для нас X даже важнее, чем Y	warn	calque: we optimize for X even over Y
+задн\w*\s+ог(онь|н)	отказаться от отложенных проектов	warn	idiom: burn the back burner
+башн\w*\s+из\s+слонов	оторван от практики	warn	idiom: ivory tower
+водян\w*\s+шар	устроить хаос и уйти	warn	idiom: throw a water balloon
+(верн|возвра[щт]|набра|набир|потер|теря)\w*\s+(\w+\s+)?импульс	помогают снова набрать темп	warn	calque: regain momentum
+кристаллизова\w*	устоявшиеся, с жёстким порядком	warn	calque: crystallized (organizations)
+станет\s+жарко	когда нагрузка вырастет	warn	idiom: when things heat up
+звезда\s+(\w+\s+)?высок	пока вас высоко ценят	warn	idiom: while your star is high
+когнитивн\w*\s+цен	усилие (запомнить, понять)	warn	calque: cognitive cost
+да(ёт|ет|ют|ла|ло|ли|вать)\s+перспективу\b	помогает разобраться / взглянуть со стороны	warn	calque: gives perspective
+сам\w*\s+себя\s+сбыва	сам себя оправдывает / сбывается	warn	calque: self-fulfilling
+без\s+(\w+\s+)?пляс	без лишних сложностей	warn	slang: without dancing around
+(больше|много|меньше|мало)\s+рычаг	больше влияния	warn	calque: more leverage
+пережива\w*\s+личное\b	переживать личные трудности	warn	calque: going through personal stuff
+(время|времени)\s+на\s+техник(у|и)\b	время на техническую работу	warn	calque: time for tech (technical work)
+вывалива	рассказывать	warn	slang: dump everything on someone
+((возможност\w*\s+(\w+\s+)?(течь|теч[её]т|текут))|((течь|теч[её]т|текут)\s+(\w+\s+)?возможност))	люди могут получать (возможности)	warn	calque: opportunities can flow
+как\s+можно\s+больш\w+\s+числ	со многими, чем больше, тем лучше	warn	calque: as many as possible
+(принял\w*|принять|примите|примет)\s+(эту\s+)?возможност	согласились на предложение	warn	calque: took the opportunity

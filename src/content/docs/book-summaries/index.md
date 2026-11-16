@@ -39,6 +39,7 @@ tags:
 | Бизнес и Soft Skills | [Escaping the Build Trap](/book-summaries/business/escaping-the-build-trap/) | Как строится продукт: роль PM, стратегия, Product Kata, product-led компания |
 | Бизнес и Soft Skills | [The Manager's Path](/book-summaries/business/managers-path/) | Путь от ментора и техлида до CTO: встречи 1:1, команды, менеджеры, стратегия, культура |
 | Бизнес и Soft Skills | [Staff Engineer](/book-summaries/business/staff-engineer/) | Техническая линия роста после Senior: архетипы Staff-инженера, стратегия, качество, влияние, повышение и 14 историй |
+| Бизнес и Soft Skills | [The Staff Engineer's Path](/book-summaries/business/staff-engineers-path/) | Как вырасти до Staff-инженера: роль, три карты организации, стратегия, большие проекты, влияние на коллег и карьера |
 
 ## Как устроен конспект
 
