@@ -132,6 +132,18 @@ export default defineConfig({
     }),
   ],
   redirects: {
+    // DDIA 1st edition chapter URLs -> 2nd edition chapters (14 chapters, numbers shifted).
+    '/book-summaries/engineering/designing-data-intensive-applications/01-reliable-scalable-maintainable/': '/book-summaries/engineering/designing-data-intensive-applications/02-nonfunctional-requirements/',
+    '/book-summaries/engineering/designing-data-intensive-applications/02-data-models-and-query-languages/': '/book-summaries/engineering/designing-data-intensive-applications/03-data-models-and-query-languages/',
+    '/book-summaries/engineering/designing-data-intensive-applications/03-storage-and-retrieval/': '/book-summaries/engineering/designing-data-intensive-applications/04-storage-and-retrieval/',
+    '/book-summaries/engineering/designing-data-intensive-applications/04-encoding-and-evolution/': '/book-summaries/engineering/designing-data-intensive-applications/05-encoding-and-evolution/',
+    '/book-summaries/engineering/designing-data-intensive-applications/05-replication/': '/book-summaries/engineering/designing-data-intensive-applications/06-replication/',
+    '/book-summaries/engineering/designing-data-intensive-applications/06-partitioning/': '/book-summaries/engineering/designing-data-intensive-applications/07-sharding/',
+    '/book-summaries/engineering/designing-data-intensive-applications/07-transactions/': '/book-summaries/engineering/designing-data-intensive-applications/08-transactions/',
+    '/book-summaries/engineering/designing-data-intensive-applications/08-trouble-with-distributed-systems/': '/book-summaries/engineering/designing-data-intensive-applications/09-trouble-with-distributed-systems/',
+    '/book-summaries/engineering/designing-data-intensive-applications/09-consistency-and-consensus/': '/book-summaries/engineering/designing-data-intensive-applications/10-consistency-and-consensus/',
+    '/book-summaries/engineering/designing-data-intensive-applications/10-batch-processing/': '/book-summaries/engineering/designing-data-intensive-applications/11-batch-processing/',
+    '/book-summaries/engineering/designing-data-intensive-applications/11-stream-processing/': '/book-summaries/engineering/designing-data-intensive-applications/12-stream-processing/',
     // Old Jekyll post URLs (/hard-skills/<date>-<slug>.html) -> new section URLs.
     '/hard-skills/2024-06-01-sql.html': '/processing/sql/',
     '/hard-skills/2024-06-02-dw.html': '/processing/dw/',

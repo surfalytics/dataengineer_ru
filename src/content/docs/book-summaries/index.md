@@ -21,7 +21,7 @@ tags:
 |---|---|---|
 | Инжиниринг | [Fundamentals of Data Engineering](/book-summaries/engineering/fundamentals-of-data-engineering/) | Профессия дата-инженера, жизненный цикл данных, архитектура, выбор технологий |
 | Инжиниринг | [The Data Warehouse Toolkit](/book-summaries/engineering/data-warehouse-toolkit/) | Dimensional modeling, star schema, SCD, ETL. SQL-практика на DuckDB |
-| Инжиниринг | [Designing Data-Intensive Applications](/book-summaries/engineering/designing-data-intensive-applications/) | Как устроены базы данных и распределённые системы: хранение, репликация, транзакции, пакеты и потоки |
+| Инжиниринг | [Designing Data-Intensive Applications, 2-е издание](/book-summaries/engineering/designing-data-intensive-applications/) | Как устроены базы данных и распределённые системы: хранение, репликация, `sharding`, транзакции, консенсус, пакеты и потоки, этика данных. 14 глав |
 | Инжиниринг | [DuckDB: Up and Running](/book-summaries/engineering/duckdb-up-and-running/) | DuckDB: CSV, Parquet, JSON, Polars, JupySQL, удалённые данные, MotherDuck. SQL-практика |
 | Инжиниринг | [Data Pipelines with Apache Airflow](/book-summaries/engineering/data-pipelines-with-apache-airflow/) | Airflow 3: DAG, расписания, assets, операторы, тесты, production и безопасность |
 | Инжиниринг | [Data Engineering Design Patterns](/book-summaries/engineering/data-engineering-design-patterns/) | Около 70 паттернов: загрузка, идемпотентность, ошибки, качество, наблюдаемость |

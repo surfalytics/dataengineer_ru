@@ -61,3 +61,47 @@
 гас(ить|ит|ят)\s+галлюцинац	защищаться от галлюцинаций	warn	odd verb
 (возможност|функци|настройк)\w*\s+жив(ёт|ут)\s+в	находится в / есть в	warn	calque: lives in
 сыр(ая|ой|ые)\s+платформ	базовая платформа	warn	calque: raw platform
+
+# --- from DDIA 2nd edition clarity passes
+тормоз(а|ов|ами)\b	медленная работа	warn	slang: slowness
+вокруг\s+(них|него|неё)\s+вырос\w*	появились	warn	calque: grew up around them
+стал\w*\s+остановк\w+\s+на\s+пути	стал промежуточным шагом	warn	calque: a stop on the way
+ставки\s+(\w+\s+)?выше	риск выше	warn	calque: the stakes are higher
+(баг|ошибк)\w*\s+(\w+\s+)?спят|долго\s+спят	долго не проявляются	warn	calque: bugs lie dormant
+при\s+той\s+же\s+техник	при тех же ресурсах	warn	calque: same hardware
+не\s+взл[её]т\w*	не прижился	warn	slang: did not take off
+полож(ить|ит|ат|ил)\w*\s+(\w+\s+)?(сервер|систем|баз|кластер|сервис)	перегрузить / уронить сервер	warn	slang: bring down
+стал\w*\s+общими\b	стали общепринятыми	warn	calque: became common
+по\s+сути,?\s+это\b	назовите подлежащее: «Полнотекстовый поиск — …»	warn	vague start
+делают\s+что-то\s+одно	либо X, либо Y	warn	vague: do one thing
+доигрыва\w+	завершаются на (старом коде)	warn	slang: play out
+берутся\s+от\b	зависят от	warn	calque: come from
+боев\w+\s+клич	лозунг	error	metaphor: battle cry
+(пользовател|клиент|люд)\w*\s+стан\w+\s+плохо	это навредит пользователям	warn	calque: users will feel bad
+лов(ит|ят|ить)\s+изменени	отслеживает изменения	warn	slang: catches changes
+(гнать|гон(ит|ят))\s+(\w+\s+)?по\s+сети	передавать по сети	warn	slang: push over the network
+слеп\w+\s+автоматик	автоматика без контроля человека	warn	calque: blind automation
+лучшее\s+(от|из)\s+обоих	скажите, что делает каждая часть	warn	cliché: best of both worlds
+делай\w*\s+retry	повторяйте	warn	mixed language
+transient\s+ошибк	временные ошибки	warn	mixed language
+unique\s+constraint	ограничение уникальности	warn	use Russian
+consistent\s+snapshot	согласованный snapshot	warn	use Russian adjective
+atomic\s+.?update	атомарный UPDATE	warn	use Russian adjective
+тонк\w+\s+баг	трудноуловимые баги	warn	calque: subtle bugs
+сигнальн\w+\s+растяжк|tripwire	скажите, что делает блокировка: не блокирует, а только сообщает	warn	metaphor: tripwire
+выкачен\w*	развёрнутый	warn	slang: rolled out
+доверя\w+\s+корректност	ставить корректность в зависимость от	warn	calque: trust correctness to
+баланс\w*\s+простоты\s+и\s+польз	скажите, что просто и что полезно	warn	vague
+сетев\w+\s+круг	запрос туда и обратно	warn	calque: network round trip
+дьявол\w*\s+в\s+детал	главная трудность — в деталях	error	idiom
+записа?(ть|л\w*|ывает|ывают)\s+запись	сохранить запись	warn	tautology
+не\s+только\s+[^,.;]{1,40},\s+а\s	не только X, но и Y	warn	grammar
+нужен\s+«да»	нужно «да»	warn	grammar: gender
+разогнал\w*	ускорил распространение	warn	slang: drove adoption
+почти\s+наверняка\s+переживёт	скорее всего столкнётся со сбоем	warn	false friend: experience ≠ пережить
+команд\w+\s+двига\w+\s+(смелее|быстрее)	разработка идёт быстрее	warn	calque: team moves faster
+обратно\s+тоже:	в другую сторону тоже: / назовите обе стороны	warn	vague
+упавш\w+\s+файл	файлы упавшего job	warn	calque: failed files
+по\s+итогу	в итоге	error	colloquial
+закрыва\w+\s+(нужд|потребност)	подходит для нужд	warn	slang: covers needs
+режим\w*\s+прошлого	диктатуры прошлого	warn	false friend: regimes

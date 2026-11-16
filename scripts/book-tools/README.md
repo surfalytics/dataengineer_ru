@@ -77,3 +77,17 @@ How to measure a run:
 ```bash
 python3 -I scripts/book-tools/token_usage.py ~/.claude/projects/<project>/<session>/subagents/workflows/wf_<id>
 ```
+
+Fourth run: "Designing Data-Intensive Applications, 2nd Edition" (14 chapters, 200,000 source words without reference lists), 2026-11-15. Full rewrite of the 1st-edition summary, old images reused. `checkCode` on.
+
+| Step | Model | Agents | Est. $ | Note |
+|---|---|---|---|---|
+| Split + glossary (51 terms) | sonnet | 2 | 0.55 | Word counts included reference lists (229K). Cut them before the run |
+| Write 14 chapters | opus/high | 14 | 44.98 | $0.22 per 1,000 source words. Pages 30-40% |
+| Review | sonnet/medium | 14 | 2.77 | 3-7 changes per chapter |
+| Clarity | opus/high | 14 | 10.89 | 12-22 changes per chapter |
+| Code | sonnet/medium | 14 | 1.57 | 1 output fixed |
+| Book + build | opus + sonnet | 2 | 2.98 | New book map, 2nd-edition cover, 333 glossary rows merged |
+| **Total** | | **61** | **63.75** | 28 minutes for Part 2 |
+
+Lesson: cut the reference list from each `chNN.txt` before you count words. DDIA has long reference lists, and they would raise every size target by 10-20%.
