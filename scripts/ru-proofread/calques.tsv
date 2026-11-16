@@ -105,3 +105,14 @@ atomic\s+.?update	атомарный UPDATE	warn	use Russian adjective
 по\s+итогу	в итоге	error	colloquial
 закрыва\w+\s+(нужд|потребност)	подходит для нужд	warn	slang: covers needs
 режим\w*\s+прошлого	диктатуры прошлого	warn	false friend: regimes
+
+# --- found in the Sonnet vs Opus test, 2026-11-16
+как\s+быть\s+управляем	как быть хорошим подчинённым / как работать с менеджером	error	how to be managed
+(дайте|дать|дай)\s+(\w+\s+)?передышк	не судите строго / простите ошибки	warn	give someone a break (idiom, not "rest")
+станут\s+ваш\w+\s+будущ\w+\s+работ	через них вы найдёте новую работу	error	peers turn into future jobs
+плотн\w+\s+рын	рынок, где много вакансий	warn	high-density market
+api-дизайн	дизайн API / проектирование API	warn	calque: API design
+петл\w+\s+(собеседован|интервью|для\b)	собеседования (серия встреч)	warn	interview loop
+(?<!«)последн\w+\s+мил[ьяиюе]	последний шаг	warn	the last mile
+как\s+устроен\w*\s+игр[аы]\s+в\s+компани	как устроена политика в компании	warn	how the game works
+идентичност\w*\s+(человека|руководител|сотрудник|ваш)	кто вы есть / ваш опыт и взгляды	warn	identity of a person

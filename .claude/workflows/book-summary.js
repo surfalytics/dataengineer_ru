@@ -159,7 +159,7 @@ const chapterResults = await pipeline(
 
 Load the \`book-summary\` skill and follow "Chapter steps (worker)". Use the translation guide, "Diagrams", "Chapter page" and "Hands-on code".${(a.technical || c.sql) ? ' Add `## Практика в DuckDB` (read `references/duckdb-practice.md`): ' + (a.technical ? 'this is a technical book.' : 'this chapter uses SQL or DuckDB.') : ' Do not add `## Практика в DuckDB`: the book is not technical and this chapter has no SQL. Code from the book still goes on the page as "Hands-on code from the book" says.'}
 Work in few, large steps: plan the whole page, write it with one \`Write\`, then fix with \`Edit\`. Every extra turn re-reads your whole context.
-Before you write, get the word budget per section: \`python3 -I scripts/book-tools/words.py --sections ${c.src}\`. Keep each section near its budget. A first draft above 40% wastes tokens: you pay for the words and again for cutting them.
+Before you write, get the word budget per section: \`python3 -I scripts/book-tools/words.py --sections ${c.src}\`. Keep each section near its budget. Aim for 30%. Keep the first draft at 35% or less: a draft above 40% wastes tokens (you pay for the words and again for cutting them), and the clarity pass later needs room to add explanations.
 The Russian title "${c.titleRu}" is a draft from the prep step. If it is not natural Russian or breaks the glossary, write a better one. Use the same title in \`title\`, \`sidebar.label\`, and report it in \`doubtful\` so the lead can align links.
 Other chapters of this book (other writers draw their diagrams at the same time): ${all.filter(x => x.n !== c.n).map(x => `${x.n}. ${x.title}`).join('; ')}. Draw a diagram for an idea only if this chapter explains it; if the idea belongs to another chapter, link to that chapter instead.
 
@@ -178,7 +178,7 @@ Other chapters of this book (other writers draw their diagrams at the same time)
 | Previous / next | ${prev ? `[${prev.titleRu}](${url(prev)})` : 'none (first chapter: link to the overview ' + urlBase + '/)'} / ${next ? `[${next.titleRu}](${url(next)})` : 'none'} |
 ${(a.notes || c.notes) ? `\nNotes from the lead (follow them, they win over the defaults above):\n${a.notes ? '- ' + a.notes + '\n' : ''}${c.notes ? '- ' + c.notes + '\n' : ''}` : ''}
 At the end:
-1. \`python3 -I scripts/book-tools/words.py --source ${c.src} ${page(c)}\`
+1. \`python3 -I scripts/book-tools/words.py --source ${c.src} ${page(c)}\`. If it is over 40%, cut now with \`Edit\` until it is 35% or less: drop repeats, side examples and minor details, keep every main idea, number and warning.
 2. \`python3 -I scripts/ru-proofread/check.py --glossary ${a.glossary} ${page(c)}\`, fix every ERROR.
 3. \`mkdir -p ${stateDir} && touch ${stateDir}/ch${pad(c.n)}.write.done\`
 
