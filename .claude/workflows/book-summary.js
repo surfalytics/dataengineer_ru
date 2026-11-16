@@ -21,7 +21,8 @@ export const meta = {
 //   notes?: "text for every writer" (for example: which old images to reuse),
 //   bookNotes?: "text for the Book step" (overview page, registers),
 //   only?: [n, ...], skipBook?: false, redo?: false, checkCode?: false,
-//   reviewOnly?: false }  // reviewOnly: pages exist; skip write and size, run review/flow/clarity/code, skip book steps
+//   reviewOnly?: false,
+//   models?: { write: 'sonnet/high', clarity: 'opus/medium', ... } }  // per-stage model/effort override  // reviewOnly: pages exist; skip write and size, run review/flow/clarity/code, skip book steps
 const a = args || {}
 const missing = ['slug', 'group', 'scratch', 'title', 'glossary', 'chapters'].filter(k => !a[k])
 if (missing.length) {
@@ -29,6 +30,15 @@ if (missing.length) {
 }
 
 const prefix = a.scriptsPrefix || a.slug
+
+// Model per stage. Defaults are below; args.models overrides them, for example
+// { write: 'sonnet/high', clarity: 'opus/medium' }. Never use haiku for Russian text.
+const M = (stage, model, effort) => {
+  const o = (a.models || {})[stage]
+  if (!o) return { model, effort }
+  const [om, oe] = o.split('/')
+  return { model: om || model, effort: oe || effort }
+}
 const bookDir = `src/content/docs/book-summaries/${a.group}/${a.slug}`
 const urlBase = `/book-summaries/${a.group}/${a.slug}`
 const stateDir = `${a.scratch}/state`
@@ -77,7 +87,7 @@ For each chapter below:
 - if the page exists: \`python3 -I scripts/book-tools/words.py --source <src> <page>\` (take the %) and \`python3 -I scripts/ru-proofread/check.py --stats <page>\` (statsLow = true if it prints LOW).
 Chapters (n | src | page):
 ${todo.map(c => `${c.n} | ${c.src} | ${page(c)}`).join('\n')}`,
-    { label: 'status', phase: 'Status', schema: STATUS, model: 'haiku', effort: 'low' })) || { chapters: [] }
+    { label: 'status', phase: 'Status', schema: STATUS, ...M('status', 'haiku', 'low') })) || { chapters: [] }
 }
 const st = n => status.chapters.find(s => s.n === n) || { done: [], pct: 0, statsLow: false }
 const skipped = todo.filter(c => st(c.n).done.includes('clarity') && (!a.checkCode || st(c.n).done.includes('code')))
@@ -176,7 +186,7 @@ At the end:
 2. \`python3 -I scripts/ru-proofread/check.py --glossary ${a.glossary} ${page(c)}\`, fix every ERROR.
 3. \`mkdir -p ${stateDir} && touch ${stateDir}/ch${pad(c.n)}.write.done\`
 
-${COMMON}`, { label: `write ch${c.n}`, phase: 'Write', schema: WRITE, model: 'opus', effort: 'high' })
+${COMMON}`, { label: `write ch${c.n}`, phase: 'Write', schema: WRITE, ...M('write', 'opus', 'high') })
     if (!write) throw new Error(`writer failed for chapter ${c.n}`)
     return { c, write }
   },
@@ -192,7 +202,7 @@ Change the page only with \`Edit\`. Do not touch code blocks, links, front matte
 Then run \`python3 -I scripts/book-tools/words.py --source ${r.c.src} ${page(r.c)}\` and \`python3 -I scripts/ru-proofread/check.py ${page(r.c)}\` (fix every ERROR).
 Return the new % and one line on what you changed.
 
-${COMMON}`, { label: `size ch${r.c.n}`, phase: 'Size', schema: SIZE, model: 'opus', effort: 'medium' })
+${COMMON}`, { label: `size ch${r.c.n}`, phase: 'Size', schema: SIZE, ...M('size', 'opus', 'medium') })
     if (size && (size.pct < 20 || size.pct > 40)) log(`chapter ${r.c.n} is still ${size.pct}% after one size fix`)
     return { ...r, size }
   },
@@ -210,7 +220,7 @@ ${COMMON}`, { label: `size ch${r.c.n}`, phase: 'Size', schema: SIZE, model: 'opu
 4. \`python3 -I scripts/ru-proofread/check.py --stats ${page(r.c)}\`. statsLow = it prints LOW, or check.py reports \`choppy\`.
 5. \`touch ${stateDir}/ch${pad(r.c.n)}.review.done\`
 
-${COMMON}`, { label: `review ch${r.c.n}`, phase: 'Review', schema: REVIEW, model: 'sonnet', effort: 'medium' })
+${COMMON}`, { label: `review ch${r.c.n}`, phase: 'Review', schema: REVIEW, ...M('review', 'sonnet', 'medium') })
     if (!review) throw new Error(`review failed for chapter ${r.c.n}`)
     if (!review.guardOk) log(`chapter ${r.c.n}: guard still fails after review`)
     return { ...r, review }
@@ -228,7 +238,7 @@ ${COMMON}`, { label: `review ch${r.c.n}`, phase: 'Review', schema: REVIEW, model
 3. Size: \`python3 -I scripts/book-tools/words.py --source ${r.c.src} ${page(r.c)}\`. If it is over 40%, undo your longest additions until it is 40% or less.
 4. \`touch ${stateDir}/ch${pad(r.c.n)}.flow.done\`
 
-${COMMON}`, { label: `flow ch${r.c.n}`, phase: 'Flow', schema: FLOW, model: 'opus', effort: 'medium' })
+${COMMON}`, { label: `flow ch${r.c.n}`, phase: 'Flow', schema: FLOW, ...M('flow', 'opus', 'medium') })
     return { ...r, flow }
   },
 
@@ -246,7 +256,7 @@ ${COMMON}`, { label: `flow ch${r.c.n}`, phase: 'Flow', schema: FLOW, model: 'opu
 3. Size: \`python3 -I scripts/book-tools/words.py --source ${r.c.src} ${page(r.c)}\`. Take the %. Clarity beats brevity: up to 50% is fine when your additions make the page clearer.
 4. \`touch ${stateDir}/ch${pad(r.c.n)}.clarity.done\`
 
-${COMMON}`, { label: `clarity ch${r.c.n}`, phase: 'Clarity', schema: CLARITY, model: 'opus', effort: 'high' })
+${COMMON}`, { label: `clarity ch${r.c.n}`, phase: 'Clarity', schema: CLARITY, ...M('clarity', 'opus', 'high') })
     if (!clarity) log(`chapter ${r.c.n}: clarity pass failed`)
     return { ...r, clarity }
   },
@@ -267,7 +277,7 @@ Code folder: scripts/${prefix}-code/ (files ch${pad(r.c.n)}_*, requirements*.txt
 8. \`touch ${stateDir}/ch${pad(r.c.n)}.code.done\`
 Do not edit README.md or other shared registers: put status changes in problems.
 
-${COMMON}`, { label: `code ch${r.c.n}`, phase: 'Code', schema: CODE, model: 'sonnet', effort: 'medium' })
+${COMMON}`, { label: `code ch${r.c.n}`, phase: 'Code', schema: CODE, ...M('code', 'sonnet', 'medium') })
     if (!code) log(`chapter ${r.c.n}: code check failed`)
     return { ...r, code }
   },
@@ -300,9 +310,17 @@ const report = {
   failed: failed.map(c => c.n),
 }
 
+// ---------- Status file: one row per book in scripts/book-tools/status.md (runs at the end of every run)
+const recordStatus = async () => {
+  report.statusFile = await agent(`Run this one command. Reply with its last output line only.
+python3 -I scripts/book-tools/status.py ${a.slug} --group ${a.group} --title ${JSON.stringify(a.title)} --scratch ${a.scratch} --chapters ${all.map(c => c.n).join(',')}`,
+    { label: 'status file', phase: 'Status', model: 'haiku', effort: 'low' })
+}
+
 // ---------- Whole book (needs all chapters: a real barrier)
 if (a.skipBook || a.only || a.reviewOnly || failed.length) {
   log(a.only || a.skipBook || a.reviewOnly ? 'book steps skipped (partial or review-only run)' : 'book steps skipped: some chapters failed')
+  await recordStatus()
   return report
 }
 
@@ -321,13 +339,14 @@ Check the chapters as a set (writers worked in parallel and could not see each o
 ${a.bookNotes ? 'Notes from the lead (follow them): ' + a.bookNotes + '\n' : ''}Do not run npm run build: the next step does it.
 Reply with one short line per item: done, or the problem.
 
-${COMMON.split('\n').filter(l => !l.includes('shared files')).join('\n')}`, { label: 'book', phase: 'Book', model: 'opus', effort: 'high' })
+${COMMON.split('\n').filter(l => !l.includes('shared files')).join('\n')}`, { label: 'book', phase: 'Book', ...M('book', 'opus', 'high') })
 
 phase('Build')
 report.build = await agent(`Build and check the book "${a.slug}".
 1. Load the \`book-epub\` skill and follow it for ${a.slug}: build, validate, link on the overview page.
 2. \`npm run build 2>&1 | tail -30\`. Fix only clear, small errors in this book's files (front matter, links). Report anything else.
 3. \`grep -c "${a.slug}.jpg" dist/index.html\` must print 1 or more (the cover is in the carousel).
-Reply with one short line per check: ok, or the problem.`, { label: 'build', phase: 'Build', model: 'sonnet', effort: 'medium' })
+Reply with one short line per check: ok, or the problem.`, { label: 'build', phase: 'Build', ...M('build', 'sonnet', 'medium') })
 
+await recordStatus()
 return report
