@@ -23,7 +23,7 @@ One row per book. Update it after every run or PR. `python3 -I scripts/book-tool
 | Machines that Think | `ai/machines-that-think` | 8 | needs review | 2026-11-13 | #96 | review, flow, clarity |
 | Claude Code: Up and Running | `ai/claude-code-up-and-running` | 4 | done | 2026-11-15 | #103 | Early Release: add chapters when they come out |
 | Claude AI Bible | `ai/claude-ai-bible` | 22 | done | 2026-11-15 | #101 | — |
-| The Startup Owner's Manual | `entrepreneurship/startup-owners-manual` | 16 | done | 2026-11-16 | #96 | — |
+| The Startup Owner's Manual | `entrepreneurship/startup-owners-manual` | 16 | done | 2026-11-16 | #108 | — |
 | The Mom Test | `entrepreneurship/mom-test` | 9 | needs review | 2026-11-13 | #96 | review, flow, clarity |
 | The Diary of a CEO | `entrepreneurship/diary-of-a-ceo` | 33 | needs review | 2026-11-13 | #96 | review, flow, clarity |
 | Lean Analytics | `business/lean-analytics` | 31 | done | 2026-11-15 | #104 | — |
