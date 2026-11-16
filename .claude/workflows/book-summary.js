@@ -17,7 +17,9 @@ export const meta = {
 
 // args: the "next.args" object returned by book-prep:
 // { slug, group, scratch, source, scriptsPrefix, title, author, technical, glossary,
-//   chapters: [{ n, title, titleRu, file, src, pages, words, oldPage }],
+//   chapters: [{ n, title, titleRu, file, src, pages, words, oldPage, notes? }],
+//   notes?: "text for every writer" (for example: which old images to reuse),
+//   bookNotes?: "text for the Book step" (overview page, registers),
 //   only?: [n, ...], skipBook?: false, redo?: false, checkCode?: false,
 //   reviewOnly?: false }  // reviewOnly: pages exist; skip write and size, run review/flow/clarity/code, skip book steps
 const a = args || {}
@@ -168,7 +170,7 @@ Other chapters of this book (other writers draw their diagrams at the same time)
 | Images | public/assets/${a.slug}/ch${pad(c.n)}-<name>.png |
 | Size target | ${Math.round(c.words * 0.2)}-${Math.round(c.words * 0.4)} prose words, aim for ${Math.round(c.words * 0.3)} |
 | Previous / next | ${prev ? `[${prev.titleRu}](${url(prev)})` : 'none (first chapter: link to the overview ' + urlBase + '/)'} / ${next ? `[${next.titleRu}](${url(next)})` : 'none'} |
-
+${(a.notes || c.notes) ? `\nNotes from the lead (follow them, they win over the defaults above):\n${a.notes ? '- ' + a.notes + '\n' : ''}${c.notes ? '- ' + c.notes + '\n' : ''}` : ''}
 At the end:
 1. \`python3 -I scripts/book-tools/words.py --source ${c.src} ${page(c)}\`
 2. \`python3 -I scripts/ru-proofread/check.py --glossary ${a.glossary} ${page(c)}\`, fix every ERROR.
@@ -316,7 +318,7 @@ Add the chapters' new clarity patterns to scripts/ru-proofread/calques.tsv if th
 Check the chapters as a set (writers worked in parallel and could not see each other):
 - Titles: every chapter's \`title\`, \`sidebar.label\`, the Previous/Next link texts in other chapters, and the overview tables must use the same Russian chapter title. Writers may have changed the draft titles.
 - Diagrams: \`ls public/assets/${a.slug}/\`. If two chapters show the same idea, keep the diagram in the chapter that explains it more, replace the other image with one sentence and a link to that chapter, delete the extra PNG, and mark it skipped in figures.md.
-Do not run npm run build: the next step does it.
+${a.bookNotes ? 'Notes from the lead (follow them): ' + a.bookNotes + '\n' : ''}Do not run npm run build: the next step does it.
 Reply with one short line per item: done, or the problem.
 
 ${COMMON.split('\n').filter(l => !l.includes('shared files')).join('\n')}`, { label: 'book', phase: 'Book', model: 'opus', effort: 'high' })
