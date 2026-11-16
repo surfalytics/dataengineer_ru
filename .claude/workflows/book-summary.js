@@ -3,7 +3,7 @@ export const meta = {
   description: 'Book summary, part 2: write, size-check, review, flow-edit and clarity-edit every chapter in parallel, then overview, nav, cover, EPUB, build',
   whenToUse: 'After book-prep, with its "next.args". Also to redo some chapters: pass "only": [3, 5]. Chapters already done are skipped, so a rerun continues where it stopped.',
   phases: [
-    { title: 'Status', detail: 'which chapter stages are already done (haiku)', model: 'haiku' },
+    { title: 'Status', detail: 'which chapter stages are already done (script, copied by sonnet)', model: 'sonnet' },
     { title: 'Write', detail: 'one writer per chapter (sonnet, high)', model: 'sonnet' },
     { title: 'Size', detail: 'fix pages outside 20-40% (max one retry)', model: 'opus' },
     { title: 'Review', detail: 'correctness review (sonnet, medium)', model: 'sonnet' },
@@ -81,13 +81,9 @@ const STATUS = {
 phase('Status')
 let status = { chapters: [] }
 if (!a.redo) {
-  status = (await agent(`Check pipeline state. Run commands only, change nothing.
-For each chapter below:
-- list which marker files exist in ${stateDir}/: chNN.write.done, chNN.review.done, chNN.flow.done, chNN.clarity.done, chNN.code.done (NN = two digits);
-- if the page exists: \`python3 -I scripts/book-tools/words.py --source <src> <page>\` (take the %) and \`python3 -I scripts/ru-proofread/check.py --stats <page>\` (statsLow = true if it prints LOW).
-Chapters (n | src | page):
-${todo.map(c => `${c.n} | ${c.src} | ${page(c)}`).join('\n')}`,
-    { label: 'status', phase: 'Status', schema: STATUS, ...M('status', 'haiku', 'low') })) || { chapters: [] }
+  status = (await agent(`Run this one command. Reply with exactly the JSON it prints, copied as is. Do not run anything else and do not guess any value.
+python3 -I scripts/book-tools/pipeline_state.py ${a.scratch} ${todo.map(c => JSON.stringify(`${c.n}|${c.src}|${page(c)}`)).join(' ')}`,
+    { label: 'status', phase: 'Status', schema: STATUS, ...M('status', 'sonnet', 'low') })) || { chapters: [] }
 }
 const st = n => status.chapters.find(s => s.n === n) || { done: [], pct: 0, statsLow: false }
 const skipped = todo.filter(c => st(c.n).done.includes('clarity') && (!a.checkCode || st(c.n).done.includes('code')))
@@ -314,7 +310,7 @@ const report = {
 const recordStatus = async () => {
   report.statusFile = await agent(`Run this one command. Reply with its last output line only.
 python3 -I scripts/book-tools/status.py ${a.slug} --group ${a.group} --title ${JSON.stringify(a.title)} --scratch ${a.scratch} --chapters ${all.map(c => c.n).join(',')}`,
-    { label: 'status file', phase: 'Status', model: 'haiku', effort: 'low' })
+    { label: 'status file', phase: 'Status', model: 'sonnet', effort: 'low' })
 }
 
 // ---------- Whole book (needs all chapters: a real barrier)
