@@ -20,13 +20,10 @@
 | 2 | (свои) | Три способа загрузить CSV | ch02-csv-ways.png | own |
 | 2 | (свои) | Размер CSV и Parquet (наш замер 21,7 и 5,0 МБ) | ch02-csv-vs-parquet.png | own |
 | 2 | (свои) | MySQL: вручную и через ATTACH | ch02-mysql-ways.png | own |
-| 3 | 3-1 | Страница загрузки DuckDB CLI | - | skipped: скриншот сайта |
+| 3 | 3-1 | Скриншот страницы загрузки DuckDB CLI | - | skipped: скриншот сайта |
 | 3 | 3-2 | Папка после EXPORT DATABASE и её файлы | ch03-cli-map.png (правая часть) | redrawn |
-| 3 | 3-3 | Схема таблиц мини-библиотеки | ch03-shop-er.png (наша схема магазина, Mermaid, `src/ch03-shop-er.mmd`) | redrawn |
-| 3 | 3-4 | LEFT JOIN | ch03-joins.png | redrawn |
-| 3 | 3-5 | RIGHT JOIN | ch03-joins.png | redrawn |
-| 3 | 3-6 | INNER JOIN | ch03-joins.png | redrawn |
-| 3 | 3-7 | FULL JOIN | ch03-joins.png | redrawn |
+| 3 | 3-3 | Схема таблиц мини-библиотеки | ch03-shop-er.png | redrawn |
+| 3 | 3-4 .. 3-7 | LEFT, RIGHT, INNER, FULL JOIN | ch03-joins.png | redrawn |
 | 3 | 3-8 | Три вложенных SELECT | ch03-nested-query.png | redrawn |
 | 3 | own | Консоль: память и файл, .open, ATTACH, EXPORT/IMPORT | ch03-cli-map.png | own |
 | 4 | 4-1 .. 4-8 | Скриншоты Polars DataFrame и результатов select, filter, SQL | настоящий вывод ch04_polars_basics.py | skipped: скриншоты таблиц |

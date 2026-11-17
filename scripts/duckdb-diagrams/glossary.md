@@ -1,76 +1,116 @@
-| English | Как пишем | Пояснение |
-|---|---|---|
-| in-process database | `in-process` база | База внутри программы, без сервера |
-| RDBMS | `RDBMS` (реляционная СУБД) | Таблицы и SQL |
-| OLAP | `OLAP` | Аналитические запросы: большие чтения и агрегаты |
-| OLTP | `OLTP` | Много коротких операций над строками |
-| columnar storage | `columnar storage` (хранение по столбцам) | Данные лежат по столбцам |
-| vectorized execution | `vectorized execution` (векторное выполнение) | Обработка порциями строк |
-| parallel execution | `parallel execution` | Запрос делится между ядрами |
-| late materialization | `late materialization` (отложенная материализация) | Полные строки собираются в конце |
-| query planner | `query planner` (планировщик запросов) | Перестраивает запрос перед выполнением |
-| predicate pushdown | `predicate pushdown` | Фильтр ближе к источнику |
-| join reordering | `join reordering` | Выбор порядка соединения таблиц |
-| ELT | `ELT` | Extract, Load, Transform |
-| DataFrame | `DataFrame` | Таблица в памяти программы |
-| MotherDuck | MotherDuck | Облачный сервис на DuckDB (название продукта) |
-| DuckDB Labs | DuckDB Labs | Компания, которая развивает DuckDB |
-| read_csv_auto | `read_csv_auto` | Чтение CSV с автоопределением схемы |
-| COPY | `COPY` | Быстрая загрузка и выгрузка файлов |
-| Parquet | `Parquet` | Колоночный формат со схемой внутри файла |
-| register | `register()` | Показать DataFrame как виртуальную таблицу в SQL |
-| ATTACH | `ATTACH` | Подключить внешнюю базу |
-| extension | расширение (`extension`) | Модуль, который добавляет возможности DuckDB |
-| lazy loading | `lazy loading` | Данные поднимаются в память по мере запросов |
-| data lake | `data lake` | Хранилище файлов в облаке |
-| CLI | `CLI` (консоль `duckdb`) | Программа командной строки |
-| dot command | dot-команда | Команда консоли, начинается с точки, не SQL |
-| ATTACH / USE | `ATTACH` / `USE` | Подключить базу / сделать активной |
-| EXPORT / IMPORT DATABASE | `EXPORT DATABASE` / `IMPORT DATABASE` | Выгрузить базу в папку / загрузить из папки |
-| foreign key | `FOREIGN KEY` | Ссылка на ключ другой таблицы |
-| CRUD | `CRUD` | Создать, прочитать, обновить, удалить |
-| view | `view` | Сохранённый запрос |
-| subquery | `subquery` (вложенный запрос) | Запрос внутри запроса |
-| inner / left / right / full / cross join | `INNER`, `LEFT`, `RIGHT`, `FULL`, `CROSS JOIN` | Виды соединения таблиц |
-| Polars | `Polars` | Библиотека DataFrame на Rust |
-| lazy evaluation | `lazy evaluation` (ленивое вычисление) | План строится сразу, выполняется при `collect()` |
-| eager execution | eager-режим | Операция выполняется сразу |
-| LazyFrame | `LazyFrame` | Объект с планом запроса |
-| expression | `expression` (выражение) | `pl.col(...)`, из выражений строят запрос |
-| Apache Arrow | `Apache Arrow` | Колоночный формат данных в памяти |
-| DuckDBPyRelation | `DuckDBPyRelation` | Объект запроса DuckDB в Python |
-| SQLContext | `SQLContext` | Класс Polars для SQL по DataFrame |
-| EDA | `EDA` | Первый разведочный анализ данных |
-| geospatial analysis | геоанализ (`GIS`-анализ) | Анализ пространственных данных |
-| spatial extension | расширение `spatial` | Геофункции DuckDB |
-| Point | `Point` | Тип «точка» |
-| WKT | `WKT` | Текстовый формат геометрии |
-| EPSG:4326 / WGS 84 | `EPSG:4326` | Система координат: широта и долгота |
-| GeoDataFrame | `GeoDataFrame` | Таблица GeoPandas с геометрией |
-| descriptive analytics | описательная аналитика | Сводка прошлых данных |
-| tile | плитки (`tiles`) | Фрагменты, из которых собрана карта |
-| nested object | `nested object` | Объект внутри объекта JSON |
-| struct | `struct` | Тип DuckDB для объекта с именованными полями |
-| NDJSON / newline-delimited | NDJSON | Один JSON-объект на строку файла |
-| unnest | `unnest` | Разворачивает массив в строки |
-| glob | `glob` | Маска имён файлов: `*`, `**`, `?` |
-| JupySQL | JupySQL | Расширение Jupyter для SQL-ячеек |
-| magic command | магическая команда (`%sql`, `%%sql`) | Команда ноутбука с `%` или `%%` |
-| snippet | `snippet` | Сохранённый именованный запрос, живёт в ноутбуке |
-| SQLAlchemy | `SQLAlchemy` | Библиотека Python для работы с реляционными БД |
-| bins | корзины (`bins`) | Диапазоны значений на гистограмме |
-| outlier | выброс (`outlier`) | Значение, далёкое от остальных |
-| keyring | `keyring` | Доступ к хранилищу паролей ОС |
-| httpfs | `httpfs` | Расширение для чтения и записи файлов по HTTP(S) и S3 |
-| range request | range request | HTTP-запрос части файла |
-| Hugging Face | Hugging Face | Площадка с моделями и датасетами для машинного обучения |
-| secret | секрет (`CREATE SECRET`) | Сохранённый доступ: токен или ключ |
-| CONFIG | `CONFIG` | Токен задан прямо в команде |
-| CREDENTIAL_CHAIN | `CREDENTIAL_CHAIN` | DuckDB сам ищет токен в известных местах |
-| access token | токен доступа | Ключ для чтения закрытого датасета |
-| serverless | serverless | Нет своего сервера |
-| compute unit | compute unit (`CU`) | Единица вычислений в тарифе |
-| share | `share` | Доступ к снимку базы только для чтения |
-| Dual Execution | `Dual Execution` | Запрос идёт частично локально, частично в облаке |
-| hybrid query | hybrid-запрос | Запрос по локальным и облачным данным |
-| schema | схема (`schema`) | Группа таблиц внутри базы |
+# Глоссарий: DuckDB: Up and Running (Wei-Meng Lee)
+
+Единые слова для всех глав. Правила: навык `book-summary`, раздел «Glossary first».
+Колонка «Как пишем»: термин в обратных кавычках = оставляем английским; обычное слово = пишем по-русски.
+
+| English | Как пишем | Не писать | Пояснение |
+|---|---|---|---|
+| in-process database | `in-process` база | встроенная БД без пояснения, процессная база | База внутри программы, без сервера |
+| RDBMS | `RDBMS` (реляционная СУБД) | РСУБД | Таблицы и SQL |
+| OLAP | `OLAP` | — | Аналитические запросы: большие чтения и агрегаты |
+| OLTP | `OLTP` | — | Много коротких операций над строками |
+| columnar storage | `columnar storage` (хранение по столбцам) | колоночное хранилище без пояснения, столбцовое хранение | Данные лежат по столбцам |
+| vectorized execution | `vectorized execution` (векторное выполнение) | векторизованное исполнение | Обработка порциями строк |
+| parallel execution | `parallel execution` | параллельное исполнение | Запрос делится между ядрами |
+| late materialization | `late materialization` (отложенная материализация) | поздняя материализация | Полные строки собираются в конце |
+| query planner | `query planner` (планировщик запросов) | планировщик без «запросов» | Перестраивает запрос перед выполнением |
+| predicate pushdown | `predicate pushdown` | проталкивание предикатов | Фильтр ближе к источнику |
+| join reordering | `join reordering` | переупорядочивание соединений | Выбор порядка соединения таблиц |
+| ELT | `ELT` | — | Extract, Load, Transform |
+| DataFrame | `DataFrame` | датафрейм, дата-фрейм | Таблица в памяти программы |
+| MotherDuck | MotherDuck | Мазер Дак | Облачный сервис на DuckDB (название продукта) |
+| DuckDB Labs | DuckDB Labs | — | Компания, которая развивает DuckDB |
+| read_csv_auto | `read_csv_auto` | — | Чтение CSV с автоопределением схемы |
+| COPY | `COPY` | — | Быстрая загрузка и выгрузка файлов |
+| Parquet | `Parquet` | паркет | Колоночный формат со схемой внутри файла |
+| register | `register()` | регистрировать DataFrame без пояснения | Показать DataFrame как виртуальную таблицу в SQL |
+| ATTACH | `ATTACH` | — | Подключить внешнюю базу |
+| extension | расширение (`extension`) | экстеншен, плагин, надстройка | Модуль, который добавляет возможности DuckDB |
+| lazy loading | `lazy loading` | ленивая загрузка | Данные поднимаются в память по мере запросов |
+| data lake | `data lake` | — | Хранилище файлов в облаке |
+| CLI | `CLI` (консоль `duckdb`) | клиай, командная строка без `duckdb` | Программа командной строки |
+| dot command | dot-команда | точечная команда, дот-команда | Команда консоли, начинается с точки, не SQL |
+| ATTACH / USE | `ATTACH` / `USE` | — | Подключить базу / сделать активной |
+| EXPORT / IMPORT DATABASE | `EXPORT DATABASE` / `IMPORT DATABASE` | — | Выгрузить базу в папку / загрузить из папки |
+| foreign key | `FOREIGN KEY` | внешний ключ без `FOREIGN KEY` | Ссылка на ключ другой таблицы |
+| CRUD | `CRUD` | — | Создать, прочитать, обновить, удалить |
+| view | `view` | вью, представление | Сохранённый запрос |
+| subquery | `subquery` (вложенный запрос) | сабквери, подзапрос без `subquery` | Запрос внутри запроса |
+| inner / left / right / full / cross join | `INNER`, `LEFT`, `RIGHT`, `FULL`, `CROSS JOIN` | джойн, внутреннее соединение | Виды соединения таблиц |
+| Polars | `Polars` | — | Библиотека DataFrame на Rust |
+| lazy evaluation | `lazy evaluation` (ленивое вычисление) | отложенное вычисление, ленивая оценка | План строится сразу, выполняется при `collect()` |
+| eager execution | eager-режим | жадное выполнение | Операция выполняется сразу |
+| LazyFrame | `LazyFrame` | ленивый фрейм | Объект с планом запроса |
+| expression | `expression` (выражение) | экспрешн | `pl.col(...)`, из выражений строят запрос |
+| Apache Arrow | `Apache Arrow` | — | Колоночный формат данных в памяти |
+| DuckDBPyRelation | `DuckDBPyRelation` | — | Объект запроса DuckDB в Python |
+| SQLContext | `SQLContext` | — | Класс Polars для SQL по DataFrame |
+| EDA | `EDA` | — | Первый разведочный анализ данных |
+| geospatial analysis | геоанализ (`GIS`-анализ) | геопространственный анализ | Анализ пространственных данных |
+| spatial extension | расширение `spatial` | пространственное расширение | Геофункции DuckDB |
+| Point | `Point` | — | Тип «точка» |
+| WKT | `WKT` | — | Текстовый формат геометрии |
+| EPSG:4326 / WGS 84 | `EPSG:4326` | — | Система координат: широта и долгота |
+| GeoDataFrame | `GeoDataFrame` | гео-датафрейм | Таблица GeoPandas с геометрией |
+| descriptive analytics | описательная аналитика | дескриптивная аналитика | Сводка прошлых данных |
+| tile | плитки (`tiles`) | тайлы | Фрагменты, из которых собрана карта |
+| nested object | `nested object` | вложенный объект без `nested object` | Объект внутри объекта JSON |
+| struct | `struct` | структура (о типе DuckDB) | Тип DuckDB для объекта с именованными полями |
+| NDJSON / newline-delimited | NDJSON | — | Один JSON-объект на строку файла |
+| unnest | `unnest` | аннест | Разворачивает массив в строки |
+| glob | `glob` | глоб | Маска имён файлов: `*`, `**`, `?` |
+| JupySQL | JupySQL | — | Расширение Jupyter для SQL-ячеек |
+| magic command | магическая команда (`%sql`, `%%sql`) | волшебная команда | Команда ноутбука с `%` или `%%` |
+| snippet | `snippet` | сниппет | Сохранённый именованный запрос, живёт в ноутбуке |
+| SQLAlchemy | `SQLAlchemy` | — | Библиотека Python для работы с реляционными БД |
+| bins | корзины (`bins`) | бины, биннинг | Диапазоны значений на гистограмме |
+| outlier | выброс (`outlier`) | аутлайер | Значение, далёкое от остальных |
+| keyring | `keyring` | — | Доступ к хранилищу паролей ОС |
+| httpfs | `httpfs` | — | Расширение для чтения и записи файлов по HTTP(S) и S3 |
+| range request | range request | запрос диапазона | HTTP-запрос части файла |
+| Hugging Face | Hugging Face | Хаггинг Фейс | Площадка с моделями и датасетами для машинного обучения |
+| secret | секрет (`CREATE SECRET`) | секрет без `CREATE SECRET` в коде | Сохранённый доступ: токен или ключ |
+| CONFIG | `CONFIG` | — | Токен задан прямо в команде |
+| CREDENTIAL_CHAIN | `CREDENTIAL_CHAIN` | — | DuckDB сам ищет токен в известных местах |
+| access token | токен доступа | токен без «доступа», аксес-токен | Ключ для чтения закрытого датасета |
+| serverless | serverless | безсерверный, бессерверный | Нет своего сервера |
+| compute unit | compute unit (`CU`) | вычислительная единица | Единица вычислений в тарифе |
+| share | `share` | шеринг | Доступ к снимку базы только для чтения |
+| Dual Execution | `Dual Execution` | двойное выполнение | Запрос идёт частично локально, частично в облаке |
+| hybrid query | hybrid-запрос | гибридный запрос | Запрос по локальным и облачным данным |
+| schema | схема (`schema`) | схема данных без пояснения, скима | Группа таблиц внутри базы |
+| in-memory database | `in-memory` база | база в памяти без `in-memory` | База живёт, пока работает процесс: `:memory:` |
+| persistent database | файловая база (`persistent`) | постоянная база | База в файле `.duckdb`, данные остаются после выхода |
+| data warehouse | хранилище данных (`data warehouse`) | склад данных | Центральная система для аналитики |
+| data wrangling | `data wrangling` (подготовка данных) | рэнглинг, обработка данных | Очистка и приведение данных к нужному виду |
+| pipeline | `pipeline` | пайплайн | Цепочка шагов, которая двигает и меняет данные |
+| CTE | `CTE` | — | Именованный подзапрос в `WITH` |
+| window function | оконная функция (`window function`) | — | Считает по окну строк, строки не схлопывает |
+| aggregate function | агрегатная функция | агрегирующая функция | `SUM`, `AVG`, `COUNT` по группе строк |
+| primary key | `PRIMARY KEY` | первичный ключ без `PRIMARY KEY` в коде | Уникальный идентификатор строки |
+| data type | тип данных | — | Тип столбца: `INTEGER`, `VARCHAR`, `STRUCT` |
+| LIST / MAP types | `LIST`, `MAP` | словарь (о типах DuckDB) | Вложенные типы DuckDB |
+| PRAGMA | `PRAGMA` | — | Команда, которая меняет настройки или показывает метаданные |
+| EXPLAIN | `EXPLAIN` | — | Показывает план запроса |
+| query plan | план запроса (`query plan`) | — | Шаги, по которым DuckDB выполнит запрос |
+| metadata | метаданные | мета-данные | Данные о таблицах, столбцах, файлах |
+| result set | результат запроса (`result set`) | набор результатов | Строки, которые вернул запрос |
+| connection | соединение (`connection`) | коннекшен | Объект для запросов к базе в Python |
+| cursor | `cursor` | курсор без `cursor` | Объект, по которому читают результат по частям |
+| Jupyter Notebook | `Jupyter Notebook` | юпитер, ноутбук без Jupyter | Интерактивная среда с ячейками кода |
+| cell | ячейка | — | Блок кода или текста в ноутбуке |
+| kernel | `kernel` | ядро (в Jupyter) | Процесс, который выполняет код ноутбука |
+| histogram | гистограмма | — | Столбцы по диапазонам значений |
+| boxplot | `boxplot` («ящик с усами») | — | Диаграмма: медиана, квартили, выбросы |
+| geometry | `geometry` | геометрия без `geometry` для типа | Тип данных для точек, линий, полигонов |
+| spatial join | `spatial join` | пространственное соединение | Соединение таблиц по положению объектов |
+| row-based storage | хранение по строкам (`row-based`) | строчное хранилище | Строка лежит целиком рядом |
+| batch | `batch` | батч | Порция данных или строк |
+| transaction | транзакция | — | Группа операций, которая выполняется целиком или никак |
+| ACID | `ACID` | — | Атомарность, согласованность, изоляция, долговечность |
+| hive partitioning | `hive partitioning` | хайв-партиционирование | Папки вида `year=2024/month=01/` |
+| replacement scan | `replacement scan` | — | DuckDB видит имя DataFrame как таблицу |
+| upsert | `upsert` | апсерт | Вставить или обновить строку: `INSERT ... ON CONFLICT` |
+| user-defined function | `UDF` (функция пользователя) | юдф | Своя функция на Python или SQL |
+| macro | `macro` | макрос | Именованное SQL-выражение с параметрами |
+| sampling | выборка (`sampling`) | семплирование | Чтение части строк для быстрой оценки |
