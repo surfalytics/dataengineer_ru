@@ -195,6 +195,21 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/business/staff-engineers-path' } }],
           },
+          {
+            label: 'Engineering Leadership: The Hard Parts',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/engineering-leadership-hard-parts' } }],
+          },
+          {
+            label: 'Crafting Engineering Strategy',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/crafting-engineering-strategy' } }],
+          },
+          {
+            label: "The Engineering Executive's Primer",
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/engineering-executives-primer' } }],
+          },
         ],
       },
     ],

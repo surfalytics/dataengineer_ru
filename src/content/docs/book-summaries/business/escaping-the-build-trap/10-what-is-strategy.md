@@ -3,7 +3,7 @@ title: "Escaping the Build Trap, глава 10: Что такое стратег
 head:
   - tag: title
     content: "Что такое продуктовая стратегия: не план | Инжиниринг Данных"
-description: "Конспект главы 10 книги Escaping the Build Trap на русском. Стратегия Netflix, Project Griffin и Roku, стратегия против плана, определение Bungay."
+description: "Конспект главы 10 книги Escaping the Build Trap на русском. Стратегия Netflix, Project Griffin и Roku, чем стратегия отличается от плана, определение Bungay."
 sidebar:
   order: 10
   label: "10. Что такое стратегия"
@@ -16,7 +16,7 @@ tags:
 
 ## О чём глава
 
-[Глава 9](/book-summaries/business/escaping-the-build-trap/09-organizing-teams/) закончила Часть II о людях и командах, а глава 10 открывает Часть III о стратегии. Главный вопрос — что такое хорошая продуктовая стратегия. Темы: пример Netflix, связка «направление, тактики, метрики», стратегия против плана, определение Bungay.
+[Глава 9](/book-summaries/business/escaping-the-build-trap/09-organizing-teams/) закончила Часть II о людях и командах, а глава 10 открывает Часть III о стратегии. Главный вопрос — что такое хорошая продуктовая стратегия. Темы: пример Netflix, связка «направление, тактики, метрики», чем стратегия отличается от плана, определение Bungay.
 
 ![Схема: стратегия раскладывается на направления, у каждого направления есть тактики и метрика успеха](/assets/escaping-the-build-trap/ch10-strategy-metrics.png)
 
