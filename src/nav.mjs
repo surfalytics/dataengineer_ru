@@ -168,7 +168,7 @@ export const topics = [
         ],
       },
       {
-        label: 'Бизнес и Soft Skills',
+        label: 'Бизнес',
         items: [
           {
             label: 'Lean Analytics',
@@ -180,6 +180,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/business/escaping-the-build-trap' } }],
           },
+        ],
+      },
+      {
+        label: 'Лидерство',
+        items: [
           {
             label: "The Manager's Path",
             collapsed: true,

@@ -35,14 +35,14 @@ tags:
 | Предпринимательство | [The Startup Owner's Manual](/book-summaries/entrepreneurship/startup-owners-manual/) | Customer Development: как найти бизнес-модель стартапа через проверку гипотез |
 | Предпринимательство | [The Mom Test](/book-summaries/entrepreneurship/mom-test/) | Как говорить с клиентами и не получать ложных ответов |
 | Предпринимательство | [The Diary of a CEO](/book-summaries/entrepreneurship/diary-of-a-ceo/) | 33 закона бизнеса и жизни: личность, история, философия, команда |
-| Бизнес и Soft Skills | [Lean Analytics](/book-summaries/business/lean-analytics/) | Как измерять стартап, метрики по бизнес-моделям и стадиям |
-| Бизнес и Soft Skills | [Escaping the Build Trap](/book-summaries/business/escaping-the-build-trap/) | Как строится продукт: роль PM, стратегия, Product Kata, product-led компания |
-| Бизнес и Soft Skills | [The Manager's Path](/book-summaries/business/managers-path/) | Путь от ментора и техлида до CTO: встречи 1:1, команды, менеджеры, стратегия, культура |
-| Бизнес и Soft Skills | [Staff Engineer](/book-summaries/business/staff-engineer/) | Техническая линия роста после Senior: архетипы Staff-инженера, стратегия, качество, влияние, повышение и 14 историй |
-| Бизнес и Soft Skills | [The Staff Engineer's Path](/book-summaries/business/staff-engineers-path/) | Как вырасти до Staff-инженера: роль, три карты организации, стратегия, большие проекты, влияние на коллег и карьера |
-| Бизнес и Soft Skills | [Engineering Leadership: The Hard Parts](/book-summaries/business/engineering-leadership-hard-parts/) | Как руководить инженерной командой в хаосе: роль, сплочённая команда, направление, бюджет, техническая стратегия, `RFC`, метрики |
-| Бизнес и Soft Skills | [Crafting Engineering Strategy](/book-summaries/business/crafting-engineering-strategy/) | Как написать инженерную стратегию: исследование, диагноз, политика, проверка, `systems modeling`, `Wardley mapping` и кейсы Uber, Calm, Stripe |
-| Бизнес и Soft Skills | [The Engineering Executive's Primer](/book-summaries/business/engineering-executives-primer/) | Как работать `CTO` или `VP of engineering`: получение роли, первые 90 дней, стратегия, планирование, найм, оценка, команда руководителей и уход |
+| Бизнес | [Lean Analytics](/book-summaries/business/lean-analytics/) | Как измерять стартап, метрики по бизнес-моделям и стадиям |
+| Бизнес | [Escaping the Build Trap](/book-summaries/business/escaping-the-build-trap/) | Как строится продукт: роль PM, стратегия, Product Kata, product-led компания |
+| Лидерство | [The Manager's Path](/book-summaries/business/managers-path/) | Путь от ментора и техлида до CTO: встречи 1:1, команды, менеджеры, стратегия, культура |
+| Лидерство | [Staff Engineer](/book-summaries/business/staff-engineer/) | Техническая линия роста после Senior: архетипы Staff-инженера, стратегия, качество, влияние, повышение и 14 историй |
+| Лидерство | [The Staff Engineer's Path](/book-summaries/business/staff-engineers-path/) | Как вырасти до Staff-инженера: роль, три карты организации, стратегия, большие проекты, влияние на коллег и карьера |
+| Лидерство | [Engineering Leadership: The Hard Parts](/book-summaries/business/engineering-leadership-hard-parts/) | Как руководить инженерной командой в хаосе: роль, сплочённая команда, направление, бюджет, техническая стратегия, `RFC`, метрики |
+| Лидерство | [Crafting Engineering Strategy](/book-summaries/business/crafting-engineering-strategy/) | Как написать инженерную стратегию: исследование, диагноз, политика, проверка, `systems modeling`, `Wardley mapping` и кейсы Uber, Calm, Stripe |
+| Лидерство | [The Engineering Executive's Primer](/book-summaries/business/engineering-executives-primer/) | Как работать `CTO` или `VP of engineering`: получение роли, первые 90 дней, стратегия, планирование, найм, оценка, команда руководителей и уход |
 
 ## Как устроен конспект
 
