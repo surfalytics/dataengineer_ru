@@ -8,6 +8,7 @@ SQL-блоки на страницах проверяет `python3 scripts/kimba
 |---|---|---|---|
 | 1 | База, таблица, агрегаты, JOIN, файл и память | ch01_quick_look.py | ok (вывод одинаков при 6 запусках `python3 -I`) |
 | 1 | DuckDB читает pandas DataFrame по имени | ch01_dataframe.py | ok (6 запусков) |
+| 1 | Запрос к DataFrame по имени переменной (пример на странице) | ch01_df_by_name.py | ok (6 запусков, вывод совпадает со страницей) |
 | 1 | pandas и DuckDB дают одинаковый ответ на CSV | ch01_flights_check.py | ok (6 запусков) |
 | 1 | Время и память pandas против DuckDB, 5,8 млн строк | ch01_speed_memory.py | ok, но вывод меняется от запуска к запуску (замер времени и памяти) |
 | 1 | План запроса: projection и filter pushdown | ch01_explain.py | ok (6 запусков) |
@@ -17,9 +18,10 @@ SQL-блоки на страницах проверяет `python3 scripts/kimba
 | 2 | Excel: `OGR_XLSX_HEADERS` AUTO и FORCE через `spatial` | ch02_excel_header.py | ok (6 запусков). Нужна сеть для `INSTALL spatial` |
 | 2 | MySQL: цикл `INSERT` и `ATTACH` | - | не запускали: нужен сервер MySQL |
 | 2 | SQL-блоки страницы | 02-importing-data.md | ok (`check_sql.py` печатает OK, 5 блоков) |
-| 3 | EXPORT DATABASE / IMPORT DATABASE в консоли duckdb | ch03_export.py | ok (6 запусков `python3 -I`, нужен `duckdb` CLI в PATH; проверено на 1.4.3) |
-| 3 | LEFT и INNER JOIN на схеме магазина | ch03_joins.py | ok (6 запусков, duckdb 1.4.3) |
-| 3 | SQL-блоки практики на странице | check_sql.py | ok (5 блоков) |
+| 3 | EXPORT DATABASE / IMPORT DATABASE в консоли duckdb | ch03_export.py | ok (6 запусков, duckdb CLI 1.4.3) |
+| 3 | LEFT и INNER JOIN на схеме магазина | ch03_joins.py | ok (6 запусков) |
+| 3 | Библиотека из книги: LEFT JOIN в обе стороны, возраст, view просрочек, вложенный запрос, ошибка DROP, даты зафиксированы | ch03_library.py | ok (6 запусков `python3 -I`, нужен `duckdb` CLI в PATH, 1.4.3) |
+| 3 | SQL-блоки практики на странице | 03-sql-primer.md | ok (`check_sql.py` печатает OK, 5 блоков) |
 | 4 | Polars: select, filter, SQLContext | ch04_polars_basics.py | ok (6 запусков `python3 -I`, вывод одинаков) |
 | 4 | Lazy: scan_csv, read_csv, read_csv().lazy(), планы | ch04_lazy.py | ok (8 запусков). CSV строится в коде. Порядок условий в плане Polars не фиксирован, поэтому скрипт его не печатает |
 | 4 | DuckDB читает Polars DataFrame, describe, order, aggregate | ch04_duckdb_polars.py | ok (6 запусков) |
