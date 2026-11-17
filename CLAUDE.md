@@ -52,6 +52,8 @@ We make three kinds of new content. Each has a project skill in `.claude/skills/
 
 A whole book runs as two saved workflows: `book-prep` (split the PDF, glossary), then `book-summary` (all chapters in parallel, then overview, EPUB, build). They are in `.claude/workflows/`. How to run them: the `book-summary` skill.
 
+Status of every book summary (done, needs review, in progress, date of last revision, PR, what is left): `scripts/book-tools/status.md`. Read it before you start book work. Update it with `scripts/book-tools/status.py`.
+
 The `book-summary` skill ends with the `book-epub` skill. It builds and checks the EPUB download of the book.
 
 Shared rules for all three:

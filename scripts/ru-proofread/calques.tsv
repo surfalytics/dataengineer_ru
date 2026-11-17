@@ -105,3 +105,69 @@ atomic\s+.?update	атомарный UPDATE	warn	use Russian adjective
 по\s+итогу	в итоге	error	colloquial
 закрыва\w+\s+(нужд|потребност)	подходит для нужд	warn	slang: covers needs
 режим\w*\s+прошлого	диктатуры прошлого	warn	false friend: regimes
+
+# --- found in the Sonnet vs Opus test, 2026-11-16
+как\s+быть\s+управляем	как быть хорошим подчинённым / как работать с менеджером	error	how to be managed
+(дайте|дать|дай)\s+(\w+\s+)?передышк	не судите строго / простите ошибки	warn	give someone a break (idiom, not "rest")
+станут\s+ваш\w+\s+будущ\w+\s+работ	через них вы найдёте новую работу	error	peers turn into future jobs
+плотн\w+\s+рын	рынок, где много вакансий	warn	high-density market
+api-дизайн	дизайн API / проектирование API	warn	calque: API design
+петл\w+\s+(собеседован|интервью|для\b)	собеседования (серия встреч)	warn	interview loop
+(?<!«)последн\w+\s+мил[ьяиюе]	последний шаг	warn	the last mile
+как\s+устроен\w*\s+игр[аы]\s+в\s+компани	как устроена политика в компании	warn	how the game works
+идентичност\w*\s+(человека|руководител|сотрудник|ваш)	кто вы есть / ваш опыт и взгляды	warn	identity of a person
+
+# --- found in the clarity pass of The Manager's Path, 2026-11-16
+«прода\w*»\s+(\w+\s+)?компани	убедить прийти в компанию	warn	sell the company (to a candidate)
+развива\w*\s+взгляд\w*\s+со\s+стороны	учится смотреть глазами других	warn	develop an outside view
+(уход|ушл|уйти|уйд)\w*\s+в\s+людей	занимаются только людьми	warn	go into people (management)
+внутри\s+(\w+\s+)?менеджер(ов|а)\b	в командах ваших менеджеров	warn	within your managers (orgs)
+как\s+выгляд\w+\s+(вы|вас)\b	как оценивают вас	warn	how you look (are judged)
+\bставк\w*\s+(был\w*\s+)?правильн	вкладывать в правильные проекты	warn	the right bets
+затрат\w*\s+вперёд	вложение, которое окупится позже	warn	upfront cost
+шаблон\w*\s+(для\s+)?(узнаван|распознаван)	учит узнавать	warn	patterns to recognize
+доверие\s+второго	ещё одно доверие (к чему именно)	warn	second kind of trust
+(помога|помоч|помогл|помогу)\w*\s+(\w+\s+){0,3}случить	помогает выполнить / сделать	warn	help make X happen
+состояни\w*\s+мира	данные в реальном времени / как обстоят дела	warn	state of the world
+(стоит|стоят|стоять|стоял\w*)\s+на\s+критическом\s+пути	задерживает каждое изменение / без этого шага работа не закончится	warn	is on the critical path
+
+# --- from Staff Engineer (Larson) clarity pass
+в\s+одном\s+(\w+\s+)?изменени\w*\s+от	не хватает одного изменения	warn	one change away from
+(читател|люд|слушател|зрител|пользовател)\w*\s+(\w+\s+)?отвал\w+	не дочитывают / бросают читать	warn	readers drop off
+долг\w+\s+игр\w*	работа не кончается / долгий путь	warn	the long game
+хитроумн\w*	без хитрых решений / сложный	warn	clever
+слуша\w*\s+реальност	будьте готовы к изменениям	warn	listen to reality
+выгна\w*\s+из\s+комнат	перестали звать на обсуждения	warn	kicked out of the room
+\bне\s+за\s+чем\b	незачем	warn	no reason to (spelling)
+(менять|меня\w+|изменить|измени\w+|поменять)\s+русл\w*	менять правила / порядок	warn	change the river bed
+временн\w+\s+валют\w*	быстро теряет ценность	warn	temporary currency
+закрыл\w*\s+бы\s+(\w+\s+)?повышени	для этой цели хватило бы повышения	warn	a promotion would close it
+\bискр(ой|ами)\b	дал толчок	warn	was a spark
+где\s+болит	какие проблемы появляются	warn	where it hurts
+(пада|упа\w|попада|попа\w|провалива)\w*\s+в\s+щел(и|ях)\s+между	не принадлежит ни одной из / никто не отвечает за	warn	fall through the cracks
+сход\w+\s+к\s+(\w+\s+)?решени\w*	прийти к решению	warn	converge on a solution
+(памят\w*\s+(\w+\s+)?«?не\s+липк)|(«?не\s+липк\w*»?\s+памят)	плохо запоминается	warn	calque: not sticky (memory)
+застав\w*\s+(\w+\s+)?заботит	сделать так, чтобы было не всё равно	warn	calque: make someone care
+хеджир	перестраховка	warn	calque: hedging (outside finance)
+хорош\w*\s+прогресс	вы уже сильно продвинулись	warn	calque: good progress
+иска\w*\s+положительн\w*\s+обратн\w*\s+связ	искал положительный цикл	warn	calque: looking for a positive feedback loop
+наслед\w*\s+от\s+(\w+\s+)?документ	опираться на документы	warn	calque: inherit from documents
+оптимизиру\w*\s+.{0,40}даже\s+важнее	для нас X даже важнее, чем Y	warn	calque: we optimize for X even over Y
+задн\w*\s+ог(онь|н)	отказаться от отложенных проектов	warn	idiom: burn the back burner
+башн\w*\s+из\s+слонов	оторван от практики	warn	idiom: ivory tower
+водян\w*\s+шар	устроить хаос и уйти	warn	idiom: throw a water balloon
+(верн|возвра[щт]|набра|набир|потер|теря)\w*\s+(\w+\s+)?импульс	помогают снова набрать темп	warn	calque: regain momentum
+кристаллизова\w*	устоявшиеся, с жёстким порядком	warn	calque: crystallized (organizations)
+станет\s+жарко	когда нагрузка вырастет	warn	idiom: when things heat up
+звезда\s+(\w+\s+)?высок	пока вас высоко ценят	warn	idiom: while your star is high
+когнитивн\w*\s+цен	усилие (запомнить, понять)	warn	calque: cognitive cost
+да(ёт|ет|ют|ла|ло|ли|вать)\s+перспективу\b	помогает разобраться / взглянуть со стороны	warn	calque: gives perspective
+сам\w*\s+себя\s+сбыва	сам себя оправдывает / сбывается	warn	calque: self-fulfilling
+без\s+(\w+\s+)?пляс	без лишних сложностей	warn	slang: without dancing around
+(больше|много|меньше|мало)\s+рычаг	больше влияния	warn	calque: more leverage
+пережива\w*\s+личное\b	переживать личные трудности	warn	calque: going through personal stuff
+(время|времени)\s+на\s+техник(у|и)\b	время на техническую работу	warn	calque: time for tech (technical work)
+вывалива	рассказывать	warn	slang: dump everything on someone
+((возможност\w*\s+(\w+\s+)?(течь|теч[её]т|текут))|((течь|теч[её]т|текут)\s+(\w+\s+)?возможност))	люди могут получать (возможности)	warn	calque: opportunities can flow
+как\s+можно\s+больш\w+\s+числ	со многими, чем больше, тем лучше	warn	calque: as many as possible
+(принял\w*|принять|примите|примет)\s+(эту\s+)?возможност	согласились на предложение	warn	calque: took the opportunity
