@@ -9,7 +9,7 @@
 | data engineer | дата-инженер | инженер данных, датаинженер | Строит и поддерживает системы данных |
 | data engineering lifecycle | `data engineering lifecycle` (жизненный цикл инжиниринга данных) | — | Пять стадий: generation, storage, ingestion, transformation, serving |
 | undercurrents | `undercurrents` | подводные течения | Шесть сквозных тем цикла: security, data management, DataOps, data architecture, orchestration, software engineering |
-| generation | `generation` (порождение данных) | генерация | Стадия, где источник создаёт данные |
+| generation | `generation` (порождение данных) | — | Стадия, где источник создаёт данные |
 | ingestion | `ingestion` | — | Стадия, где данные забирают из источника |
 | transformation | `transformation` (преобразование) | — | Стадия, где данные превращают в полезный вид |
 | serving | `serving` (выдача данных) | подача, сервинг | Стадия, где данные получают аналитика, ML и приложения |
@@ -77,3 +77,62 @@
 | dark data | `dark data` | тёмные данные | Данные, которые собирают, но не используют |
 | data fabric | `data fabric` | — | Единый слой доступа к разрозненным данным через metadata и автоматизацию |
 | data cascade | `data cascade` | каскад данных | Ошибка в данных ломает всё, что стоит дальше по цепочке |
+| query optimizer | `query optimizer` | оптимизатор запросов | Часть базы, которая выбирает самый дешёвый план запроса |
+| explain plan | `explain plan` | — | План выполнения запроса |
+| row explosion | `row explosion` | — | Рост числа строк из-за повторов в ключах join |
+| pruning | `pruning` | — | Чтение только нужных колонок и партиций |
+| vacuum | `vacuum` | — | Удаление старых версий записей |
+| grain | `grain` | — | Уровень детализации строки |
+| normalization | `normalization` | нормализация без пояснения | Устранение дублирования через нормальные формы |
+| SCD | `SCD` | — | Slowly changing dimension |
+| conformed dimension | `conformed dimension` | — | Dimension, общий для нескольких star schemas |
+| star schema | `star schema` | звёздная схема | Fact-таблица, окружённая dimensions |
+| window / watermark | окно (`window`) / `watermark` | — | Окна в streaming и порог для поздних данных |
+| copy on write | `copy on write` (`COW`) | — | Изменение файла через его полную перезапись |
+| materialized view | `materialized view` | — | View с заранее посчитанным результатом |
+| data virtualization | `data virtualization` | — | Запросы к внешним источникам без своего хранилища |
+| metrics layer | `metrics layer` | — | Слой с определениями бизнес-метрик |
+| derived data | `derived data` | — | Данные, вычисленные из других данных |
+| micro-batch / true streaming | `micro-batch` / `true streaming` | — | Пачки каждые 1 с или 2 мин / по одному событию |
+| партиция | партиция | — | Часть таблицы (форма уже принята на страницах) |
+| trust | доверие | — | Главное условие выдачи данных |
+| SLA / SLO | `SLA` / `SLO` | — | Обещание потребителю / способ измерить его выполнение |
+| jobs to be done | `jobs to be done` | — | Работа, ради которой пользователь «нанимает» продукт |
+| self-service | self-service | самообслуживание | Пользователь сам строит отчёты и модели |
+| data definition / data logic | `data definition` / `data logic` | — | Смысл данных в компании / формулы метрик |
+| tribal knowledge | `tribal knowledge` | — | Знания, которые передают устно |
+| business analytics | business analytics | бизнес-аналитика | Аналитика для решений по трендам |
+| query pushdown | `query pushdown` | — | BI генерирует SQL и выполняет его в базе |
+| query federation | `query federation` | федерация запросов | Один запрос к нескольким системам |
+| featurization | `featurization` | — | Превращение данных в признаки для ML |
+| data obfuscation | `data obfuscation` | — | Синтетические, перемешанные или обезличенные данные |
+| least privilege | `least privilege` | — | Минимально нужный доступ |
+| credentials | credentials | — | Пароли, ключи, токены |
+| notebook | notebook | ноутбук (как термин) | Jupyter и подобные |
+| bidirectional load and transform | `BLT` | — | Шутливое название reverse ETL |
+| security theater | `security theater` | театр безопасности | Формальное соблюдение требований без реальной защиты |
+| security habit | `security habit` (привычка к безопасности) | — | Простые правила, которые выполняют каждый день |
+| active security | `active security` | активная безопасность | Поиск угроз под вашу организацию |
+| shared responsibility | `shared responsibility` | разделённая ответственность | Облако защищает дата-центр, вы защищаете свои системы |
+| broken glass | `broken glass` | — | Экстренный доступ с согласованием, закрывается сразу после работы |
+| PII | `PII` | — | Персональные данные |
+| IAM role | `IAM role` | — | Набор прав в облаке |
+| service account | `service account` | — | Учётная запись для программы, не для человека |
+| SSO | `SSO` | — | Единый вход |
+| multifactor authentication | `multifactor authentication` | многофакторная аутентификация | Второй фактор кроме пароля |
+| secrets manager | `secrets manager` | — | Сервис для хранения паролей и ключей |
+| phishing | `phishing` | — | Обман, чтобы выманить credentials |
+| ransomware | `ransomware` | — | Вирус, который блокирует данные ради выкупа |
+| encryption at rest / over the wire | `encryption at rest` / `encryption over the wire` | — | Шифрование на диске / при передаче |
+| air gap | `air gap` | — | Полная изоляция от сетей |
+| man-in-the-middle | `man-in-the-middle` | — | Атакующий перехватывает и меняет трафик |
+| anomaly detection | `anomaly detection` | — | Автоматический поиск необычных событий |
+| modern data stack | `modern data stack` (`MDS`) | современный стек данных | Cloud warehouse, ELT, SaaS-pipeline, BI |
+| live data stack | `live data stack` | живой стек | Стек на streaming и real-time OLAP внутри приложений |
+| STL | `STL` (stream, transform, load) | — | Преобразование в потоке |
+| real-time OLAP | `real-time OLAP` | — | База с быстрой загрузкой и запросами за доли секунды |
+| feature store | `feature store` | — | Хранилище признаков для ML |
+| enterprisey | `enterprisey` | — | Хорошие практики больших компаний: governance, DataOps |
+| dark matter data | `dark matter data` | — | Данные в таблицах вне основных систем |
+| bounded / unbounded data | `bounded` / `unbounded` | — | Данные с концом / бесконечный поток |
+| cloud-scale data OS | cloud-scale data OS | — | Облачные сервисы как слой операционной системы |

@@ -10,7 +10,7 @@ One row per book. Update it after every run or PR. `python3 -I scripts/book-tool
 
 | Book | Folder | Chapters | Status | Last revision | PR | What is left |
 |---|---|---|---|---|---|---|
-| Fundamentals of Data Engineering | `engineering/fundamentals-of-data-engineering` | 12 | needs review | 2026-11-13 | #96 | rewrite ch 8-11 (8-18% of the book); review ch 1-7; full source is the iCloud PDF |
+| Fundamentals of Data Engineering | `engineering/fundamentals-of-data-engineering` | 11 | done | 2026-11-16 | #108 | — |
 | The Data Warehouse Toolkit | `engineering/data-warehouse-toolkit` | 21 | done | 2026-11-15 | #105 | — |
 | Designing Data-Intensive Applications, 2nd ed. | `engineering/designing-data-intensive-applications` | 14 | done | 2026-11-15 | #106 | — |
 | DuckDB: Up and Running | `engineering/duckdb-up-and-running` | 9 | needs review | 2026-11-12 | #95 | review, flow, clarity, code check |
