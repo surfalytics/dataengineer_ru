@@ -171,3 +171,108 @@ api-дизайн	дизайн API / проектирование API	warn	calque
 ((возможност\w*\s+(\w+\s+)?(течь|теч[её]т|текут))|((течь|теч[её]т|текут)\s+(\w+\s+)?возможност))	люди могут получать (возможности)	warn	calque: opportunities can flow
 как\s+можно\s+больш\w+\s+числ	со многими, чем больше, тем лучше	warn	calque: as many as possible
 (принял\w*|принять|примите|примет)\s+(эту\s+)?возможност	согласились на предложение	warn	calque: took the opportunity
+
+# --- leadership books (Engineering Leadership: The Hard Parts, 2026-11)
+изобрета\w*\s+(сво\w+\s+)?колес	изобретать велосипед / придумать свой способ	warn	calque: reinvent the wheel
+разрыв\w*\s+между\s+видением\s+и\s+исполнением	разрыв между замыслом и реальной работой	warn	calque: vision-execution gap
+(сид\w*|работа\w*)\s+по\s+силосам|слом\w*\s+силос	работают в изоляции / убрать изоляцию между командами	warn	calque: silos
+исполнени\w+\s+в\s+масштаб	выполнение силами многих людей	warn	calque: execution at scale
+дрейфу\w*\s+к\s	постепенно теряют связь с тем, что важно	warn	calque: drift toward
+не\s+чиня	не пытаясь сразу исправить	warn	calque: without fixing
+пройдите\s+за\s	посмотрите, как команда (разбирает инцидент)	warn	calque: follow an incident
+выпуст(ишь|ит|им|ят)ся	не решить тем, что выпускать больше	warn	calque: ship your way out
+(вел|вест|вед)\w*\s+близост	вели личным участием	warn	calque: lead by proximity
+(вед[её]\w*|вести|в[её]л\w*)\s+рычаг	вести через опоры: системы и людей	warn	calque: lead by leverage
+не\s+только\s+руки	а не только дополнительные часы работы	warn	calque: not just hands
+дай\w*\s+(им\s+)?слова\b	дайте готовые формулировки	warn	calque: give them the words
+переж\w+\s+ревью	пройдёт ревью	warn	calque: survive review
+яблок\w*\s+с\s+яблок	на равных, по одним критериям	warn	calque: apples to apples
+против\s+плана	по сравнению с планом	warn	calque: versus plan
+коммодити	типовой сервис / типовая услуга	warn	English look-alike: commodity
+читать\s+деньги	разбираться в деньгах	warn	calque: read money
+во\s+внешние\s+руки	остаются у внешних людей	warn	calque: in outside hands
+прочита\w*\s+(этот\s+|его\s+)?(pull\s+request|пул-?реквест)	просмотрел pull request	warn	calque: read a PR
+документ\w*\s+вроде\s+госстандарт	казённый документ	warn	calque: government paper
+
+# --- Crafting Engineering Strategy clarity pass (2026-11): warn only
+самовнедр\w*	«стратегия внедрится сама»	warn	calque: self-implementing
+зашит\w*\s+в\s+решени	заложена в решения	warn	calque: baked into decisions
+итериров\w*\s+(стратеги|документ|политик)	дорабатывать по шагам	warn	calque: iterate on strategy
+документ\w*-посредник	документ, чтобы примирить стороны	warn	calque: mediating document
+(?<!ционная )(?<!ционной )(?<!ционную )осведомл[её]нност	понимание / «люди знают о проблеме»	warn	calque: awareness
+\bв\s+долгую\b	со временем / в долгосрочной перспективе	warn	slang: in the long run
+если\s+не\s+(взять|возьм\w+|вынест\w*)\s+.{0,25}ничего\s+другого	Главный вывод главы:	warn	calque: if you take nothing else
+\bизбежим\w*	которых можно было избежать	warn	calque: avoidable
+шаблон\w*\s+тяжеле\w*	разрастается	warn	calque: get heavy
+оборачива\w*\s+сожалени	потом пожалеете	warn	calque: turns into regret
+органическ\w+\s+(процесс|подход)	стихийный процесс	warn	calque: organic process
+\bприкип\w*\s+к\b	застрять на одной точке зрения	warn	calque: get attached to
+оптимизир\w+\s+побочн	гонится за побочной целью	warn	calque: optimizes a side goal
+\bглохн\w*|\bзаглох\w*	застопорится	warn	calque: stall
+сигнализиру\w*,?\s+что	показывает, что	warn	calque: signals that
+повторяющ\w+\s+приглашени	регулярная встреча в календаре	warn	calque: recurring invite
+\bна\s+(любой|этой|своей|новой|прошлой|каждой)\s+роли\b	в любой роли	warn	calque: in a role
+\bкопа(ть|ет|ют|ем|ешь|йте)\s+в\b	разбирать	warn	calque: dig into
+т[её]мн\w+\s+мест	непонятные места	warn	calque: dark corners
+хвост\w*\s+комментари	длинный список комментариев	warn	calque: long tail of comments
+глубоко\s+в\s+деталях	погружены в детали	warn	calque: deep in the details
+\bдирективн\w*	звучит как приказ	warn	calque: directive
+с\s+канал\w*\s+к\b	человек, который может поговорить с	warn	calque: channel to
+сним\w*\s+блок(и|ов)\b	устраняет блокеры	warn	calque: unblocks
+значим\w+\s+сред[аеуы]	реальной среде	warn	calque: meaningful environment
+смешанн\w*\s+результат|результат\w*(\s+\w+)?\s+смешанн	неоднозначные результаты	warn	calque: mixed results
+закры\w+\s+потребност	выполнить / обслуживать потребность	warn	calque: close a need
+размер\w*\s+ошибок	доля ошибок	warn	calque: error size (rate)
+работ\w*\s+в\s+процессе	задачи в работе	warn	calque: work in progress
+\bсли(л|ли|ть|вает|вают)\s+команд	объединил команды	warn	slang: merged teams
+тонк\w+\s+случа	спорный случай	warn	calque: subtle case
+плод(ить|ят|ит|или)\s+(микро)?сервис	создавать много сервисов	warn	slang: spawn services
+\bлез(ть|ут|ет|ли)\s+в\s+чуж	работать в чужом коде	warn	slang: poke into
+отрицательн\w+\s+рычаг	тормозить, вредить вместо пользы	warn	calque: negative leverage
+отбива\w*\s+попытк	не даёт / защищает от	warn	calque: fends off attempts
+защит\w*\s+(\w+\s+)?уход	снизьте риск ухода	warn	calque: protect departures
+\b0\s+иначе\b	0 в остальных случаях	warn	calque: 0 otherwise
+
+# --- leadership books (The Engineering Executive's Primer, 2026-11)
+воспринимаем\w*\s+соответстви	впечатление, что вы подходите	warn	calque: perceived fit
+\b(идти|идите|ид[её]м|ид[её]т|ид[уя]т)\s+по\s+ситуаци	подстраиваться под ситуацию	warn	calque: go with the situation
+почувств\w*\s+опыт	поймёте, каково это	warn	calque: feel the experience
+узна\w*\s+в\s+(них|н[её]м|ней)\s+люд	узнайте их как людей	warn	calque: get to know them as people
+(смотр|посмотр)\w*\s+в\s+пустоту	смотрел на пустую страницу	warn	calque: stared at a blank page
+исполня\w*\s+практик	исполнять стратегию / применять практику	warn	calque: execute a practice
+итериру\w*\s+(над\s+)?(предложени|документ|черновик)	по кругу правят предложения	warn	calque: iterate on proposals
+стационарн\w*\s+распределени	долгосрочное распределение	warn	calque outside math: steady state
+заря(жа|ди|д)\w*\s+(команд|людей|коллег|организаци)	увлекает / вдохновляет команду	warn	calque: energize the team
+(выжима\w*|выжать|выжмет\w*)\s+себя	тратить все силы	warn	calque: squeeze yourself
+(провер|покаж|покаж)\w*\s+(\w+\s+)?до\s+финала	до окончательной версии	warn	calque: before the final
+дав\w*»?\s+на\s+данны	проверять данные и задавать к ним вопросы	warn	calque: push on the data
+да[её]т\s+вход\s+(для|в)\b	опирается на / служит основой для	warn	calque: gives input for
+окаж\w*\s+в\s+яме	исправить будет трудно	warn	calque: end up in a hole
+держ\w*\s+друг\s+друга\s+в\s+тонусе	проверяйте друг у друга, что работа идёт	warn	calque: hold each other accountable
+(быть|был\w*|стать|стал\w*)\s+воротами	больше не одобряет каждый запрос заранее	warn	calque: be a gate
+культур\w*\s+«?плы	культура начала размываться	warn	calque: culture drifted
+(за)?ржаве(ть|ет|ют|л)\w*	забрасывать навык / навык слабеет	warn	calque: get rusty
+итог\w*\s+(будет\s+)?в\s+минус\b	итог будет в минусе (скажите, что уходит в минус)	warn	calque: net negative
+пожале\w*\s+(эту\s+|ту\s+|свою\s+)?работу	пожалеете о работе	warn	grammar: regret the job needs «о»
+сильн\w*\s+возможност	хорошая возможность / хорошая задача	warn	calque: strong opportunity
+сокраща\w*\s+расстояни\w*\s+между	делает ближе к	warn	calque: closes the gap between
+буквальн\w*\s+собеседник	человек, который понимает слова буквально	warn	calque: literal listener
+верн\w*\s+читател	постоянные читатели	warn	calque: loyal readers
+механическ\w*\s+привычк	простые приёмы	warn	calque: mechanical habits
+тонк\w*\s+диагноз	точный разбор / точнее разобрать	warn	calque: nuanced diagnosis
+больн\w*\s+пример	нездоровый пример	warn	calque: sick example
+суд\w*\s+поведени	разбирает поведение / следит за поведением	warn	calque: referee behavior
+распознавател\w*\s+закономерност	лучше всех видят закономерности	warn	calque: pattern matchers
+упомина\w*\s+(его|её|их)\s+конкретик	упоминаем, что именно взяли из ответа	warn	calque: mention its specifics
+пар\w*\s+рук\s+вместо	исполнителя, а не партнёра	warn	calque: pair of hands instead of a head
+широко\s+и\s+мелко	широко, без глубины	warn	calque: broad and shallow
+главн\w*\s+технар	самый сильный инженер	warn	slang: main techie
+(выход|вышл|выйт|выш)\w*\s+за\s+(\w+\s+)?глубин	слишком сложны для	warn	calque: out of their depth
+по\s+кривой\s+стоимост	к более дорогому варианту	warn	calque: up the cost curve
+проблем\w*\s+исполнени	проблема в работе (кого-то)	warn	calque: execution problem
+рол\w*\s+неполн	работа на часть времени	warn	calque: part-time role
+отзыв\w*\s+снизу	отзыв сотрудника о своём менеджере	warn	calque: upward feedback
+артефакт\w*\s+оценк	документы оценки	warn	calque: review artifacts
+перестал?\w*\s+(его|её|их)\s+воспринима	перестают принимать всерьёз	warn	calque: stop taking seriously
+лучш\w*\s+услуг\w*\s+(организаци|компани|команд)	лучше всего вы поможете	warn	calque: best service to the org
+рычаг\w*\s+(на|в)\s+переговор|переговор\w*\s+рычаг	сила позиций на переговорах	warn	calque: negotiation leverage

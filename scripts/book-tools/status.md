@@ -31,3 +31,6 @@ One row per book. Update it after every run or PR. `python3 -I scripts/book-tool
 | The Staff Engineer's Path | `business/staff-engineers-path` | 10 | done | 2026-11-16 | #107 | — |
 | Staff Engineer: Leadership beyond the management track | `business/staff-engineer` | 8 | done | 2026-11-16 | #107 | — |
 | The Manager's Path | `business/managers-path` | 10 | done | 2026-11-16 | #107 | — |
+| Engineering Leadership: The Hard Parts | `business/engineering-leadership-hard-parts` | 11 | done | 2026-11-16 | #110 | — |
+| Crafting Engineering Strategy | `business/crafting-engineering-strategy` | 24 | done | 2026-11-16 | #110 | — |
+| The Engineering Executive's Primer | `business/engineering-executives-primer` | 24 | done | 2026-11-16 | #110 | — |

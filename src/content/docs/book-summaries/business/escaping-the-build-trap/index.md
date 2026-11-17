@@ -107,7 +107,7 @@ tags:
 
 | Глава | Тема |
 |---|---|
-| [10. Что такое стратегия](/book-summaries/business/escaping-the-build-trap/10-what-is-strategy/) | Пример Netflix, стратегия против плана |
+| [10. Что такое стратегия](/book-summaries/business/escaping-the-build-trap/10-what-is-strategy/) | Пример Netflix, чем стратегия отличается от плана |
 | [11. Стратегические разрывы](/book-summaries/business/escaping-the-build-trap/11-strategic-gaps/) | Knowledge, alignment и effects gap |
 | [12. Стратегическая рамка](/book-summaries/business/escaping-the-build-trap/12-strategic-framework/) | Strategy deployment, четыре уровня стратегии |
 | [13. Видение и strategic intents](/book-summaries/business/escaping-the-build-trap/13-vision-and-strategic-intents/) | Видение компании и главные цели |
