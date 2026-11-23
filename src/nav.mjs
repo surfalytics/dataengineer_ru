@@ -220,6 +220,55 @@ export const topics = [
     ],
   },
   {
+    label: 'Конспекты лекций',
+    link: '/lecture-summaries/',
+    icon: 'notes',
+    match: ['/lecture-summaries/'],
+    items: [
+      { label: 'Обзор', link: '/lecture-summaries/' },
+      {
+        label: 'AI и ML',
+        items: [
+          {
+            label: 'CME295: Transformers and Large Language Models',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'lecture-summaries/ai/stanford-cme295' } }],
+          },
+          // Курсы со значком «скоро»: пока есть только страница «О курсе». Значок убирают, когда выходит первая лекция.
+          {
+            label: 'CS336: Language Modeling from Scratch',
+            badge: { text: 'скоро', variant: 'note' },
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'lecture-summaries/ai/stanford-cs336' } }],
+          },
+          {
+            label: 'CS329Z: Engineering AI Agents',
+            badge: { text: 'скоро', variant: 'note' },
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'lecture-summaries/ai/stanford-cs329z' } }],
+          },
+          {
+            label: 'CS193T: Thinking with AI',
+            badge: { text: 'скоро', variant: 'note' },
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'lecture-summaries/ai/stanford-cs193t' } }],
+          },
+        ],
+      },
+      {
+        label: 'Computer Science',
+        items: [
+          {
+            label: 'CS50x: Introduction to Computer Science',
+            badge: { text: 'скоро', variant: 'note' },
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'lecture-summaries/cs/harvard-cs50x' } }],
+          },
+        ],
+      },
+    ],
+  },
+  {
     label: 'Библиотека',
     link: '/resources/books/',
     icon: 'document',

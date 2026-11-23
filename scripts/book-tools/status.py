@@ -10,6 +10,10 @@ Examples:
   status.py staff-engineer --pr "#107"
   status.py mom-test --status done --left "-"
 
+  # lecture courses: their own status file, docs folder and lecNN markers
+  status.py stanford-cs336 --kind lecture --group ai --title "Stanford CS336" \
+      --scratch /path/to/scratch --chapters 1,2,3
+
 Chapter status comes from the marker files in <scratch>/state/:
 chNN.write.done, chNN.review.done, chNN.clarity.done. A chapter is done when it has
 the clarity marker. The book is "done" when all chapters are done and index.md exists.
@@ -22,8 +26,14 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-STATUS = ROOT / "scripts/book-tools/status.md"
-DOCS = ROOT / "src/content/docs/book-summaries"
+# unit: prefix of the stage markers (chNN.write.done, lecNN.write.done); final: the steps after all parts
+KINDS = {
+    "book": dict(file=ROOT / "scripts/book-tools/status.md", docs=ROOT / "src/content/docs/book-summaries",
+                 unit="ch", final="overview, nav, cover, EPUB"),
+    "lecture": dict(file=ROOT / "scripts/lecture-tools/status.md", docs=ROOT / "src/content/docs/lecture-summaries",
+                    unit="lec", final="overview, nav, EPUB"),
+}
+# Column positions. The lecture file calls them Course and Lectures.
 COLS = ["Book", "Folder", "Chapters", "Status", "Last revision", "PR", "What is left"]
 
 
@@ -40,35 +50,38 @@ def ranges(nums):
     return ", ".join(out)
 
 
-def from_markers(scratch, chapters):
+def from_markers(scratch, chapters, unit="ch"):
     state = pathlib.Path(scratch) / "state"
-    has = lambda n, stage: (state / f"ch{n:02d}.{stage}.done").exists()
+    has = lambda n, stage: (state / f"{unit}{n:02d}.{stage}.done").exists()
     done = [n for n in chapters if has(n, "clarity")]
     reviewed = [n for n in chapters if n not in done and has(n, "review")]
     written = [n for n in chapters if n not in done and n not in reviewed and has(n, "write")]
     missing = [n for n in chapters if n not in done + reviewed + written]
     left = []
     if reviewed:
-        left.append(f"clarity: ch {ranges(reviewed)}")
+        left.append(f"clarity: {unit} {ranges(reviewed)}")
     if written:
-        left.append(f"review + clarity: ch {ranges(written)}")
+        left.append(f"review + clarity: {unit} {ranges(written)}")
     if missing:
-        left.append(f"write: ch {ranges(missing)}")
+        left.append(f"write: {unit} {ranges(missing)}")
     return done, left
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("slug")
-    p.add_argument("--group", help="engineering, business, entrepreneurship, ai")
+    p.add_argument("--kind", choices=KINDS, default="book", help="book (default) or lecture")
+    p.add_argument("--group", help="books: engineering, business, entrepreneurship, ai; lectures: ai, cs, data")
     p.add_argument("--title")
     p.add_argument("--scratch", help="workflow scratch dir with state/ markers")
-    p.add_argument("--chapters", help="all chapter numbers of the book, e.g. 0,1,2")
+    p.add_argument("--chapters", help="all chapter (or lecture) numbers, e.g. 0,1,2")
     p.add_argument("--status", help="override: done, needs review, in progress")
     p.add_argument("--pr")
     p.add_argument("--left", help="what is left; '-' for nothing")
     p.add_argument("--date", default=datetime.date.today().isoformat())
     a = p.parse_args()
+    k = KINDS[a.kind]
+    STATUS, DOCS = k["file"], k["docs"]
 
     lines = STATUS.read_text(encoding="utf-8").splitlines()
     idx = next((i for i, l in enumerate(lines) if f"/{a.slug}`" in l and l.startswith("|")), None)
@@ -87,10 +100,10 @@ def main():
 
     if a.scratch and a.chapters:
         nums = [int(x) for x in a.chapters.split(",") if x.strip()]
-        done, left = from_markers(a.scratch, nums)
+        done, left = from_markers(a.scratch, nums, k["unit"])
         has_index = (DOCS / row["Folder"].strip("`") / "index.md").exists()
         if not has_index:
-            left.append("overview, nav, cover, EPUB")
+            left.append(k["final"])
         row["Chapters"] = f"{len(done)}/{len(nums)} done" if len(done) < len(nums) else str(len(nums))
         row["Status"] = "done" if not left else "in progress"
         row["What is left"] = "; ".join(left) or "—"

@@ -43,6 +43,7 @@ python3 -I scripts/ru-proofread/check.py --stats <page.md>        # rhythm numbe
 - `ERROR` must be fixed. `WARN` is a question: fix it or decide it is fine.
 - Silence a false positive: put `<!-- ru-proofread:ignore-line -->` on the line before it.
 - `term-drift` means the page uses two forms of one term (`потребитель` and `consumer`). Pick the form from the book glossary. If the glossary does not say, ask the owner and write the answer into the glossary.
+- Lecture glossaries have the line `<!-- ru-proofread: two-languages -->`. Then `first-mention` means the first paragraph with a term lacks its second language (write the glossary form «токенизация (`tokenization`)»), and `term-lead` means the English form of a Russian-led term comes back later (use the Russian word).
 
 ### Step 2. Correctness review (fresh agent)
 

@@ -118,6 +118,40 @@ def test_term_drift():
     return bad
 
 
+def test_leads():
+    """Glossary terms in two languages: «lead (other)» at the first mention, later the lead only."""
+    with tempfile.TemporaryDirectory() as d:
+        g = Path(d) / "glossary.md"
+        table = (
+            "| English | Как пишем | Не писать | Пояснение |\n|---|---|---|---|\n"
+            "| tokenization | токенизация (`tokenization`) | — | x |\n"
+            "| embedding | `embedding` (векторное представление) | эмбеддинг | x |\n"
+        )
+        g.write_text(table, encoding="utf-8")
+        if ck.load_glossary_leads(g):
+            return [("load_glossary_leads", "a glossary without the two-languages line must give no terms")]
+        g.write_text("<!-- ru-proofread: two-languages -->\n\n" + table, encoding="utf-8")
+        leads = ck.load_glossary_leads(g)
+    if len(leads) != 2:
+        return [("load_glossary_leads", f"want 2 terms, got {leads}")]
+    names = {"first-mention", "term-lead"}
+    bad = []
+    for text, must, must_not in [
+        ("Токенизация (`tokenization`) режет текст. Токенизация бывает разной.\n", set(), names),
+        ("Сначала идёт токенизация.\n\nПотом токенизация (`tokenization`) ещё раз.\n", {"first-mention"}, set()),
+        ("Токенизации (`tokenization`) учат отдельно.\n\nНо `tokenization` и снова `tokenization` по-английски.\n", {"term-lead"}, {"first-mention"}),
+        ("`Embedding` (векторное представление) хранит смысл. Каждый `embedding` — вектор.\n", set(), {"first-mention"}),
+        ("Вектор `embedding` хранит смысл.\n", {"first-mention"}, set()),
+        ("## Токенизация\n\nТокенизация (`tokenization`) режет текст.\n", set(), names),
+        ("| Термин | English |\n|---|---|\n| токенизация | `tokenization` |\n", set(), {"first-mention"}),
+        ("Текст без этих терминов.\n", set(), names),
+    ]:
+        got = {f.rule for f in ck.check_text("t.md", text, CALQUES, (), PAIRS, leads)} & names
+        if not must <= got or got & must_not:
+            bad.append((text.strip()[:70], f"want {must or 'none'}, not {must_not or 'none'}, got {got or 'none'}"))
+    return bad
+
+
 def test_fix():
     bad = []
     for src, want in [
@@ -175,7 +209,7 @@ def test_guard():
 
 if __name__ == "__main__":
     failed = []
-    for t in (test_cases, test_skips, test_glossary, test_term_drift, test_fix, test_guard):
+    for t in (test_cases, test_skips, test_glossary, test_term_drift, test_leads, test_fix, test_guard):
         res = t()
         print(f"{'ok  ' if not res else 'FAIL'} {t.__name__}")
         failed += res

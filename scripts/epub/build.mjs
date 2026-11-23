@@ -1,8 +1,9 @@
-// Собирает EPUB из конспектов книг.
-// Запуск: node scripts/epub/build.mjs            — все книги
-//         node scripts/epub/build.mjs mom-test   — одна книга (по имени папки)
-// Читает src/content/docs/book-summaries/<группа>/<книга>/*.md.
-// Пишет public/downloads/<книга>.epub. На сайте файл доступен как /downloads/<книга>.epub.
+// Собирает EPUB из конспектов книг и курсов лекций.
+// Запуск: node scripts/epub/build.mjs                  — все книги и курсы
+//         node scripts/epub/build.mjs mom-test         — одна книга или курс (по имени папки)
+// Читает src/content/docs/book-summaries/<группа>/<книга>/*.md
+//    и src/content/docs/lecture-summaries/<группа>/<курс>/*.md.
+// Пишет public/downloads/<папка>.epub. На сайте файл доступен как /downloads/<папка>.epub.
 // Нужна системная команда zip (есть в macOS и ubuntu-latest).
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -28,7 +29,12 @@ const TELEGRAM = 'https://t.me/rockyourdata';
 // Подпись в начале и в конце каждой главы: сайт и Telegram-канал.
 const CREDITS = `Источник: <a href="${SITE}/">dataengineer.ru</a> · Telegram: <a href="${TELEGRAM}">t.me/rockyourdata</a>`;
 const ROOT = resolve(import.meta.dirname, '../..');
-const BOOKS = join(ROOT, 'src/content/docs/book-summaries');
+const DOCS = join(ROOT, 'src/content/docs');
+// Виды конспектов: папка, подпись на обложке, строка с авторами, слово для заметки, пункт оглавления.
+const KINDS = [
+  { dir: 'book-summaries', label: 'Конспект книги', by: 'По книге', what: 'книги', overview: 'Обзор книги' },
+  { dir: 'lecture-summaries', label: 'Конспект курса', by: 'Лекторы', what: 'лекций', overview: 'Обзор курса' },
+];
 const PUBLIC = join(ROOT, 'public');
 const OUT = join(PUBLIC, 'downloads');
 const MEDIA = {
@@ -38,18 +44,27 @@ const MEDIA = {
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-// Все книги: [{ group, slug, dir }]
+// Все книги и курсы: [{ kind, group, slug, dir }]
+// Курс без лекций (есть только страница «О курсе») пропускаем: в EPUB нечего читать.
 function findBooks() {
   const books = [];
-  for (const group of readdirSync(BOOKS, { withFileTypes: true })) {
-    if (!group.isDirectory()) continue;
-    for (const book of readdirSync(join(BOOKS, group.name), { withFileTypes: true })) {
-      const dir = join(BOOKS, group.name, book.name);
-      if (book.isDirectory() && existsSync(join(dir, 'index.md'))) {
-        books.push({ group: group.name, slug: book.name, dir });
+  const empty = [];
+  for (const kind of KINDS) {
+    const root = join(DOCS, kind.dir);
+    if (!existsSync(root)) continue;
+    for (const group of readdirSync(root, { withFileTypes: true })) {
+      if (!group.isDirectory()) continue;
+      for (const book of readdirSync(join(root, group.name), { withFileTypes: true })) {
+        const dir = join(root, group.name, book.name);
+        if (book.isDirectory() && existsSync(join(dir, 'index.md'))) {
+          const parts = readdirSync(dir).filter((f) => f.endsWith('.md') && f !== 'index.md');
+          if (parts.length) books.push({ kind, group: group.name, slug: book.name, dir });
+          else empty.push(book.name);
+        }
       }
     }
   }
+  if (empty.length) console.log(`Без глав и лекций, EPUB не собираем: ${empty.join(', ')}`);
   return books;
 }
 
@@ -69,13 +84,13 @@ function readPages(book) {
       body: (m ? raw.slice(m[0].length) : raw).replace(/^.*\]\(\/downloads\/.*\n/gm, ''),
       order: isIndex ? -1 : (data.sidebar?.order ?? 9999),
       // Адрес страницы на сайте. По нему ищем ссылки между главами.
-      url: `/book-summaries/${book.group}/${book.slug}/${isIndex ? '' : `${name.toLowerCase()}/`}`,
+      url: `/${book.kind.dir}/${book.group}/${book.slug}/${isIndex ? '' : `${name.toLowerCase()}/`}`,
     };
   });
   pages.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
   pages.forEach((p, i) => {
     p.file = `ch${String(i).padStart(2, '0')}.xhtml`;
-    p.navLabel = p.isIndex ? 'Обзор книги' : (p.data.sidebar?.label ?? p.data.title);
+    p.navLabel = p.isIndex ? book.kind.overview : (p.data.sidebar?.label ?? p.data.title);
   });
   return pages;
 }
@@ -153,22 +168,36 @@ ${body}
 `;
 }
 
-// Своя обложка с названием. Обложку издателя не берём: это чужая картинка.
-async function makeCover(title, author, file) {
-  const words = title.split(/\s+/);
+// Разбивает текст на строки не длиннее max символов.
+function wrap(text, max) {
   const lines = [];
-  for (const w of words) {
+  for (const w of text.split(/\s+/)) {
     const last = lines[lines.length - 1];
-    if (last && (last + ' ' + w).length <= 20) lines[lines.length - 1] = `${last} ${w}`;
+    if (last && (last + ' ' + w).length <= max) lines[lines.length - 1] = `${last} ${w}`;
     else lines.push(w);
   }
+  return lines;
+}
+
+// Своя обложка с названием. Обложку издателя не берём: это чужая картинка.
+async function makeCover(title, author, file, kind) {
+  const lines = wrap(title, 20);
   const text = lines.map((l, i) => `<text x="100" y="${520 + i * 104}" font-size="84" font-weight="700" fill="#ffffff">${esc(l)}</text>`).join('');
+  // В строку влезает около 48 символов. Длинный список авторов переносим между именами.
+  const by = [];
+  for (const name of `${kind.by}: ${author}`.split(/,\s*/)) {
+    const last = by.length - 1;
+    if (last >= 0 && `${by[last]}, ${name}`.length <= 46) by[last] = `${by[last]}, ${name}`;
+    else if (last >= 0) { by[last] += ','; by.push(name); } else by.push(name);
+  }
+  const byText = by.flatMap((l) => (l.length > 46 ? wrap(l, 46) : [l]))
+    .map((l, i) => `<text x="100" y="${560 + lines.length * 104 + i * 60}" font-size="46" fill="#c9d6e2">${esc(l)}</text>`).join('');
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" font-family="Helvetica, Arial, DejaVu Sans, sans-serif">
 <rect width="1200" height="1600" fill="#0f2a43"/>
 <rect x="100" y="250" width="160" height="12" fill="#35c2c1"/>
-<text x="100" y="360" font-size="54" fill="#35c2c1">Конспект книги</text>
+<text x="100" y="360" font-size="54" fill="#35c2c1">${kind.label}</text>
 ${text}
-<text x="100" y="${560 + lines.length * 104}" font-size="46" fill="#c9d6e2">По книге: ${esc(author)}</text>
+${byText}
 <text x="100" y="1410" font-size="46" fill="#ffffff">dataengineer.ru</text>
 <text x="100" y="1480" font-size="46" fill="#35c2c1">t.me/rockyourdata</text>
 </svg>`;
@@ -212,13 +241,13 @@ async function buildBook(book) {
 </container>
 `);
   writeFileSync(join(oebps, 'style.css'), CSS);
-  await makeCover(title.replace(/\s+—\s+конспект книги$/, ''), author, join(oebps, 'cover.jpg'));
+  await makeCover(title.replace(/\s+—\s+конспект (книги|курса|лекций)$/, ''), author, join(oebps, 'cover.jpg'), book.kind);
   writeFileSync(join(oebps, 'cover.xhtml'), xhtml(title, '<div style="text-align: center"><img src="cover.jpg" alt="Обложка конспекта" /></div>'));
 
   for (const page of pages) {
     let doc = renderPage(page, pages, images);
     if (page.isIndex) {
-      const note = `<p class="source">Бесплатный конспект с сайта <a href="${SITE}${page.url}">dataengineer.ru</a>. Это пересказ, а не перевод книги.</p>`;
+      const note = `<p class="source">Бесплатный конспект с сайта <a href="${SITE}${page.url}">dataengineer.ru</a>. Это пересказ, а не перевод ${book.kind.what}.</p>`;
       doc = doc.replace('</p>', `</p>\n${note}`);
     }
     writeFileSync(join(oebps, page.file), doc);
@@ -286,7 +315,7 @@ ${pages.map((_, i) => `<itemref idref="ch${i}"/>`).join('\n')}
 const only = process.argv[2];
 const books = findBooks().filter((b) => !only || b.slug === only);
 if (!books.length) {
-  console.error(`Книга не найдена: ${only}`);
+  console.error(`Книга или курс не найдены: ${only}`);
   process.exit(1);
 }
 for (const book of books) await buildBook(book);
