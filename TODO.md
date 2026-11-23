@@ -10,7 +10,7 @@ Each planned course already has a page «О курсе» on the site (summary, l
 
 ### Next steps
 
-- [ ] Open a PR: the lecture pipeline, the «Конспекты лекций» tab, CME295 lecture 1, the «О курсе» pages. Nothing is committed yet.
+- [x] PR #112: the lecture pipeline, the «Конспекты лекций» tab, CME295 lecture 1, the «О курсе» pages.
 - [ ] CME295 lectures 2-7, in one run. Run `lecture-prep` again (the transcripts were in a temporary folder), then `lecture-summary` with `"only": [2, 3, 4, 5, 6, 7]` and `"publish": true`. About $16.
 - [ ] CS336. Start its glossary from `scripts/cme295-diagrams/glossary.md`. About $44.
 - [ ] CS329Z, when its 2 private videos are public. About $25.
