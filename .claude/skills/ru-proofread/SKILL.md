@@ -24,6 +24,7 @@ Guide for humans, with test results: `scripts/ru-proofread/README.md`.
 - After you finish a chapter or page, before `npm run build` and before commit.
 - On any page the user calls "rough", "like a translation", "dry", or "silly mistakes".
 - The agent that wrote the text does not review it. With parallel chapter workers, the **lead** starts the review agents after the workers finish.
+- Many site pages at once (not book summaries): run the saved workflow `page-proofread` (`.claude/workflows/page-proofread.js`). Group the pages into batches of 2,000–4,000 Russian words. Each batch gets steps 2, 4 and 5. Then do steps 3 and 6 yourself: guard, diff, `check.py`, `npm run build`. Agents do not touch front matter, so fix titles yourself.
 
 ## The pipeline (6 steps, in this order)
 

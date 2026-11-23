@@ -11,5 +11,5 @@ tags:
   - streaming
   - data-integration
 ---
-Streaming сценарии.
+Streaming-сценарии.
 

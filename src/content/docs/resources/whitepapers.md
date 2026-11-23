@@ -10,8 +10,8 @@ sidebar:
 tags:
   - whitepapers
 ---
-> 🇷🇺 / 🇬🇧 - язык материалов       
-> ⭐ - наша рекомендация
+> 🇷🇺 / 🇬🇧 — язык материалов       
+> ⭐ — наша рекомендация
 
 ## Big Data
 
@@ -30,5 +30,5 @@ tags:
 
 - [Amazon Redshift Paper](https://homepages.cwi.nl/~manegold/UvA-ABS-MBA-BDBA-ISfBD/p1917-gupta.pdf) 🇬🇧
 - [The Snowflake Elastic Data Warehouse Paper](http://pages.cs.wisc.edu/~yxy/cs839-s20/papers/snowflake.pdf) 🇬🇧
-- [Azure SQL DW paper - POLARIS: The Distributed SQL Engine in Azure Synapse](https://www.vldb.org/pvldb/vol13/p3204-saborit.pdf) 🇬🇧
+- [Azure SQL DW paper — POLARIS: The Distributed SQL Engine in Azure Synapse](https://www.vldb.org/pvldb/vol13/p3204-saborit.pdf) 🇬🇧
 - [DuckDB: an Embeddable Analytical Database](https://mytherin.github.io/papers/2019-duckdbdemo.pdf) 🇬🇧

@@ -117,6 +117,7 @@ Run it after every agent pass. It fails if proofreading changed something it mus
 | `link-changed` (links and image paths) | ERROR |
 | `number-changed` (digits in prose) | ERROR |
 | `heading-changed`, `front-matter-changed` | ERROR |
+| `tag-changed` (HTML/MDX tags; text in `title`, `description`, `alt` may change), `import-changed` | ERROR |
 | `line-count` (needed for `compare.py`) | WARN |
 | `length` (default limit 5%, `--max-change 10` after the flow pass) | WARN |
 

@@ -486,8 +486,14 @@ def print_stats(files):
 # ---------------------------------------------------------------- guard (--before)
 
 
+TAG = re.compile(r"</?[A-Za-z][^<>]*>")
+TEXT_ATTR = re.compile(r'\b(title|description|alt)="[^"]*"')   # Russian text: may be fixed
+URL_ATTR = re.compile(r'\b(?:href|src)="([^"]*)"')
+
+
 def parts(text):
     front, code, inline, links, heads, nums, words = [], [], Counter(), Counter(), [], Counter(), 0
+    tags, imports = Counter(), Counter()
     block = None
     for i, raw, kind in classify(text):
         if kind == "front":
@@ -500,9 +506,15 @@ def parts(text):
         if block is not None:
             code.append("\n".join(block))
             block = None
+        if kind != "front":
+            # every line, not only prose: image lines, JSX components and import lines too
+            links.update(re.findall(r"\]\(([^)]*)\)", raw))
+            links.update(URL_ATTR.findall(raw))
+            tags.update(TEXT_ATTR.sub(r'\1=""', t) for t in TAG.findall(raw))
+            if re.match(r"\s*(import|export)\s", raw):
+                imports[raw.strip()] += 1
         if kind in ("prose", "table", "heading"):
             inline.update(re.findall(r"`[^`]*`", raw))
-            links.update(re.findall(r"\]\(([^)]*)\)", raw))
             c = clean(raw)
             nums.update(re.findall(r"\d+", c))
             words += n_words(c)
@@ -510,7 +522,8 @@ def parts(text):
                 heads.append(re.match(r"\s*(#+)", raw).group(1))
     if block is not None:
         code.append("\n".join(block))
-    return {"front": front, "code": code, "inline": inline, "links": links, "heads": heads, "nums": nums, "words": words}
+    return {"front": front, "code": code, "inline": inline, "links": links, "heads": heads, "nums": nums, "words": words,
+            "tags": tags, "imports": imports}
 
 
 def guard(path, old, new, max_change):
@@ -534,6 +547,10 @@ def guard(path, old, new, max_change):
         add("ERROR", "link-changed", "Изменились ссылки или пути картинок: " + delta(a["links"], b["links"]))
     if a["heads"] != b["heads"]:
         add("ERROR", "heading-changed", f"Изменилась структура заголовков (было {len(a['heads'])}, стало {len(b['heads'])}).")
+    if a["tags"] != b["tags"]:
+        add("ERROR", "tag-changed", "Изменились HTML/MDX-теги (можно менять только title, description, alt): " + delta(a["tags"], b["tags"]))
+    if a["imports"] != b["imports"]:
+        add("ERROR", "import-changed", "Изменились строки import/export: " + delta(a["imports"], b["imports"]))
     if a["nums"] != b["nums"]:
         add("ERROR", "number-changed", "Изменились числа в тексте: " + delta(a["nums"], b["nums"]))
     if old.count("\n") != new.count("\n"):
