@@ -1,5 +1,5 @@
 ---
-title: Big Data Технологии
+title: Технологии Big Data
 # SEO-заголовок для поиска (вкладка браузера). H1 и сайдбар берут title.
 head:
   - tag: title

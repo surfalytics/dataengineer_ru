@@ -153,6 +153,23 @@ def test_guard():
     ]:
         if name not in {f.rule for f in ck.guard("t", old, new, 50)[0]}:
             bad.append(("guard", f"{name} not found"))
+
+    # .mdx: image lines, component tags and imports are guarded too; Russian text in title/description/alt is not
+    mdx = ("---\ntitle: A\n---\nimport Resource from '../Resource.astro';\n\n![Схема](/assets/a.png)\n\n"
+           '<Resource title="Курс" href="https://x.ru/" type="Курс" level="Новичок">\n'
+           "  Описание курса.\n</Resource>\n<p>Текст абзаца.</p>\n")
+    ok = (mdx.replace('title="Курс"', 'title="Хороший курс"').replace("Описание курса", "Описание")
+             .replace("Текст абзаца", "Другой текст").replace("[Схема]", "[Схема пайплайна]"))
+    if [f for f in ck.guard("t", mdx, ok, 50)[0] if f.level == "ERROR"]:
+        bad.append(("guard mdx", "text in title, alt, <p> and between tags may change"))
+    for name, new in [
+        ("link-changed", mdx.replace("/assets/a.png", "/assets/b.png")),
+        ("link-changed", mdx.replace('href="https://x.ru/"', 'href="https://y.ru/"')),
+        ("tag-changed", mdx.replace('level="Новичок"', 'level="Средний"')),
+        ("import-changed", mdx.replace("../Resource.astro", "../R.astro")),
+    ]:
+        if name not in {f.rule for f in ck.guard("t", mdx, new, 50)[0]}:
+            bad.append(("guard mdx", f"{name} not found"))
     return bad
 
 

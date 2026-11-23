@@ -11,47 +11,47 @@ tags:
   - spark
   - big-data
 ---
-Apache Spark является самый популярным инструментом среди инженеров данных, аналитиков и инженеров машинного обучения. Его главная задача - это обработка данных. С помощью Spark можно подключаться к любому источнику данных, читать большие данные и обрабатывать их в оперативной памяти с использованием распределенных вычислений (distributed computing).
+Apache Spark — самый популярный инструмент среди инженеров данных, аналитиков и инженеров машинного обучения. Его главная задача — обработка данных. С помощью Spark можно подключаться к любому источнику данных, читать большие данные и обрабатывать их в оперативной памяти с использованием распределённых вычислений (distributed computing).
 
-В зависимости от вашей роли вам необходимо обладать навыками от написания запросов в `PySpark` и `SparkSQL` (реже `Scala`) до развертывания решений Big Data на Apache Spark.
+Какие навыки нужны, зависит от роли: от запросов в `PySpark` и `SparkSQL` (реже `Scala`) до развёртывания решений Big Data на Apache Spark.
 
-Мы собрали несколько видео и лабораторных работ, которые вам помогут понять, что такое Apache Spark и как им пользоваться. Давайте посмотрим на примеры использования для ролей:
+Мы собрали несколько видео и лабораторных работ, которые вам помогут понять, что такое Apache Spark и как им пользоваться. Вот примеры того, как Spark используют разные роли:
 
-- Дата Инженер:
-    - Создание Data Lake или Lake House. Если делаем Lakehouse, то формат таблицы будет по умолчанию `Delta`, но сейчас уже чаще используется `Iceberg`. 
+- Дата-инженер:
+    - Создание Data Lake или Lakehouse. Для Lakehouse по умолчанию берут формат таблиц `Delta`, но сейчас чаще используют `Iceberg`. 
     - Трансформация и обработка данных для ETL/ELT процессов.
     - Потоковая обработка с Apache Spark Streaming
-    - Помощь ML-команде в создании ML-решений, например, создание `Feature Store` для предрасчета параметров ML-модели.
+    - Помощь ML-команде в создании ML-решений, например, создание `Feature Store` для предрасчёта признаков (features) для ML-модели.
 - Аналитик и BI-разработчик:
-    - Типичные запросы к Data Lake/Lakehouse с использование `SparkSQL`, `PySpark`.
-    - Добавиление и модификация ETL jobs (data pipelines)
-    - Чтение `source code`, то есть понимание трансформаций данных.
+    - Типичные запросы к Data Lake/Lakehouse с использованием `SparkSQL`, `PySpark`.
+    - Добавление и модификация ETL jobs (data pipelines)
+    - Чтение исходного кода (`source code`), чтобы понимать трансформации данных.
 
-> 🇷🇺 / 🇬🇧 - язык материалов       
-> ⭐ - наша рекомендация
+> 🇷🇺 / 🇬🇧 — язык материалов       
+> ⭐ — наша рекомендация
 
 Посмотрите видео [Что такое Apache Spark](https://youtu.be/Tl9YzC-dQLI) 🇷🇺 ⭐.
 
-В этом видео вы узнаете:
+В этом видео мы:
 
-- Узнаем история Apache Spark
+- Узнаем историю Apache Spark
 - Посмотрим примеры архитектур с использованием Spark
-- Разберемся когда его можно использовать
+- Разберёмся, когда его можно использовать
 - Узнаем про основные компоненты
-- Узнаем, обозначает термин Unified Analytics
+- Узнаем, что обозначает термин Unified Analytics
 
-Прежде чем начать работать с Apache Spark, мы должны владеть необходимым минимумом в хотя бы одном из поддерживаемых языков программирования. Один из самых популярных языков - Python.  
+Прежде чем начать работать с Apache Spark, нужно знать хотя бы один из поддерживаемых языков программирования. Один из самых популярных среди них — Python.  
 
-> Вы можете ознакомится с ресурсами по самостоятельному обучению [Python на нашем портале](https://dataengineer.ru/coding/2024-11-15-coding.html#python).
+> Вы можете ознакомиться с ресурсами по самостоятельному обучению [Python на нашем портале](/tools/coding/#python).
 
-Поэтому в этом уроке мы посмотрим, какие команды нам необходимо знать на примере Databricks notebooks. У вас будет замечательная возможно попрактиковаться, и если вдруг вы мало используете Python, то самое время попробовать его, так как дальше он нам очень понадобится.
+Поэтому в этом уроке мы на примере Databricks notebooks посмотрим, какие команды нужно знать. Если вы мало пишете на Python, это хороший повод попрактиковаться: дальше он нам очень понадобится.
 
 [Минимум Python для работы со Spark (JUST ENOUGH PYTHON FOR SPARK)](https://youtu.be/ylaby_czbSI) 🇷🇺 ⭐.
 
 В этом видео вы узнаете:
 
 - Что такое Databricks
-- Как запустить Community Edition Databricks и какие есть еще варианты для бесплатного Spark
+- Как запустить Community Edition Databricks и какие есть ещё варианты для бесплатного Spark
 - Переменные и типы данных в Python
 - Условия и циклы
 - Методы, функции и библиотеки
@@ -59,15 +59,15 @@ Apache Spark является самый популярным инструмен
 
 Для лабораторной работы вам нужно:
 
-- Создать Databricks Community Edition. Если какие-то проблемы с Databricks, можно все делать на локальном спарке. В следующем уроке покажу, как можно его установить.
-- Импортировать Notebooks с примерами для `Just Enougth Python for Spark` - [Репозиторий с кодом](https://github.com/Data-Learn/data-engineering/tree/master/DE-101%20Modules/Module07/DE%20-%20101%20Lab%207.1)
+- Создать аккаунт в Databricks Community Edition. Если с Databricks возникнут проблемы, всё можно делать на локальном Spark: как его установить, покажу в следующем уроке.
+- Импортировать Notebooks с примерами для `Just Enough Python for Spark` — [Репозиторий с кодом](https://github.com/Data-Learn/data-engineering/tree/master/DE-101%20Modules/Module07/DE%20-%20101%20Lab%207.1)
 - Выполнить задачки в папке `Labs`
 
-Также вы можете использовать Google Collab или локальный Spark. Для решения Notebooks может подойти Jupyter Notebooks.
+Также вы можете использовать Google Colab или локальный Spark, а задания в ноутбуках можно решать в Jupyter Notebooks.
 
-Теперь мы можем начать работать с Apache Spark на локальной машине. Посмотрите видео - [Начало работы с Apache Spark](https://youtu.be/FiaZnMMOV-A) 🇷🇺 ⭐. 
+Теперь мы можем начать работать с Apache Spark на локальной машине. Посмотрите видео — [Начало работы с Apache Spark](https://youtu.be/FiaZnMMOV-A) 🇷🇺 ⭐. 
 
-В этом видео вы узнаете:
+В этом видео мы:
 
 - Скачаем и запустим Apache Spark
 - Посмотрим как запустить Spark на Windows
@@ -80,45 +80,45 @@ Apache Spark является самый популярным инструмен
 
 В качестве лабораторной работы вы можете выполнить следующее задание:
 
-1. Ваша задача установить Apache Spark на ваш компьютер и запустить `PySpark`. Этого может хватить вам для изучения Спарка, практически до конца модуля. Так как команды везде очень похожи, а вот интерфейс и конфигурация разные. 
+1. Ваша задача — установить Apache Spark на ваш компьютер и запустить `PySpark`. Этого может хватить для изучения Spark практически до конца модуля, так как команды везде очень похожи, а интерфейс и конфигурация разные. 
 2. Вам нужно взять программу про M&Ms из нашего [репозитория](https://github.com/Data-Learn/data-engineering/blob/master/DE-101%20Modules/Module07/DE%20-%20101%20Lab%207.2/mnmcount.py) и также взять файл с данными в том же репозитории в папке `data`.
-3. Запустить Спарк-программу используя `spark-submit` и передать в качестве аргумента месторасположение файла с данными.
-4. Вам необходимо взять тот же код про M&Ms, но теперь нужно будет его выполнить в интерактивном режиме. Я это сделал на примере Databricks, если есть доступ к нему, сделайте там, если нет, используйте командную строку или попробуйте вот этот рецепт [Get Started with PySpark and Jupyter Notebook in 3 Minutes](https://medium.com/sicara/get-started-pyspark-jupyter-guide-tutorial-ae2fe84f594f#:~:text=There%20are%20two%20ways%20to%20get%20PySpark%20available,Jupyter%20Notebook%20and%20load%20PySpark%20using%20findSpark%20package)
+3. Запустить Spark-программу, используя `spark-submit` и передать в качестве аргумента расположение файла с данными.
+4. Вам необходимо взять тот же код про M&Ms, но теперь выполнить его в интерактивном режиме. Я делал это в Databricks: если у вас есть к нему доступ, работайте там. Если нет, используйте командную строку или попробуйте вот этот рецепт [Get Started with PySpark and Jupyter Notebook in 3 Minutes](https://medium.com/sicara/get-started-pyspark-jupyter-guide-tutorial-ae2fe84f594f#:~:text=There%20are%20two%20ways%20to%20get%20PySpark%20available,Jupyter%20Notebook%20and%20load%20PySpark%20using%20findSpark%20package)
 
-Мы продолжим [Знакомство с Spark API](https://youtu.be/gg1uip_i2KY) и потренируемся в написании `PySpark`.
+Мы продолжим [Знакомство со Spark API](https://youtu.be/gg1uip_i2KY) и потренируемся в написании `PySpark`.
 
 В этом видео вы узнаете:
 
 - что такое RDD (Resilient Distributed Datasets)
 - что такое DataFrame
-- посмотрим на пример синтаксиса Scala vs Python
+- пример синтаксиса Scala и Python
 - типы данных Spark
-- схему(schema) dataframe
-- колонки (colums) и вычисляемы (expressions) поля dataframe
-- основные операции при работе с dataframe (Reader, Wrtiter)
+- схему (schema) DataFrame
+- колонки (columns) и вычисляемые (expressions) поля dataframe
+- основные операции при работе с dataframe (Reader, Writer)
 - примеры чтения разных источников и файлов (API, база данных, JSON, Parquet, CSV, TXT)
-- различные операции для трансформации, фильтрации и агрегации данных в Spark DataFrame (прям как в SQL)
+- различные операции для трансформации, фильтрации и агрегации данных в Spark DataFrame (прямо как в SQL)
 - Spark SQL, Catalyst Optimizer
 - план запроса Spark
-- примеры advance Spark функций и ноутбуков в Databticks
+- примеры advanced Spark функций и ноутбуков в Databricks
 
-В качестве практики попробуйте повторить [Запросы PySpark](https://youtu.be/gg1uip_i2KY?t=2297) использую Spark CLI. Заодно, мы можем познакомиться ближе с Databriks и их курсом - [Обзор курса Databrick - Programming with Apache Spark](https://youtu.be/gg1uip_i2KY?t=3567).
+В качестве практики попробуйте повторить [Запросы PySpark](https://youtu.be/gg1uip_i2KY?t=2297), используя Spark CLI. Заодно мы можем ближе познакомиться с Databricks и их курсом — [Обзор курса Databricks — Programming with Apache Spark](https://youtu.be/gg1uip_i2KY?t=3567).
 
-В качестве лабораторной работы, вам нужно будет ответить на вопросы про пожарную службу Сан-Франциско, используя файлик с данными [sf-fire-calls.csv](https://github.com/Data-Learn/data-engineering/blob/master/DE-101%20Modules/Module07/DE%20-%20101%20Lab%207.4/examples/sf-fire-calls.csv)
+В качестве лабораторной работы вам нужно будет ответить на вопросы про пожарную службу Сан-Франциско, используя файл с данными [sf-fire-calls.csv](https://github.com/Data-Learn/data-engineering/blob/master/DE-101%20Modules/Module07/DE%20-%20101%20Lab%207.4/examples/sf-fire-calls.csv)
 
-Вопросы находятся в файлике [sf_fire.py](https://github.com/Data-Learn/data-engineering/blob/master/DE-101%20Modules/Module07/DE%20-%20101%20Lab%207.4/examples/sf_fire.py)
+Вопросы находятся в файле [sf_fire.py](https://github.com/Data-Learn/data-engineering/blob/master/DE-101%20Modules/Module07/DE%20-%20101%20Lab%207.4/examples/sf_fire.py)
 
 Теперь мы можем изучить [Spark SQL и DataFrame](https://youtu.be/MHt_s0-q_PM).
 
 В этом видео вы узнаете:
 
 - Методы SparkSession для работы с SQL 
-- Как создавать таблицы и вьюхи
-- Виды таблиц - Managed vs Unmanaged
+- Как создавать таблицы и представления (views)
+- Виды таблиц — Managed vs Unmanaged
 - Примеры SQL запросов в PySpark
 - Кеш в Spark
 - Результат SQL-запроса в DataFrame и наоборот
-- Пример работы с различными файлами в Spark - Parquet, CSV, JSON, AVRO, ORC
+- Пример работы с различными файлами в Spark — Parquet, CSV, JSON, AVRO, ORC
 - Пример использования Spark для бинарных файлов и изображений
 - Функции и операции Spark
 - UNION, JOIN для DataFrame
@@ -130,13 +130,13 @@ Apache Spark является самый популярным инструмен
 
 **Книги:**
 
-- [Книга Learnin Spark V2 PDF](https://github.com/Data-Learn/data-engineering/blob/master/DE-101%20Modules/Module07/LearningSpark2.0.pdf) 🇬🇧 ⭐
+- [Книга Learning Spark V2 PDF](https://github.com/Data-Learn/data-engineering/blob/master/DE-101%20Modules/Module07/LearningSpark2.0.pdf) 🇬🇧 ⭐
 
 **Курсы:**
 
-- [Introduction to Big Data with PySpark](https://www.codecademy.com/learn/big-data-pyspark) - курс для ознакомления с библиотекой pyspark. 🇬🇧
+- [Introduction to Big Data with PySpark](https://www.codecademy.com/learn/big-data-pyspark) — курс для ознакомления с библиотекой pyspark. 🇬🇧
 - [PySpark on Google Colab 101](https://towardsdatascience.com/pyspark-on-google-colab-101-d31830b238be) 🇬🇧
-- [Databricks: Working with SQL at Scale - Spark SQL Tutorial](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/3137082781873852/3704545280501166/1264763342038607/latest.html)
+- [Databricks: Working with SQL at Scale — Spark SQL Tutorial](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/3137082781873852/3704545280501166/1264763342038607/latest.html)
 - [Spark SQL Explained with Examples](https://sparkbyexamples.com/spark/spark-sql-explained/)
 
 **Статьи:**
@@ -145,7 +145,7 @@ Apache Spark является самый популярным инструмен
 - [Apache Spark Installation on Windows](https://sparkbyexamples.com/spark/apache-spark-installation-on-windows/) 🇬🇧
 - [Install PySpark in Jupyter on Mac using Homebrew](https://sparkbyexamples.com/pyspark/install-pyspark-in-jupyter-on-mac-using-homebrew/) 🇬🇧
 - [Get Started with PySpark and Jupyter Notebook in 3 Minutes](https://sparkbyexamples.com/spark/install-apache-spark-on-mac/)
-- [Beginners Guide to PySpark](https://towardsdatascience.com/ beginners-guide-to-pyspark-bbe3b553b79f#:~:text=Beginners%20Guide%20to%20PySpark%201%20Setting%20Environment%20in,Values%20...%208%20Querying%20Data%20...%20More%20items) 🇬🇧
+- [Beginners Guide to PySpark](https://towardsdatascience.com/beginners-guide-to-pyspark-bbe3b553b79f#:~:text=Beginners%20Guide%20to%20PySpark%201%20Setting%20Environment%20in,Values%20...%208%20Querying%20Data%20...%20More%20items) 🇬🇧
 - [Welcome to Spark… on Java: Интервью с Евгением Борисовым](https://habr.com/ru/company/jugru/blog/311146/) 🇷🇺
 - [Знакомство с Apache Spark](https://habr.com/ru/company/piter/blog/276675/) 🇷🇺
 - [Spark local mode: обработка больших файлов на обычном ноутбуке](https://habr.com/ru/post/274705/) 🇷🇺

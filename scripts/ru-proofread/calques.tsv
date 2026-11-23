@@ -276,3 +276,15 @@ api-дизайн	дизайн API / проектирование API	warn	calque
 перестал?\w*\s+(его|её|их)\s+воспринима	перестают принимать всерьёз	warn	calque: stop taking seriously
 лучш\w*\s+услуг\w*\s+(организаци|компани|команд)	лучше всего вы поможете	warn	calque: best service to the org
 рычаг\w*\s+(на|в)\s+переговор|переговор\w*\s+рычаг	сила позиций на переговорах	warn	calque: negotiation leverage
+
+# --- from the site pages review (page-proofread, 2026-11-22)
+нотификаци\w*	уведомление	warn	calque: notification
+\bвьюх\w*	представление (view)	warn	slang: view
+\bфайлик\w*	файл	warn	slang: little file
+есть\s+возможность	можно	warn	канцелярит
+коллаборац\w*	совместная работа	warn	calque: collaboration
+компани\w*\s+мирового\s+уровня	крупные международные компании	warn	AI slop: world-class companies
+\bмикс(а|е|ом|у)?\b	сочетание / сочетает	warn	slang: mix
+бест\s+практи\w*	лучшая практика / лучше	warn	slang: best practice in Cyrillic
+\bпитонист\w*	разработчик на Python	warn	slang: pythonista
+как\s+бонус	кроме того / ещё	warn	calque: as a bonus
