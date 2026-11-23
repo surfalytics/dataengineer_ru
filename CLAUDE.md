@@ -36,32 +36,38 @@ All content is Markdown (`.md`) or MDX (`.mdx`, when a page imports Starlight co
 | AI | `ai/` |
 | Карьера | `career/` |
 | Конспекты книг | `book-summaries/` (`engineering/`, `business/`) |
+| Конспекты лекций | `lecture-summaries/` (`ai/`, `cs/`) |
 | Библиотека | `resources/`, `community/` |
 
 `src/content/docs/index.mdx` is the home page (Starlight `splash` template).
 
 ## Content Types
 
-We make three kinds of new content. Each has a project skill in `.claude/skills/`. Load the skill before you start.
+We make four kinds of new content. Each has a project skill in `.claude/skills/`. Load the skill before you start.
 
 | Type | Where | Skill |
 |---|---|---|
 | Book summary: one page per chapter, in Russian | `book-summaries/<group>/<book>/` | `book-summary` |
 | Diagram: Excalidraw for flows and architecture, Mermaid only for ER (tables) | `public/assets/<section>/` | `diagrams` |
 | Practice course: lessons with tasks on DuckDB (SQL) and Python | `practice/<course>/` | `practice-lesson` |
+| Lecture summary: a university course from YouTube (Stanford, Harvard...), one page per lecture, in Russian | `lecture-summaries/<group>/<course>/` | `lecture-summary` |
 
 A whole book runs as two saved workflows: `book-prep` (split the PDF, glossary), then `book-summary` (all chapters in parallel, then overview, EPUB, build). They are in `.claude/workflows/`. How to run them: the `book-summary` skill.
+
+A whole lecture course runs the same way: `lecture-prep` (YouTube transcripts with `scripts/lecture-tools/fetch_transcripts.py`, slides, glossary), then `lecture-summary`. How to run them: the `lecture-summary` skill. Course status: `scripts/lecture-tools/status.md`.
 
 Other pages (not book summaries) get the same Russian review through the saved workflow `page-proofread`. How to run it: the `ru-proofread` skill.
 
 Status of every book summary (done, needs review, in progress, date of last revision, PR, what is left): `scripts/book-tools/status.md`. Read it before you start book work. Update it with `scripts/book-tools/status.py`.
 
+What to do next, with the plan of lecture courses: `TODO.md`. Read it at the start of a new piece of work.
+
 The `book-summary` skill ends with the `book-epub` skill. It builds and checks the EPUB download of the book.
 
-Shared rules for all three:
+Shared rules for all four:
 
 - **Own words, not translation.** Retell the source. Do not copy text or pictures.
-- **Simple Russian.** Short sentences. Tables and lists instead of long paragraphs. English terms stay in English: `grain`, `fact table`, `SCD`.
+- **Simple Russian.** Short sentences. Tables and lists instead of long paragraphs. English terms stay in English: `grain`, `fact table`, `SCD`. Lecture summaries show each term in two languages at its first mention: «токенизация (`tokenization`)», «`embedding` (векторное представление)». See the `lecture-summary` skill.
 - **Proofread before commit.** Load the `ru-proofread` skill and run `python3 -I scripts/ru-proofread/check.py <page.md>`. It finds calques, missing dashes (`X — это Y`), straight quotes, term drift and choppy paragraphs. Then fresh agents review correctness and flow. How it works: `scripts/ru-proofread/README.md`.
 - **Every code block must run.** Check SQL with DuckDB and Python with `python3` before commit. Write the real answers into the page.
 - **Data is generated or open.** Build data in SQL (`VALUES`, `generate_series`) or with a script in `scripts/<name>/` with a fixed seed.
@@ -69,7 +75,7 @@ Shared rules for all three:
 
 ### EPUB downloads
 
-`scripts/epub/build.mjs` builds one EPUB per book summary. It runs as the first step of `npm run build`.
+`scripts/epub/build.mjs` builds one EPUB per book summary and per lecture course. It runs as the first step of `npm run build`.
 
 - Output: `public/downloads/<book-slug>.epub` (not in git). The site serves it as `/downloads/<book-slug>.epub`.
 - Each book overview page (`index.md`) has the link `📥 [Скачать конспект в EPUB](/downloads/<book-slug>.epub)`.

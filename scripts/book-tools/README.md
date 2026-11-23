@@ -1,11 +1,13 @@
 # book-tools
 
-Helpers for book summaries (`book-summary` skill) and the `book-prep` / `book-summary` workflows in `.claude/workflows/`.
+Helpers for book summaries (`book-summary` skill) and the `book-prep` / `book-summary` workflows in `.claude/workflows/`. Lecture summaries use them too, with lecture flags: `words.py --target 15-25`, `pipeline_state.py --unit lec`, `status.py --kind lecture` (see `scripts/lecture-tools/README.md`).
 
 | Script | What it does |
 |---|---|
 | `split_source.py` | PDF (by page ranges) or EPUB → `chNN.txt` text files, so agents read text, not PDF pages |
-| `words.py` | Prose words of a page or source; with `--source`, page size in % (target 20-40%) |
+| `words.py` | Prose words of a page or source; with `--source`, page size in % (target 20-40%, or `--target 15-25` for lectures) |
+| `pipeline_state.py` | Stage markers and page size per chapter, as JSON, for the workflow's Status step |
+| `status.py` | Updates one row of `status.md` (books) or, with `--kind lecture`, of `scripts/lecture-tools/status.md` |
 | `same_output.py` | Runs a script 6 times, prints `same x6` or the first difference |
 | `token_usage.py` | Tokens and estimated API cost per agent and phase of a workflow run |
 

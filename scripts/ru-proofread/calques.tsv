@@ -288,3 +288,7 @@ api-дизайн	дизайн API / проектирование API	warn	calque
 бест\s+практи\w*	лучшая практика / лучше	warn	slang: best practice in Cyrillic
 \bпитонист\w*	разработчик на Python	warn	slang: pythonista
 как\s+бонус	кроме того / ещё	warn	calque: as a bonus
+
+# --- from the lecture summaries (Stanford CME295, 2026-11)
+(железо|gpu|процессор\w*|видеокарт\w*)\s+люб(ит|ят)	железо быстрее считает / GPU быстрее считает X	warn	calque: hardware likes
+(нужна|нужно|требуется|требует\w*)\s+дополнительн\w+\s+работ\w*	скажите, какая работа: «токенизатор надо обучить»	warn	vague: extra work

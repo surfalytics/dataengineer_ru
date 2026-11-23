@@ -146,7 +146,7 @@ Before chapter 1, make `scripts/<book>-diagrams/glossary.md`: a table `English |
 
 Technical terms stay in English. Do not translate them to be "more Russian". Make the Russian around them correct.
 
-**One form per term.** For each term the glossary gives exactly one form: English (`consumer`) or an established Russian word (`партиция`, `кэш`, `поток`). Never both on one page. `check.py` reports a page with both forms as `term-drift`. Put the other form in `Не писать`. The owner decides the form. If the glossary has no entry for a term, keep the form the book's pages use most and ask.
+**One form per term.** For each term the glossary gives exactly one form: English (`consumer`) or an established Russian word (`партиция`, `кэш`, `поток`). Never both on one page. `check.py` reports a page with both forms as `term-drift`. Put the other form in `Не писать`. The owner decides the form. If the glossary has no entry for a term, keep the form the book's pages use most and ask. Lecture summaries use a two-language variant of this rule: see "Terms in two languages" in the `lecture-summary` skill.
 
 | Kind of term | Rule | Example |
 |---|---|---|

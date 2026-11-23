@@ -1,27 +1,28 @@
 ---
 name: book-epub
-description: Build and check the EPUB download of a book summary (конспект книги) on dataengineer.ru - run scripts/epub/build.mjs, validate the file, and add the "Скачать конспект в EPUB" link to the book overview page. Use as the last step of the book-summary skill, when a book or chapter is added or changed, or when the user asks for EPUB, a downloadable book, an e-reader file, or a fix to the EPUB script, cover or credits.
+description: Build and check the EPUB download of a book summary (конспект книги) or a lecture course summary (конспект курса) on dataengineer.ru - run scripts/epub/build.mjs, validate the file, and add the "Скачать конспект в EPUB" link to the overview page. Use as the last step of the book-summary and lecture-summary skills, when a book, course, chapter or lecture is added or changed, or when the user asks for EPUB, a downloadable book, an e-reader file, or a fix to the EPUB script, cover or credits.
 ---
 
 # Book EPUB
 
-Each book summary has an EPUB file. People download it and read it on a phone or an e-reader.
+Each book summary and each lecture course has an EPUB file. People download it and read it on a phone or an e-reader.
 
-The `book-summary` skill calls this skill as its last step. You can also run it alone to fix the EPUB of an existing book.
+The `book-summary` and `lecture-summary` skills call this skill as their last step. You can also run it alone to fix the EPUB of an existing book or course. Below, "book" means a book or a course, and `<book-slug>` is the folder name of either.
 
 ## How it works
 
 | What | Where |
 |---|---|
 | Build script | `scripts/epub/build.mjs` |
-| Input | `src/content/docs/book-summaries/<group>/<book-slug>/*.md` |
+| Input | `src/content/docs/book-summaries/<group>/<book-slug>/*.md` and `src/content/docs/lecture-summaries/<group>/<course-slug>/*.md` |
 | Output | `public/downloads/<book-slug>.epub` (not in git) |
 | URL on the site | `/downloads/<book-slug>.epub` |
 | Link for readers | on the book overview page (`index.md`) |
 
 - `npm run build` runs the script first, then builds the site. So the deploy always has fresh files.
 - `npm run epub` builds only the EPUB files.
-- The script finds books by itself: every folder with an `index.md`. A new book needs no change in the script.
+- The script finds books and courses by itself: every folder with an `index.md`. A new book or course needs no change in the script.
+- The cover says «Конспект книги» with «По книге: <author>», or «Конспект курса» with «Лекторы: <author>». A long author list wraps between names. Keep `author:` short.
 - Chapter order is `sidebar.order`. The table of contents uses `sidebar.label`.
 
 ## Steps

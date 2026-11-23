@@ -11,7 +11,13 @@ Only prose is checked. Front matter, code blocks, inline code, URLs and HTML tag
   ERROR  quotes, double-hyphen, calque (marked "error" in calques.tsv), glossary
   WARN   dash-before-eto, calque, term-drift, yo, decimal-point, doubled-word,
          hyphen-as-dash, range-hyphen, arrow, double-space,
-         long-sentence, same-opener, choppy
+         long-sentence, same-opener, choppy, first-mention, term-lead
+
+A glossary with the line <!-- ru-proofread: two-languages --> also turns on two checks for its
+«Как пишем» forms like «токенизация (`tokenization`)» or «`embedding` (векторное представление)»:
+the first paragraph that mentions the term shows both languages (first-mention), and the English
+form of a term where Russian leads does not come back outside brackets (term-lead).
+Lecture glossaries have this line. Book glossaries do not.
 
 --stats    rhythm numbers per page (sentence length, short sentences, link words).
 --before   compares NEW with OLD: code, inline code, links, numbers, headings and
@@ -217,6 +223,67 @@ def load_glossary_bans(path):
     return bans
 
 
+LEAD_CELL = re.compile(r"^(?P<lead>[^()]+?)\s*\((?P<other>[^()]+)\)$")
+
+
+def load_glossary_leads(path):
+    """Read «Как пишем» cells of the form «lead (other)»: a term in two languages.
+
+    Returns [(lead, other, cell)], for example ("токенизация", "tokenization", ...) where Russian
+    leads, or ("embedding", "векторное представление", ...) where English leads.
+    Only for a glossary that has the line <!-- ru-proofread: two-languages -->."""
+    leads = []
+    if not path:
+        return leads
+    text = Path(path).read_text(encoding="utf-8")
+    if not re.search(r"<!--\s*ru-proofread:\s*two-languages\s*-->", text):
+        return leads
+    header = None
+    for raw in text.splitlines():
+        if not raw.strip().startswith("|"):
+            header = None
+            continue
+        cells = [c.strip() for c in raw.strip().strip("|").split("|")]
+        if all(re.fullmatch(r":?-+:?", c) for c in cells):
+            continue
+        if header is None:
+            header = cells
+            continue
+        if "Как пишем" in header and len(cells) == len(header):
+            cell = cells[header.index("Как пишем")]
+            m = LEAD_CELL.match(cell)
+            if m:
+                leads.append((m.group("lead").strip(" `"), m.group("other").split(",")[0].split(":")[0].strip(" `"), cell))
+    return leads
+
+
+def check_leads(text, leads, add):
+    """A glossary term in two languages: its first mention shows both, later only the leading form."""
+    lines = [(i + 1, raw, kind) for i, raw, kind in classify(text) if kind in ("prose", "table", "heading")]
+    outside = lambda s: re.sub(r"\([^()]*\)", " ", s)   # text outside (brackets) and (links)
+    for lead, other, cell in leads:
+        ru_lead = bool(re.search(r"[А-Яа-яЁё]", lead))
+        eng = other if ru_lead else lead
+        rx_eng = re.compile(r"`" + re.escape(eng) + r"(?:e?s)?`", re.I)  # English terms stand in backticks
+        rx_ru = stem_regex(lead) if ru_lead else None
+        if ru_lead:
+            pair = re.compile(rx_ru.pattern + r"\s*\(\s*`?" + re.escape(eng), re.I)
+        else:
+            pair = re.compile(r"`" + re.escape(eng) + r"(?:e?s)?`\s*\(", re.I)
+        first = next(((no, raw, kind) for no, raw, kind in lines if kind != "heading"
+                      and (rx_eng.search(outside(raw)) or (rx_ru and rx_ru.search(outside(raw))))), None)
+        if first is None:
+            continue
+        no, raw, kind = first
+        both_in_row = kind == "table" and rx_eng.search(raw) and (not rx_ru or rx_ru.search(raw))
+        if not (pair.search(raw) or both_in_row):
+            add(no, "WARN", "first-mention", f"Первое упоминание термина: дайте оба языка, как в глоссарии: {cell}.", raw.strip()[:200])
+        if ru_lead:
+            later = [n for n, r, k in lines if k != "table" for _ in rx_eng.finditer(outside(r))]
+            if len(later) >= 2:
+                add(later[0], "WARN", "term-lead", f"«{eng}» вне скобок {len(later)} раз. После первого упоминания пишите «{lead}».")
+
+
 # ---------------------------------------------------------------- markdown
 
 
@@ -350,7 +417,7 @@ def check_eto(sent):
     return None
 
 
-def check_text(path, text, calques, bans, pairs=()):
+def check_text(path, text, calques, bans, pairs=(), leads=()):
     out = []
 
     def add(line, level, rule, msg, ctx=""):
@@ -421,6 +488,10 @@ def check_text(path, text, calques, bans, pairs=()):
                 best = max(best, run)
             if best >= CHOPPY_RUN:
                 add(no, "WARN", "choppy", f"{best} коротких предложений подряд (до {CHOPPY_WORDS} слов). Свяжите их: «поэтому», «но», «то есть».", unit)
+
+    # --- terms in two languages (glossary «Как пишем»: «lead (other)»)
+    if leads:
+        check_leads(text, leads, add)
 
     # --- term drift: the Russian and the English form of one term on the same page
     if pairs:
@@ -680,10 +751,11 @@ def main():
     calques = load_calques()
     pairs = load_term_pairs()
     bans = load_glossary_bans(a.glossary)
+    leads = load_glossary_leads(a.glossary)
     only = set(a.only.split(",")) if a.only else None
     findings = []
     for f in files:
-        findings += check_text(str(f), f.read_text(encoding="utf-8"), calques, bans, pairs)
+        findings += check_text(str(f), f.read_text(encoding="utf-8"), calques, bans, pairs, leads)
     if only:
         findings = [x for x in findings if x.rule in only]
 
