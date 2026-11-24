@@ -2,6 +2,51 @@
 
 What to do next. Update this file when you finish a step or plan a new one.
 
+## Book workflow: test the token changes on the next book
+
+On 2026-11-24 we changed the `book-summary` workflow to use fewer tokens. A test on one chapter did not show a saving. Test it again on the next whole book.
+
+**How it was** (Learning Spark, 12 chapters, about 76M tokens, about $30):
+
+- The writer drew its own diagrams. Each turn re-reads its 100-200K context, and 11-31 tool calls per writer went to diagrams.
+- An LLM agent checked all the code. It missed 2 hand-written outputs in ch09.
+- The Opus book step merged the registers by hand.
+- The workflow returned the full report to the lead (69K characters).
+- The Docker image was built after the test chapter, so ch01 ran twice.
+
+**How it is now:**
+
+- The writer only writes the diagram specs. A new Diagrams stage (Sonnet, small context) draws them and checks them all on one contact sheet (`contact_sheet.mjs`).
+- `check_code.py` runs every python and SQL block and compares it with the page. An agent gets only the blocks it flags.
+- `merge_registers.py` merges the registers.
+- A short report by default. The details are in `journal.jsonl`, or use `fullReport: true`.
+- The writer reads only its own inputs and applies all fixes in one turn.
+- Set up the code environment (venv or Docker) before the test chapter, and pass it as `codeRunner`.
+
+**Test on ch04 (one chapter):**
+
+| | Old | New |
+|---|---|---|
+| Code check | 0.49M | 0.10M |
+| Diagrams | 0.42M (inside the writer) | 0.25M |
+| Writer | 2.95M | 3.91M (it read the finished pages and tool sources) |
+| Total | $1.96 | $3.09 (+$0.52 flow pass, because the rhythm was LOW) |
+| Blind quality score | 39.5 / 50 | 40 / 50 |
+
+Quality did not drop. The writer limits were added after this test, so they are not tested yet.
+
+The same changes are now in the `lecture-summary` workflow (Diagrams stage, `check_code.py`, `merge_registers.py --unit lec`, short report, writer limits). The next CME295 run (lectures 2-7) is a good first test: it is smaller than a book, and the other pages do not exist yet. Compare with lecture 1 (PR #112, old workflow).
+
+**First real test: CME295, 7 lectures (2026-11-24).** It worked. Writers made 0 diagram runs and almost no off-task reads (14-33 turns). The code check found nothing to fix, so no fix agent ran ($0.10 per lecture). The Diagrams stage drew 28 diagrams for $1.03 and fixed 4. One lecture cost $2.50 at 35% size, against $2.30 at 22% with the old workflow. Details: "Measured cost" in `scripts/lecture-tools/README.md`.
+
+**Next time:**
+
+1. Run a whole new technical book with `checkCode` and `codeRunner`. Books are not tested yet in a clean run.
+2. `python3 -I scripts/book-tools/token_usage.py <transcript dir>`. Compare tokens per 1,000 source words with Learning Spark (about 0.9M per 1,000 words).
+3. Check the writers' turns: diagram calls should be about 0, and no reads of other pages or tool sources.
+4. Read one chapter. If quality dropped, go back to the writer drawing diagrams: `git log .claude/workflows/book-summary.js`.
+5. Write the result here and in "Measured cost" in `scripts/book-tools/README.md`.
+
 ## Lecture summaries («Конспекты лекций»)
 
 How to work: the `lecture-summary` skill. Courses that are started: `scripts/lecture-tools/status.md`.
@@ -11,11 +56,11 @@ Each planned course already has a page «О курсе» on the site (summary, l
 ### Next steps
 
 - [x] PR #112: the lecture pipeline, the «Конспекты лекций» tab, CME295 lecture 1, the «О курсе» pages.
-- [ ] CME295 lectures 2-7, in one run. Run `lecture-prep` again (the transcripts were in a temporary folder), then `lecture-summary` with `"only": [2, 3, 4, 5, 6, 7]` and `"publish": true`. About $16.
-- [ ] CS336. Start its glossary from `scripts/cme295-diagrams/glossary.md`. About $44.
-- [ ] CS329Z, when its 2 private videos are public. About $25.
-- [ ] CS193T. About $16.
-- [ ] CS50x. First add C to "Code and practice" in the skill: compile with `clang`, show the real output. About $38.
+- [x] CME295, all 7 lectures at the new size 30-40% (lecture 1 expanded), 2026-11-24. $21 with prep.
+- [ ] CS336. Start its glossary from `scripts/cme295-diagrams/glossary.md`. About $48 (18 lectures × $2.50 + $3).
+- [ ] CS329Z, when its 2 private videos are public. About $33.
+- [ ] CS193T. About $23.
+- [ ] CS50x. First add C to "Code and practice" in the skill: compile with `clang`, show the real output. About $33-40 (long lectures).
 
 When a course starts, its first run turns the «О курсе» page into the full overview (see `.claude/skills/lecture-summary/references/lead.md`). Then remove the «скоро» badge in `src/nav.mjs` and change «Статус» in `src/content/docs/lecture-summaries/index.md`.
 

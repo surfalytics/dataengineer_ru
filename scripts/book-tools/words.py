@@ -5,13 +5,13 @@ Usage:
   python3 -I scripts/book-tools/words.py PAGE.md [PAGE2.md ...]      # prose words of pages
   python3 -I scripts/book-tools/words.py SOURCE_DIR                   # all .txt and .md files in a folder
   python3 -I scripts/book-tools/words.py --source ch03.txt PAGE.md    # page words as % of the source
-  python3 -I scripts/book-tools/words.py --target 15-25 --source lec03.md PAGE.md   # lecture page
+  python3 -I scripts/book-tools/words.py --target 30-40 --source lec03.md PAGE.md   # lecture page
 
 Prose means: no front matter, no ``` code blocks, no <details> blocks, no HTML tags, no URLs,
 no video timestamps like [12:34] or [▶ 1:02:03].
 For .txt from a PDF there are no code fences, so lines that look like code are dropped (an estimate).
 Target (--target, default 20-40): book chapter page 20-40% of the source, aim for 30% (the middle).
-Lecture page: 15-25% of the transcript, aim for 20% (see the lecture-summary skill).
+Lecture page: 30-40% of the transcript, aim for 35% (see the lecture-summary skill).
 """
 import argparse
 import re

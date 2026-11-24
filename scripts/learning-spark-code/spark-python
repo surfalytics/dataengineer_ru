@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Запускает python3 внутри Docker-образа learning-spark:4.3.0.
+# Репозиторий монтируется по тому же пути, поэтому пути к файлам не меняются.
+# Пример: scripts/learning-spark-code/spark-python scripts/learning-spark-code/ch01_spark_sql.py
+# Другой образ: SPARK_IMAGE=learning-spark:4.2.0-delta scripts/learning-spark-code/spark-python ...
+set -euo pipefail
+REPO="$(cd "$(dirname "$0")/../.." && pwd)"
+case "$PWD" in "$REPO"*) WD="$PWD" ;; *) WD="$REPO" ;; esac
+exec docker run --rm -i -v "$REPO:$REPO" -w "$WD" \
+  -e PYTHONHASHSEED="${PYTHONHASHSEED:-random}" "${SPARK_IMAGE:-learning-spark:4.3.0}" python3 "$@"

@@ -15,7 +15,7 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-STAGES = ["write", "review", "flow", "clarity", "code"]
+STAGES = ["write", "diagrams", "review", "flow", "clarity", "code"]
 
 
 def run(args):

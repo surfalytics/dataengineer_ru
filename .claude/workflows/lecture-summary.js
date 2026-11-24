@@ -4,13 +4,14 @@ export const meta = {
   whenToUse: 'After lecture-prep, with its "next.args". Also to redo some lectures: pass "only": [3, 5]. Lectures already done are skipped, so a rerun continues where it stopped.',
   phases: [
     { title: 'Status', detail: 'which lecture stages are already done (script, copied by sonnet)', model: 'sonnet' },
-    { title: 'Write', detail: 'one writer per lecture (sonnet, high)', model: 'sonnet' },
-    { title: 'Size', detail: 'fix pages outside 15-25% of the transcript (max one retry)', model: 'opus' },
+    { title: 'Write', detail: 'one writer per lecture (sonnet, high); writes diagram specs, does not draw', model: 'sonnet' },
+    { title: 'Diagrams', detail: 'draw the specs, check them on one contact sheet (sonnet, medium)', model: 'sonnet' },
+    { title: 'Size', detail: 'fix pages outside 30-40% of the transcript (max one retry)', model: 'opus' },
     { title: 'Review', detail: 'correctness review (sonnet, medium)', model: 'sonnet' },
     { title: 'Flow', detail: 'flow pass only when --stats is LOW (opus, medium)', model: 'opus' },
     { title: 'Clarity', detail: 'final read: vague text, AI slop, contradictions, gaps in explanations (opus, medium)', model: 'opus' },
-    { title: 'Code', detail: 'optional (checkCode: true): run every code example, match outputs (sonnet, medium)', model: 'sonnet' },
-    { title: 'Course', detail: 'registers, overview, nav, section (opus, high)', model: 'opus' },
+    { title: 'Code', detail: 'optional (checkCode: true): check_code.py runs the code; an agent fixes only flagged blocks (sonnet)', model: 'sonnet' },
+    { title: 'Course', detail: 'registers by script, then overview, nav, section (opus, high)', model: 'opus' },
     { title: 'Build', detail: 'EPUB, npm run build (sonnet)', model: 'sonnet' },
   ],
 }
@@ -22,6 +23,8 @@ export const meta = {
 //                materials, slidesUrl, oldPage, notes? }],
 //   notes?: "text for every writer", courseNotes?: "text for the Course step",
 //   only?: [n, ...], skipCourse?: false, redo?: false, checkCode?: false,
+//   codeRunner?: "<venv>/bin/python" (runs a script like python3; default: a shared venv in <scratch>/venv-code from requirements.txt),
+//   fullReport?: false,   // true: every agent's notes in the report; default: a short report, details in the run's journal.jsonl
 //   publish?: false,      // with only: still run the Course and Build steps, so the written lectures go on the site
 //                         // (the overview lists every lecture and links only the written ones)
 //   reviewOnly?: false,   // pages exist: skip write and size, run review/flow/clarity/code, skip course steps
@@ -41,8 +44,9 @@ const M = (stage, model, effort) => {
   const [om, oe] = o.split('/')
   return { model: om || model, effort: oe || effort }
 }
-// Size of a lecture page in % of its transcript. Speech is wordier than a book, so the range is lower than 20-40%.
-const LO = 15, HI = 25, AIM = 20, DRAFT_MAX = 22, FLOW_MAX = 27, CLARITY_MAX = 30
+// Size of a lecture page in % of its transcript.
+// 2026-11-24: the owner asked for full pages (quality over size): lectures teach fundamentals. Was 15-25%.
+const LO = 30, HI = 40, AIM = 35, DRAFT_MAX = 37, FLOW_MAX = 42, CLARITY_MAX = 45
 const TARGET = `--target ${LO}-${HI}`
 const courseDir = `src/content/docs/lecture-summaries/${a.group}/${a.slug}`
 const urlBase = `/lecture-summaries/${a.group}/${a.slug}`
@@ -105,12 +109,30 @@ const WRITE = {
   properties: {
     page: { type: 'string' }, srcWords: { type: 'integer' }, pageWords: { type: 'integer' }, pct: { type: 'number' },
     title: { type: 'string', description: 'the Russian title used in title and sidebar.label' },
-    diagramsDrawn: { type: 'integer' }, diagramsSkipped: { type: 'integer' },
+    diagramsDrawn: { type: 'integer', description: 'diagram specs written to lecNN_diagrams.py' }, diagramsSkipped: { type: 'integer' },
     codeOk: { type: 'boolean' }, codeProblems: { type: 'array', items: { type: 'string' } },
     checkErrors: { type: 'integer', description: 'ERROR count from check.py at the end' },
     doubtful: { type: 'array', items: { type: 'string' }, description: 'unclear audio, caption errors you were not sure about, places where a missing slide was needed, meaning risks' },
   },
   required: ['page', 'srcWords', 'pageWords', 'pct', 'title', 'diagramsDrawn', 'diagramsSkipped', 'codeOk', 'codeProblems', 'checkErrors', 'doubtful'],
+}
+const DIAGRAMS = {
+  type: 'object',
+  properties: {
+    drawn: { type: 'integer' }, fixed: { type: 'integer', description: 'diagrams redrawn after a problem' },
+    problems: { type: 'array', items: { type: 'string' }, description: 'problems left, or empty' },
+  },
+  required: ['drawn', 'fixed', 'problems'],
+}
+const CODECHECK = {
+  type: 'object',
+  properties: {
+    blocks: { type: 'integer' },
+    count: { type: 'object', description: 'status -> number, as printed' },
+    problems: { type: 'array', items: { type: 'object' }, description: 'the problems array, copied as is' },
+    unusedScripts: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['blocks', 'count', 'problems', 'unusedScripts'],
 }
 const SIZE = {
   type: 'object',
@@ -181,7 +203,11 @@ const results = await pipeline(
 
 Load the \`lecture-summary\` skill and follow "Lecture steps (writer)". It tells you which parts of the \`book-summary\` skill to read too.
 ${PRACTICE}
-Work in few, large steps: plan the whole page, write it with one \`Write\`, then fix with \`Edit\`. Every extra turn re-reads your whole context.
+Work in few, large steps: plan the whole page, write it with one \`Write\`, then fix with \`Edit\`. Every extra turn re-reads your whole context (about 100K tokens), so batch your commands:
+- write all scripts of the lecture first, then run them all in ONE command (a for loop), printing only short results (\`| tail -5\` per script); run the determinism check for all of them in one command too;
+- write the diagram specs file once with \`Write\`; do not draw (see "Diagram specs" below);
+- after the checks, apply all page fixes in one step (one \`Edit\` per place, all in the same turn), not one fix per turn.
+Read only what you need: the skills, the transcript, the slides text, the glossary, and one existing *_diagrams.py for the spec format. Do not read other lectures' pages, the shared registers (figures.md, README.md) or the source of tools (scripts/book-tools/*, scripts/lecture-tools/*, excb.py): this prompt tells you how to use them.
 Before you write, get the word budget per section: \`python3 -I scripts/book-tools/words.py ${TARGET} --sections ${l.src}\`. Aim for ${AIM}%. Keep the first draft at ${DRAFT_MAX}% or less: the clarity pass later needs room to add explanations.
 The Russian title "${l.titleRu}" is a draft from the prep step. If it is not natural Russian or breaks the glossary, write a better one. Use the same title in \`title\` and \`sidebar.label\`, and return it in \`title\` so the lead can align links.
 Other lectures of this course (other writers work at the same time): ${all.filter(x => x.n !== l.n).map(x => `${x.n}. ${x.title}`).join('; ')}. Explain and draw an idea in depth only if this lecture explains it; if it belongs to another lecture, link to that lecture instead.
@@ -198,8 +224,8 @@ Other lectures of this course (other writers work at the same time): ${all.filte
 | Old page to keep our additions from | ${l.oldPage ? `${l.oldPage} (read with \`git show HEAD:${l.oldPage}\`)` : 'none'} |
 | Glossary (read only) | ${a.glossary} |
 | Your registers | scripts/${prefix}-diagrams/glossary-lec${pad(l.n)}.md, figures-lec${pad(l.n)}.md; scripts/${prefix}-code/README-lec${pad(l.n)}.md |
-| Diagrams | scripts/${prefix}-diagrams/lec${pad(l.n)}_diagrams.py with scripts/${prefix}-diagrams/excb.py (the prep step set it up for this course; if it is missing, copy it from scripts/data-quality-fundamentals-diagrams/ and set OUT and the scene prefix as \`references/lead.md\` step 3 says). The canvas is shared with other writers: excb.py has a lock. Look at every PNG: every flow between boxes needs an arrow, a label alone is not enough. |
-| Images | public/assets/${a.slug}/lec${pad(l.n)}-<name>.png |
+| Diagram specs (write only, do NOT run) | scripts/${prefix}-diagrams/lec${pad(l.n)}_diagrams.py: a \`D = {...}\` dict of specs with the \`N\`, \`E\`, \`Z\`, \`T\` helpers of excb.py, like any other *_diagrams.py in scripts/. Do not run it and do not open PNGs: the next stage (a separate diagram agent) draws, looks at and fixes every diagram. Lay nodes out in rows and columns so arrows do not cross boxes. |
+| Images (put the lines on the page now) | \`![<alt по-русски>](/assets/${a.slug}/lec${pad(l.n)}-<name>.png)\`, where <name> is the key in D without the \`lec${pad(l.n)}-\` prefix |
 | Code | scripts/${prefix}-code/lec${pad(l.n)}_<name>.py |
 | Size target | ${w(l.words * LO / 100)}-${w(l.words * HI / 100)} prose words, aim for ${w(l.words * AIM / 100)} |
 | Previous / next | ${prevLink} / ${nextLink} |
@@ -212,6 +238,25 @@ At the end:
 ${COMMON}`, { label: `write lec${l.n}`, phase: 'Write', schema: WRITE, ...M('write', 'sonnet', 'high') })
     if (!write) throw new Error(`writer failed for lecture ${l.n}`)
     return { l, write }
+  },
+
+  // Stage 1b: draw the diagrams from the writer's specs (small fresh context, not the writer's 100K+)
+  async (r) => {
+    if (!r || a.reviewOnly || st(r.l.n).done.includes('diagrams')) return r
+    const d = `scripts/${prefix}-diagrams`
+    const diagrams = await agent(`Draw and check the diagrams of lecture ${r.l.n} of "${C.title}".
+The lecture writer wrote the specs: ${d}/lec${pad(r.l.n)}_diagrams.py. The page is ${page(r.l)}. Do not read the whole page or the transcript.
+
+1. If ${d}/excb.py is missing, copy scripts/data-quality-fundamentals-diagrams/excb.py there and set OUT and the scene prefix as the \`lecture-summary\` skill's \`references/lead.md\` step 3 says.
+2. Draw all from the repo root: \`python3 ${d}/lec${pad(r.l.n)}_diagrams.py 2>&1 | tail -15\` (not with -I). The canvas is shared: excb.py waits for its lock. Never use the excalidraw MCP tools.
+3. Look at all of them at once: \`node scripts/book-tools/contact_sheet.mjs ${a.scratch}/sheet-lec${pad(r.l.n)}.png public/assets/${a.slug}/lec${pad(r.l.n)}-*.png\`, then \`Read\` the sheet (and its -2, -3 files if printed).
+4. Check each diagram: only our content (another program can draw on the shared canvas), every flow between boxes has an arrow, arrows do not cross boxes, text fits its box, labels follow the glossary (${a.glossary}). If one is wrong, fix its spec with \`Edit\` and redraw only it: \`python3 ${d}/lec${pad(r.l.n)}_diagrams.py <name> ...\`. Read the sheet again only if you redrew something. Use \`Read\` on a single PNG only if the sheet is too small to judge it.
+5. Page check: \`grep -n '/assets/' ${page(r.l)}\`. Every image line must point to an existing PNG, every PNG of lec${pad(r.l.n)} must be on the page, and every alt must be Russian and say what the image shows. Fix only image lines of the page with \`Edit\`; no prose.
+6. \`touch ${mark(r.l, 'diagrams')}\`
+
+${COMMON}`, { label: `diagrams lec${r.l.n}`, phase: 'Diagrams', schema: DIAGRAMS, ...M('diagrams', 'sonnet', 'medium') })
+    if (!diagrams) log(`lecture ${r.l.n}: diagram stage failed`)
+    return { ...r, diagrams }
   },
 
   // Stage 2: size check, one retry
@@ -285,23 +330,36 @@ ${COMMON}`, { label: `clarity lec${r.l.n}`, phase: 'Clarity', schema: CLARITY, .
     return { ...r, clarity }
   },
 
-  // Stage 6 (optional, checkCode: true): every code example runs and its output on the page is real
+  // Stage 6 (optional, checkCode: true): every code example runs and its output on the page is real.
+  // A script (book-tools/check_code.py) runs the code and compares outputs; an agent only gets the blocks it flags.
   async (r) => {
     if (!r || !a.checkCode || st(r.l.n).done.includes('code')) return r
-    const code = await agent(`Check the code examples of lecture ${r.l.n}: ${page(r.l)}.
-Code folder: scripts/${prefix}-code/ (files lec${pad(r.l.n)}_*, requirements*.txt, README.md).
+    const venv = `${a.scratch}/venv-code`
+    const runner = a.codeRunner || `${venv}/bin/python`
+    const setup = a.codeRunner ? '' : `[ -x ${venv}/bin/python ] || { python3 -m venv ${venv} && ${venv}/bin/pip install -q -r scripts/${prefix}-code/requirements.txt; } >/dev/null 2>&1; `
+    const cmd = `python3 -I scripts/book-tools/check_code.py ${page(r.l)} --code-dir scripts/${prefix}-code --runner ${JSON.stringify(runner)} --json`
+    const check = await agent(`Run this one command. Reply with exactly the JSON it prints, copied as is. Do not run anything else and do not guess any value.
+${setup}${cmd} && touch ${mark(r.l, 'code')}`, { label: `code check lec${r.l.n}`, phase: 'Code', schema: CODECHECK, ...M('codecheck', 'sonnet', 'low') })
+    if (!check) { log(`lecture ${r.l.n}: code check script failed`); return r }
+    const total = check.blocks
+    const notRun = (check.count && check.count.notrun) || 0
+    if (!check.problems.length) return { ...r, code: { blocks: total, ok: total - notRun, fixed: 0, notRun, problems: check.unusedScripts.map(u => `not used on the page: ${u}`) } }
+    const fix = await agent(`Fix the code examples of lecture ${r.l.n} that the checker flagged: ${page(r.l)}.
+Code folder: scripts/${prefix}-code/ (files lec${pad(r.l.n)}_*, requirements.txt, README.md). Runner for scripts: ${runner} (\`<runner> -I <script>\`).
+The checker (\`${cmd}\`) found these blocks (line on the page, status, detail):
+${check.problems.map(p => `- L${p.line} ${p.lang} ${p.status}${p.script ? ' ' + p.script : ''}: ${p.detail || ''}`).join('\n')}
 
-1. List every code block on the page: language, and the \`text\` output block under it, if any. Solutions inside \`<details>\` count too.
-2. SQL: \`python3 scripts/kimball-diagrams/check_sql.py ${page(r.l)}\` must print OK. Then check outputs: run the sql blocks in order in one \`duckdb :memory:\` session and compare each result with the \`text\` block under it on the page.
-3. Python: make a venv in ${a.scratch}/venv-code-lec${pad(r.l.n)} from scripts/${prefix}-code/requirements.txt. Run \`python3 -I scripts/lecture-tools/check_code.py ${page(r.l)} scripts/${prefix}-code --prefix lec${pad(r.l.n)} --python <venv>/bin/python\`: every line must be ok. Then run \`python3 -I scripts/book-tools/same_output.py --python <venv>/bin/python <script>\` on each lec${pad(r.l.n)}_*.py: it must print same x6.
-4. Shell blocks that are not files: run them in a temp folder.
-5. Fix: if an output on the page differs from the real output, paste the real output. If code fails, make the smallest fix that keeps what the example teaches, and update the output. Never type output by hand. Edit only code blocks, their outputs and one sentence about them; no other prose.
-6. If something cannot run here (GPU, paid API, large model), do not fake it: count it as notRun and say why.
-7. \`touch ${mark(r.l, 'code')}\`
+Statuses: diff = the \`text\` block under the code is not in the real output; error = the script or SQL fails; unstable = output differs between runs; unmatched = a python block that is not in any script.
+1. Look only at the flagged blocks: \`sed -n '<from>,<to>p' ${page(r.l)}\`. Do not read the whole page.
+2. unmatched: make the block equal to (or a cut of) a script in the code folder, adding the code to a lec${pad(r.l.n)}_*.py script if needed, and paste its real output. If it cannot run here (GPU, paid API, large model), put \`# не запускается: <причина>\` as the first line of the block.
+3. diff / error / unstable: run the script, paste the real output, or make the smallest fix that keeps what the example teaches. Never type output by hand.
+4. Edit only code blocks, their outputs and one sentence about them; no other prose.
+5. Run \`${cmd} && touch ${mark(r.l, 'code')}\` again. Repeat until it prints no problems, or explain in problems what is left.
 Do not edit README.md or other shared registers: put status changes in problems.
 
 ${COMMON}`, { label: `code lec${r.l.n}`, phase: 'Code', schema: CODE, ...M('code', 'sonnet', 'medium') })
-    if (!code) log(`lecture ${r.l.n}: code check failed`)
+    if (!fix) log(`lecture ${r.l.n}: code fix failed`)
+    const code = fix ? { ...fix, blocks: total } : { blocks: total, ok: total - check.problems.length, fixed: 0, notRun, problems: check.problems.map(p => `L${p.line} ${p.status}: ${p.detail || ''}`) }
     return { ...r, code }
   },
 )
@@ -322,6 +380,7 @@ const report = {
     review: r.review.reused ? 'done earlier' : `${r.review.changes} changes (${r.review.byType})`,
     flow: r.flow ? `${r.flow.paragraphs} paragraphs` : 'not needed',
     clarity: r.clarity ? `${r.clarity.changes} changes, ${r.clarity.deleted} deleted (${r.clarity.byType})` : 'done earlier or failed',
+    diagramStage: r.diagrams ? `${r.diagrams.drawn} drawn, ${r.diagrams.fixed} fixed${r.diagrams.problems.length ? ', problems: ' + r.diagrams.problems.join('; ') : ''}` : 'done earlier or skipped',
     clarityFound: (r.clarity && r.clarity.found) || [],
     newPatterns: (r.clarity && r.clarity.newPatterns) || [],
     code: r.code ? `${r.code.blocks} blocks: ${r.code.ok} ok, ${r.code.fixed} fixed, ${r.code.notRun} not run` : (a.checkCode ? 'done earlier or failed' : 'not checked'),
@@ -332,6 +391,18 @@ const report = {
   })),
   skipped: skipped.map(l => l.n),
   failed: failed.map(l => l.n),
+}
+// Short report by default: the lead reads it in full, so long lists cost tokens every turn after.
+// Every agent's full reply stays in the run's journal.jsonl. The Course step gets newPatterns from \`ok\`, not from here.
+if (!a.fullReport) {
+  const cut = (xs, n = 3) => xs.slice(0, n).map(x => String(x).slice(0, 220)).concat(xs.length > n ? [`+${xs.length - n} more in journal.jsonl`] : [])
+  report.lectures = report.lectures.map(x => ({
+    n: x.n, title: x.title, pct: x.pct, diagrams: x.diagrams, diagramStage: x.diagramStage, review: x.review, flow: x.flow,
+    clarity: x.clarity, code: x.code, guardOk: x.guardOk,
+    codeProblems: cut([...x.codeProblems, ...x.codeCheckProblems].filter(y => /не запуск|not run|fail|error|differ|diff/i.test(y)), 3),
+    meaningRisks: cut(x.meaningRisks, 3), doubtful: cut(x.doubtful, 3),
+  }))
+  report.details = 'Full agent replies: journal.jsonl of this run (one {"type":"result"} line per agent).'
 }
 
 // ---------- Status file: one row per course in scripts/lecture-tools/status.md (runs at the end of every run)
@@ -356,10 +427,11 @@ Not all lectures are written yet. Written: ${all.filter(written).map(l => l.n).j
 - The overview lists every lecture of the course. Link only the written ones. A lecture that is not written gets its title without a link and «скоро» in the last column. Write the course parts (О чём курс, Как устроен курс) from the lecture titles and the course facts; do not invent content of unwritten lectures. Put \`## Главные идеи\` only for written lectures.
 - In nav and in lecture-summaries/index.md the course is listed as usual: the sidebar shows only the pages that exist.
 - Previous/Next lines: every written lecture links only to written lectures. Add a missing «Следующая» to a written lecture when the next lecture is now written.` : ''
+report.registers = await agent(`Run this one command and reply with its output lines only.
+python3 -I scripts/book-tools/merge_registers.py ${prefix} --unit lec`, { label: 'registers', phase: 'Course', ...M('registers', 'sonnet', 'low') })
 report.course = await agent(`Finish the course "${C.title}": the lectures of this run are written and proofread.
 
-Load the \`lecture-summary\` skill, then read its \`references/lead.md\`. Do lead steps 6, 7 and 8 only:
-- merge scripts/${prefix}-diagrams/glossary-lecNN.md, figures-lecNN.md and scripts/${prefix}-code/README-lecNN.md into glossary.md, figures.md and README.md, then delete the -lecNN files;
+Load the \`lecture-summary\` skill, then read its \`references/lead.md\`. Do lead steps 6, 7 and 8 only. The registers (the -lecNN parts) are already merged by a script: ${report.registers || 'see merge_registers.py'}. Check the merged glossary only for clear conflicts (one term, two forms).
 - the overview page ${courseDir}/index.md (section "Overview page"), with the EPUB link line. Course facts: ${JSON.stringify(C)}. Practice: ${practice}.
   Lectures (n | title the writer used, or the draft title | minutes | page | written): ${all.map(l => `${l.n} | ${titles.get(l.n) || l.titleRu} | ${l.minutes} | ${url(l)} | ${written(l) ? 'yes' : 'no'}`).join('; ')}
 - src/nav.mjs and the row in src/content/docs/lecture-summaries/index.md. If that index.md does not exist, this is the first course: also do "First course only: create the section".${PARTIAL}
