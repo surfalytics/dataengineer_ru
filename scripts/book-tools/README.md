@@ -1,14 +1,17 @@
 # book-tools
 
-Helpers for book summaries (`book-summary` skill) and the `book-prep` / `book-summary` workflows in `.claude/workflows/`. Lecture summaries use them too, with lecture flags: `words.py --target 15-25`, `pipeline_state.py --unit lec`, `status.py --kind lecture` (see `scripts/lecture-tools/README.md`).
+Helpers for book summaries (`book-summary` skill) and the `book-prep` / `book-summary` workflows in `.claude/workflows/`. Lecture summaries use them too, with lecture flags: `words.py --target 30-40`, `pipeline_state.py --unit lec`, `status.py --kind lecture` (see `scripts/lecture-tools/README.md`).
 
 | Script | What it does |
 |---|---|
 | `split_source.py` | PDF (by page ranges) or EPUB → `chNN.txt` text files, so agents read text, not PDF pages |
-| `words.py` | Prose words of a page or source; with `--source`, page size in % (target 20-40%, or `--target 15-25` for lectures) |
+| `words.py` | Prose words of a page or source; with `--source`, page size in % (target 20-40%, or `--target 30-40` for lectures) |
 | `pipeline_state.py` | Stage markers and page size per chapter, as JSON, for the workflow's Status step |
 | `status.py` | Updates one row of `status.md` (books) or, with `--kind lecture`, of `scripts/lecture-tools/status.md` |
 | `same_output.py` | Runs a script 6 times, prints `same x6` or the first difference |
+| `check_code.py` | Runs every python and SQL block of a page (python through `--runner`) and compares outputs with the page. Agents get only the flagged blocks |
+| `merge_registers.py` | Merges the per-chapter glossary, figures and code README parts into the registers |
+| `contact_sheet.mjs` | Up to 12 PNGs on one image with file names, for one `Read` |
 | `token_usage.py` | Tokens and estimated API cost per agent and phase of a workflow run |
 
 Book text from `split_source.py` stays in the scratchpad. Never commit it.
@@ -93,3 +96,27 @@ Fourth run: "Designing Data-Intensive Applications, 2nd Edition" (14 chapters, 2
 | **Total** | | **61** | **63.75** | 28 minutes for Part 2 |
 
 Lesson: cut the reference list from each `chNN.txt` before you count words. DDIA has long reference lists, and they would raise every size target by 10-20%.
+
+"Learning Spark, 2nd Edition" (12 chapters, 84,600 source words, `checkCode`, code in Docker), 2026-11-24. Old workflow (writer draws diagrams, LLM code check).
+
+| Step | Model | Agents | Est. $ | Note |
+|---|---|---|---|---|
+| Split + glossary (54 terms) | sonnet | 2 | 0.59 | |
+| Write 12 chapters | sonnet/high | 12 | 14.58 | 26-48 turns, 100-200K context per turn. 11-31 tool calls per writer went to diagrams |
+| Review + clarity + flow | sonnet + opus | 25 | 9.46 | |
+| Code check | sonnet/medium | 12 | 2.26 | Missed 2 hand-written DuckDB outputs in ch09; `check_code.py` found them |
+| Book + build + status | opus + sonnet | 6 | 2.78 | |
+| **Total** | | **57** | **~29.7** | ~76M tokens with the lead session (70.5M of them cache reads) |
+
+Test of the new workflow on ch04 (same chapter, same args, `redo`): Diagrams stage, `check_code.py`, registers by script.
+
+| | Old ch04 | New ch04 |
+|---|---|---|
+| Writer | 28 turns, 2.95M context | 31 turns, 3.91M (0.41M on reading other pages and tool sources: the book was already done) |
+| Diagrams | inside the writer, 0.42M | own stage, 0.25M |
+| Code check | 0.49M, $0.20 | 0.10M, $0.13 (script, no fixes needed) |
+| Flow pass | not needed | needed (`--stats` LOW), 0.41M |
+| Total | $1.96 | $3.09 |
+| Blind Opus judge | 39.5 / 50 | 40 / 50 (more runnable code; slightly thinner option lists) |
+
+After the test, the writer prompt forbids reading other pages, registers and tool sources, and asks for all fixes in one turn. One chapter is a noisy sample: compare on the next whole book.

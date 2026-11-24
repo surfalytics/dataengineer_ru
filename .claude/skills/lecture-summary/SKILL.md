@@ -14,8 +14,8 @@ It works like the `book-summary` skill. This file covers what is different. For 
 - **Reader:** a Russian-speaking data engineer who has NOT watched the lecture and may not know the field.
 - **Goal: learn the fundamentals.** After a lecture page the reader understands the main ideas of the lecture: what they are, why they matter, and how they work. The page teaches. It does not only list what the lecturer said.
 - **Detailed summary, not a transcript.** Keep every main idea, definition, argument, number, example and warning. Keep the lecture's order. Cut filler, jokes, repeats, logistics and pauses in live coding.
-- **Size target: 15-25% of the transcript, aim for 20%.** Speech needs more words than a book for the same ideas, so the target is lower than for books. A 75-minute lecture has about 11,000 words, so its page has 1,650-2,750 words. Count with `python3 -I scripts/book-tools/words.py --target 15-25 --source <lecNN.md> <page.md>`, not by eye.
-- **Clear first.** Clarity beats brevity. The clarity pass may take the page up to 30%.
+- **Size target: 30-40% of the transcript, aim for 35%.** These courses teach fundamentals, so quality beats a short page (the owner's decision, 2026-11-24; it was 15-25%). Use the room to explain: each main concept gets what it is, why it is needed, how it works, and an example or a small calculation. Do not use it for filler, jokes or repeats of the lecturer. A 75-minute lecture has about 11,000 words, so its page has 3,300-4,400 words. Count with `python3 -I scripts/book-tools/words.py --target 30-40 --source <lecNN.md> <page.md>`, not by eye.
+- **Clear first.** Clarity beats brevity. The clarity pass may take the page up to 45%.
 
 ### Teach, not just retell
 
@@ -129,7 +129,8 @@ The same rules as for books: never `haiku` for Russian text, never `xhigh` or `m
 - `videos: ["<URL or ID>", ...]` instead of `playlist` takes single videos, in your order.
 - **Test first:** run step 3 with `"only": [2]` and read the page. Lecture 1 is often mostly logistics, so it is a poor test.
 - **Publish lectures one by one:** add `"publish": true` to a run with `only`. The Course and Build steps then run too: the overview lists every lecture of the course, links the written ones and marks the others «скоро». Links between lectures point only to written pages. The next run with `publish` adds the missing «Следующая» links.
-- **Rerun, some lectures only, review only, models:** the same options as `book-summary`: `"redo": true`, `"only": [3, 5]`, `"reviewOnly": true`, `"checkCode": true`, `"models": {"write": "opus/high"}`, `"notes"`, `"courseNotes"`. Model keys: `status`, `write`, `size`, `review`, `flow`, `clarity`, `code`, `course`, `build`. Stage markers are `<scratch>/state/lecNN.<stage>.done`.
+- **Rerun, some lectures only, review only, models:** the same options as `book-summary`: `"redo": true`, `"only": [3, 5]`, `"reviewOnly": true`, `"checkCode": true`, `"codeRunner"`, `"fullReport": true`, `"models": {"write": "opus/high"}`, `"notes"`, `"courseNotes"`. Model keys: `status`, `write`, `diagrams`, `size`, `review`, `flow`, `clarity`, `codecheck`, `code`, `registers`, `course`, `build`.
+- **Code check:** with `checkCode`, the script `scripts/book-tools/check_code.py` runs every python and SQL block and compares the outputs with the page. An agent starts only for the blocks it flags. The runner is `codeRunner` (a venv python or a Docker wrapper), or by default a shared venv `<scratch>/venv-code` made from `requirements.txt`. Set up the environment before the test lecture. Stage markers are `<scratch>/state/lecNN.<stage>.done`.
 - `only` means different things: in `lecture-prep` it is a string of playlist positions (`"1-5,8"`), in `lecture-summary` a list of lecture numbers (`[3, 5]`).
 - **Status file:** every run updates the course's row in `scripts/lecture-tools/status.md`. Add the PR number: `python3 -I scripts/book-tools/status.py <slug> --kind lecture --pr "#N"`.
 - **Cost** (measured on CME295 lecture 1): about $2.30 per lecture (write, review, clarity), plus about $1.50 for the Course step of each run and $0.80 for the prep. So write several lectures in one run. Numbers: `scripts/lecture-tools/README.md`.
@@ -138,13 +139,13 @@ The same rules as for books: never `haiku` for Russian text, never `xhigh` or `m
 ## Lecture steps (writer)
 
 1. **Read the whole transcript first** (`lecMM.md`), then the slides text if there is one. Write down the topic tree: the YouTube chapters, plus topic changes inside long chapters.
-2. **Plan the sections.** One `##` per main topic, usually one per YouTube chapter. Join tiny chapters. Split a long chapter that has two topics. Get the word budget: `python3 -I scripts/book-tools/words.py --target 15-25 --sections <lecMM.md>`.
+2. **Plan the sections.** One `##` per main topic, usually one per YouTube chapter. Join tiny chapters. Split a long chapter that has two topics. Get the word budget: `python3 -I scripts/book-tools/words.py --target 30-40 --sections <lecMM.md>`.
 3. **Add new terms** of the lecture to `glossary-lecNN.md`.
 4. **Write the page** with one `Write`, in the format below. Apply "Teach, not just retell" to each main concept. Then change it only with `Edit`.
-5. **Draw 2-4 diagrams** (see "Diagrams").
+5. **Draw 2-4 diagrams** (see "Diagrams"). In the workflow, write the specs to `lecNN_diagrams.py` only and do not draw: the Diagrams stage, a fresh agent with a small context, draws them, looks at them on one contact sheet and fixes them. Working alone, draw them yourself.
 6. **Code and practice** (see below). Every code block runs, and its output on the page is real.
 7. **Check coverage:** every chapter and main topic of the lecture has a place on the page. Logistics do not.
-8. **Size and script:** `words.py --target 15-25 --source <lecMM.md> <page.md>`. Over 25%: cut with `Edit` to 22% or less. Then `python3 -I scripts/ru-proofread/check.py --glossary <glossary.md> <page.md>` and `--stats`. Fix every `ERROR`.
+8. **Size and script:** `words.py --target 30-40 --source <lecMM.md> <page.md>`. Over 40%: cut with `Edit` to 37% or less. Under 30%: add the missing explanations from the transcript. Then `python3 -I scripts/ru-proofread/check.py --glossary <glossary.md> <page.md>` and `--stats`. Fix every `ERROR`.
 9. **Report** to the lead in a few lines: transcript words, page words and %, diagrams drawn and skipped, code status, doubtful places (unclear audio, caption errors you were not sure about, places where the slide is needed and missing).
 
 ## Lecture page
@@ -189,7 +190,7 @@ The lecture's slides and board drawings are its figures. Use the `diagrams` skil
 2. Draw 2-4 diagrams per lecture: the main one (the map of the lecture's idea) and one per hard mechanism. Our layout, colors and Russian labels: each term in its leading form from the glossary. Never trace or screenshot a slide.
 3. A chart of results (a loss curve, a scaling law): draw a simple chart of the trend with our own example numbers, and say in the text what the real result was.
 4. Each diagram goes right after the paragraph that explains it, with one sentence on how to read it. `alt` in Russian.
-5. Specs: `scripts/<prefix>-diagrams/lecNN_diagrams.py` with the `N`, `E`, `Z`, `T` helpers of `excb.py`. Run: `python3 scripts/<prefix>-diagrams/lecNN_diagrams.py [name ...]`. Look at every PNG.
+5. Specs: `scripts/<prefix>-diagrams/lecNN_diagrams.py` with the `N`, `E`, `Z`, `T` helpers of `excb.py`. Run: `python3 scripts/<prefix>-diagrams/lecNN_diagrams.py [name ...]`. Look at every PNG: put them on one sheet with `node scripts/book-tools/contact_sheet.mjs <out.png> public/assets/<course-slug>/lecNN-*.png` and read it once.
 6. Keep the figure list `figures-lecNN.md`: `Лекция | Что на слайде | Идея | Наш файл | Статус (redrawn / own / skipped: причина)`.
 
 ## Code and practice
@@ -218,7 +219,7 @@ When you rewrite an existing lecture page, read the old one first (`git show HEA
 For each lecture, answer yes to all:
 
 - [ ] Every chapter and main topic of the lecture has a section on the page. Logistics are not there.
-- [ ] Prose size is 15-25% of the transcript: `words.py --target 15-25 --source <lecMM.md> <page.md>` prints `ok`.
+- [ ] Prose size is 30-40% of the transcript: `words.py --target 30-40 --source <lecMM.md> <page.md>` prints `ok`.
 - [ ] Every main concept answers: what, why, how, an example, a common mistake.
 - [ ] Every main definition, argument, number and warning of the lecture is there.
 - [ ] Every `##` of the lecture content starts with a `▶ [mm:ss](https://youtu.be/<id>?t=<s>)` link, and the time matches the transcript.

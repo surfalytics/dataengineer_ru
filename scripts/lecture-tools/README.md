@@ -1,6 +1,6 @@
 # lecture-tools
 
-Helpers for lecture summaries (`lecture-summary` skill) and the `lecture-prep` / `lecture-summary` workflows in `.claude/workflows/`. Word counts, stage markers and the status row use the shared scripts in `scripts/book-tools/` (`words.py --target 15-25`, `pipeline_state.py --unit lec`, `status.py --kind lecture`).
+Helpers for lecture summaries (`lecture-summary` skill) and the `lecture-prep` / `lecture-summary` workflows in `.claude/workflows/`. Word counts, stage markers and the status row use the shared scripts in `scripts/book-tools/` (`words.py --target 30-40`, `pipeline_state.py --unit lec`, `status.py --kind lecture`).
 
 | File | What it does |
 |---|---|
@@ -83,7 +83,7 @@ Tested 2026-11-23 with `yt-dlp` 2026.10.26: Stanford CS336 Spring 2026 (playlist
 | CS50 SQL, lecture 0 | 79 | 12,800 | 2,550 |
 | CME295 (2026), lecture 1 | 104 | 13,600 | 2,700 |
 
-Speech runs at about 145 words per minute. A book chapter carries the same ideas in fewer words, so a lecture page is 15-25% of the transcript, not 20-40%.
+Speech runs at about 145 words per minute. A lecture page is 30-40% of the transcript (since 2026-11-24; it was 15-25%): the courses teach fundamentals, and the owner chose full explanations over short pages.
 
 ## Measured cost
 
@@ -104,3 +104,19 @@ First run: Stanford CME295 (Autumn 2026), lecture 1 only, with `publish: true`, 
 
 - One lecture costs about $2.30 (write, review, clarity).
 - The Course step runs once per run. Write several lectures in one run (`"only": [2, 3, 4]`) instead of one run per lecture.
+
+Second run: CME295, all 7 lectures (lecture 1 expanded), 2026-11-24. New size 30-40% and the new workflow: Diagrams stage, `check_code.py`, `merge_registers.py --unit lec`, short report, writer read limits.
+
+| Step | Model | Agents | Est. $ | Note |
+|---|---|---|---|---|
+| Prep: 7 transcripts, slides, glossary (158 terms) | sonnet | 3 | 0.81 | |
+| Write 7 lectures | sonnet/high | 7 | 8.75 | 14-33 turns. Pages 34-38%. 0 diagram runs in writers |
+| Diagrams (28 drawn, 4 fixed) | sonnet/medium | 7 | 1.03 | |
+| Review | sonnet/medium | 7 | 1.73 | |
+| Clarity | opus/medium | 7 | 5.03 | Flow pass not needed in any lecture |
+| Code check (49 blocks, 0 flagged) | sonnet/low | 7 | 0.71 | No fix agent was needed |
+| Course + registers + build + status | opus + sonnet | 5 | 2.27 | |
+| **Total** | | **43** | **20.33** | 17 minutes |
+
+- One lecture now costs about $2.50 at 35% (it was $2.30 at 22%): pages 1.6 times longer for 7% more money.
+- A course of N lectures: about $2.50 × N + $3 (prep, course step, build).

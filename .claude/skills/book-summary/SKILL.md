@@ -73,10 +73,12 @@ For a new book (or many chapters), the lead runs two saved workflows from `.clau
 
 - **Rerun or continue:** run step 3 again with the same args. Stages that are done have marker files in `<scratch>/state/` and are skipped. Add `"redo": true` to ignore the markers.
 - **Some chapters only:** add `"only": [3, 5]`. Book steps (overview, build) are skipped in a partial run.
+- **Set up the code environment before the test chapter.** A technical book needs a venv or a Docker image with pinned versions (example: `scripts/learning-spark-code/Dockerfile` + `spark-python`). Build it and run one small script in it first. Pass it as `"codeRunner"` and describe it in `"notes"`. A change of environment after the test chapter means running that chapter again.
 - **Test first:** run step 3 with `"only": [1]` and read the page before you run the whole book.
 - **Review an existing book:** run `book-prep` (it keeps the glossary and sets `oldPage`), then `book-summary` with `"reviewOnly": true`. It does not write or resize pages. It runs review, flow (if `LOW`), clarity, and code (with `checkCode`). Book steps are skipped: run `npm run epub` and `npm run build` yourself.
-- **Check code (optional):** add `"checkCode": true`. A `sonnet` agent per chapter runs every code example (SQL, Python, dbt) and replaces any output on the page that differs from the real one. Use it for technical books. A chapter that already passed the other stages runs only this step.
-- **Other models for one run:** add `"models": {"write": "opus/high"}` to go back to Opus, for example for a hard technical book. Keys: `status`, `write`, `size`, `review`, `flow`, `clarity`, `code`, `book`, `build`. Value: `model/effort`. Stages you leave out keep the defaults in the table above. Never use `haiku` for Russian text.
+- **Check code (optional):** add `"checkCode": true` and `"codeRunner": "<command that runs a script like python3>"` (a venv python or a Docker wrapper; default `python3`). The script `check_code.py` runs every python and SQL block and compares the outputs with the page. A `sonnet` agent starts only if it flags blocks, and it gets only those blocks. Use it for technical books. A chapter that already passed the other stages runs only this step. A block that cannot run here starts with `# не запускается: <причина>`.
+- **Short report:** the workflow returns a short report (sizes, stages, top 3 risks per chapter). Add `"fullReport": true` for every agent's notes, or read the run's `journal.jsonl`.
+- **Other models for one run:** add `"models": {"write": "opus/high"}` to go back to Opus, for example for a hard technical book. Keys: `status`, `write`, `diagrams`, `size`, `review`, `flow`, `clarity`, `codecheck`, `code`, `registers`, `book`, `build`. Value: `model/effort`. Stages you leave out keep the defaults in the table above. Never use `haiku` for Russian text.
 - **Status file:** every run updates the book's row in `scripts/book-tools/status.md` (status, chapters done, what is left, date). When you open the PR, add its number: `python3 -I scripts/book-tools/status.py <slug> --pr "#N"`. Check this file first when the owner asks what to do next.
 - **Record the cost** after each run: `python3 -I scripts/book-tools/token_usage.py <transcript dir of each run>`. The transcript dir is printed when the workflow starts. Add a row to "Measured cost" in `scripts/book-tools/README.md` when the numbers differ a lot.
 - **Look at the result:** `npm run dev`, open the overview page, check every diagram. `npm run epub` first if you want the EPUB link to work.
@@ -89,6 +91,7 @@ Output tokens cost 5 times more than input tokens. Most waste comes from writing
 - **Read the book as text, never as PDF pages.** The lead splits the book once: `python3 -I scripts/book-tools/split_source.py <book.pdf|book.epub> <scratch>/src [--chapters "1:15-40,..."]`. A worker reads only its own `chNN.txt`. Open a PDF page as an image only to look at one figure you redraw: `pdftoppm -f N -l N -r 80 -png <book.pdf> <scratch>/fig`.
 - **Write the page once, at the right size.** Get the budget per section before you start: `python3 -I scripts/book-tools/words.py --sections <scratch>/src/chNN.txt`. Plan about 30% of each section. Check the draft with `words.py --source <chNN.txt> <page.md>`. If the draft is too long, cut with `Edit`. Do not write the page again.
 - **After the first `Write`, change files only with `Edit`.** Never rewrite a whole page to fix a few lines.
+- **Batch commands.** Every turn re-reads the whole context (a writer has about 100K tokens). Run all scripts of a chapter in one command, and the determinism check for all of them in one command. Look at all diagrams of a chapter on one sheet: `node scripts/book-tools/contact_sheet.mjs <out.png> public/assets/<book>/chNN-*.png`.
 - **Do not read a file again right after you wrote it.** Read it again only if a script reports a problem.
 - **Keep command output short.** `npm run build 2>&1 | tail -20`. Check that code is deterministic with `same_output.py` (see "Tooling"). Do not print all the output of every run.
 - **Run `check.py` yourself before you hand the page on.** Fix every `ERROR`. Then the review agent has fewer edits to make.
@@ -98,7 +101,7 @@ Output tokens cost 5 times more than input tokens. Most waste comes from writing
 1. **Read the whole chapter first** (`chNN.txt`). Write down its full heading tree (all H2 and H3 headings of the book).
 2. **Add new terms** of the chapter to `glossary-chNN.md` (or straight to the glossary if you work alone; see below).
 3. **Write the chapter page** section by section, using the translation guide. Aim for 30% of the source size.
-4. **Redraw the book's figures** with the `diagrams` skill (see "Diagrams").
+4. **Redraw the book's figures** (see "Diagrams"). In the workflow, write the specs to `chNN_diagrams.py` only and do not draw: the Diagrams stage, a fresh agent with a small context, draws them, looks at them on one contact sheet and fixes them. Working alone, draw them yourself with the `diagrams` skill.
 5. **Run and validate all code** from the chapter (see "Hands-on code from the book").
 6. **Check coverage**: every heading, figure, and code example of the book chapter has a place on our page.
 7. **Run the proofread script** on your page: `python3 -I scripts/ru-proofread/check.py --glossary <glossary.md> <page.md>` and `--stats`. Fix every `ERROR`. Do not start review agents: the lead runs the `ru-proofread` review and flow agents after all workers finish. The agent that wrote the chapter does not review it.
@@ -123,6 +126,9 @@ For a new book copy these files and change the paths, scene prefix and output fo
 | `excb.py` | Draws diagrams on the shared Excalidraw canvas with a lock, checks the scene and element count, waits for the frontend, exports PNG, compresses it |
 | `chNN_diagrams.py` | Specs of the chapter diagrams (`N`, `E`, `Z`, `T` helpers). Run: `python3 scripts/<book>-diagrams/chNN_diagrams.py [name ...]` (not with `-I`) |
 | `chNN_<name>.py` | Code of the chapter. Run with `python3 -I`, fixed seeds, same output twice |
+| `check_code.py` (`scripts/book-tools/`) | Runs every python and SQL block of a page and compares the output with the `text` block under it. Flags `diff`, `error`, `unstable`, `unmatched`. The workflow's Code stage runs it first |
+| `merge_registers.py` (`scripts/book-tools/`) | Merges `glossary-chNN.md`, `figures-chNN.md`, `README-chNN.md` into the registers and deletes the parts |
+| `contact_sheet.mjs` (`scripts/book-tools/`) | Puts up to 12 PNGs on one image, so one `Read` shows all diagrams of a chapter |
 | `embed.py` | Builds the chapter page from a template. `{{code: file.py}}` inserts the script in a `<details>` block. `{{out: file.py}}` inserts its real output. Code and output on the page always match the files |
 | `figures.md`, `glossary.md`, `README.md` | Registers: figures, terms, code status |
 

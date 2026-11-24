@@ -9,7 +9,7 @@ Read this file only if you are the lead (the main session) or the Course step of
 3. **Set up `excb.py`** once per course, before the writers start: copy `scripts/data-quality-fundamentals-diagrams/excb.py` to `scripts/<prefix>-diagrams/`, set `OUT` to `public/assets/<course-slug>` and the scene name to `dataengineer_ru/<prefix>-{name}`. Parallel writers then do not race to copy it.
 4. **Start one writer per lecture** (model `sonnet`, effort `high`). Give each writer only paths and numbers: transcript, slides text, video ID, glossary, lecture number and title, size target, previous and next lecture URLs, old page if any. The writer loads the skill itself.
 5. **When the writers finish,** run the review, flow (if `LOW`) and clarity agents, one per lecture.
-6. **Merge** `figures-lecNN.md`, `glossary-lecNN.md`, `README-lecNN.md` into `figures.md`, `glossary.md`, `README.md`. Delete the `-lecNN` files.
+6. **Merge** `figures-lecNN.md`, `glossary-lecNN.md`, `README-lecNN.md` into `figures.md`, `glossary.md`, `README.md`: `python3 -I scripts/book-tools/merge_registers.py <prefix> --unit lec`. It deletes the `-lecNN` files. Then check the glossary for one term with two forms.
 7. **Overview page** (below), `src/nav.mjs`, the row in `src/content/docs/lecture-summaries/index.md`.
 8. **First course only:** create the section (below).
 9. **EPUB:** follow the `book-epub` skill with `<course-slug>`: the link on the overview page, `node scripts/epub/build.mjs <course-slug>`, validation. The script finds courses in `lecture-summaries/` by itself.

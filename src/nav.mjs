@@ -101,6 +101,11 @@ export const topics = [
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-pipelines-with-apache-airflow' } }],
           },
           {
+            label: 'Learning Spark',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/learning-spark' } }],
+          },
+          {
             label: 'Data Engineering Design Patterns',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-engineering-design-patterns' } }],

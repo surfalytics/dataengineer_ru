@@ -1,0 +1,14 @@
+# Образ для главы 9 (Delta Lake).
+# delta-spark 4.4.1 пока поддерживает PySpark до 4.2.0, поэтому здесь Spark 4.2.0.
+# Сборка: docker build -f scripts/learning-spark-code/Dockerfile.delta -t learning-spark:4.2.0-delta scripts/learning-spark-code
+FROM python:3.12-slim-bookworm
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openjdk-17-jre-headless procps \
+ && rm -rf /var/lib/apt/lists/*
+COPY requirements-delta.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+ENV PYSPARK_PYTHON=python3
+RUN useradd -m spark
+USER spark
+# jar-файлы Delta скачиваем при сборке, чтобы скрипты не ходили в сеть
+RUN python3 -c "from delta import configure_spark_with_delta_pip as c; from pyspark.sql import SparkSession as S; s=c(S.builder.master('local[1]')).getOrCreate(); s.range(1).count(); s.stop()"

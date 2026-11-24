@@ -292,3 +292,29 @@ api-дизайн	дизайн API / проектирование API	warn	calque
 # --- from the lecture summaries (Stanford CME295, 2026-11)
 (железо|gpu|процессор\w*|видеокарт\w*)\s+люб(ит|ят)	железо быстрее считает / GPU быстрее считает X	warn	calque: hardware likes
 (нужна|нужно|требуется|требует\w*)\s+дополнительн\w+\s+работ\w*	скажите, какая работа: «токенизатор надо обучить»	warn	vague: extra work
+(та|эта)\s+же\s+проблема\s+остал\w*	назовите проблему: «модель всё ещё не видит порядок слов»	warn	vague reference
+богатые\s+становятся\s+богаче	разрыв только растёт	warn	idiom: the rich get richer
+(та\s+же|а)\s+ручк(а|ой)\b|ручк\w*\s+настройк\w*	параметр / можно менять плавно	warn	calque: knob
+не\s+то,\s+чего\s+(мы\s+)?хотим	скажите, какая цель	warn	calque: not what we want
+вне\s+рамок|остал\w*\s+за\s+рамками	не входит в программу / не разбирала	warn	calque: out of scope
+натягива\w*\s+на	должны служить разным целям	warn	slang: stretch onto
+,\s+(он|она|оно|они)\s+называ\w*	«Правило называется»: без лишнего местоимения	warn	pronoun repeats the subject
+не\s+разори\w*	не стоило дорого	warn	slang: did not ruin
+оптимизиру\w*\s+`?proxy	улучшают замену (`proxy`) вместо настоящей цели	warn	calque: optimize a proxy
+(тест\w*|benchmark\w*`?)\s+насыщ\w*	модели набирают на тесте почти максимум	warn	calque: saturated benchmark
+(провайдер|компани|сервис|клиент)\w*\s+благодарн\w*	ценят	warn	calque: grateful
+верно,\s+но\s+неточн\w*	может посчитать, но ненадёжно	warn	calque: correct but imprecise
+
+# --- from Learning Spark (2026-11)
+под\s+капот\w*	внутри / скажите, что именно происходит	warn	calque: under the hood
+\bесли\s+лень\b	если не хочется	warn	slang: if you are lazy
+(два|двумя|двух)\s+лиц(а|ами)?\b	два вида / две стороны	warn	calque: two faces (of an API)
+пуска\w*\s+(bi|клиент\w*|инструмент\w*|пользовател\w*)	даёт подключаться	warn	calque: lets in
+спрашива\w*\s+(spark|базу|бд|сервер\w*|движ\w*)	отправлять запросы к	warn	calque: ask the database
+говор(ит|ят)\s+по\s+протокол\w*	подключаются по протоколу	warn	calque: speak a protocol
+забива(ется|ются)	перегружается	warn	slang: gets clogged
+(узк|широк)\w*\s+`(narrow|wide)	широкие преобразования (`wide transformation`)	warn	adjective repeats the English term
+уникальн\w+\s+идентичност\w*	уникальный идентификатор	warn	calque: unique identity
+упад(ёт|ет|ут|ает|ают)\s+по\s+памяти	упадёт из-за нехватки памяти	warn	calque: fail on memory
+\bклауз\w*	ветка / условие / часть запроса (WHEN MATCHED)	warn	calque: clause
+неконсистентн\w*	несогласованный	warn	calque: inconsistent

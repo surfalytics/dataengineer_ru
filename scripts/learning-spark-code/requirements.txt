@@ -1,0 +1,5 @@
+pyspark==4.3.0
+pandas==2.2.3
+pyarrow==18.1.0
+duckdb==1.4.1
+mlflow==3.18.0
