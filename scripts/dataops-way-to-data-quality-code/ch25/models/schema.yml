@@ -1,0 +1,32 @@
+version: 2
+models:
+  - name: stg_orders
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: customer_id
+        tests:
+          - relationships:
+              to: ref('customers')
+              field: customer_id
+      - name: status
+        tests:
+          - accepted_values:
+              values: [pending, delivered]
+  - name: fct_orders
+    columns:
+      - name: amount
+        tests:
+          - within_n_stddev:
+              date_column: order_date
+              lookback_days: 30
+              n_stddev: 3
+sources:
+  - name: feed
+    schema: main
+    tables:
+      - name: order_feed
+        loaded_at_field: "cast(current_date - cast(age_days as integer) as timestamp)"
+        freshness:
+          warn_after: {count: 30, period: hour}
+          error_after: {count: 48, period: hour}

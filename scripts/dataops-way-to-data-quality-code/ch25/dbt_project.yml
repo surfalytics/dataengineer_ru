@@ -1,0 +1,10 @@
+name: quality_book
+version: 1.0.0
+config-version: 2
+profile: quality_book
+models:
+  quality_book:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

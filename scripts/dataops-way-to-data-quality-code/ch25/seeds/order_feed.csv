@@ -1,0 +1,4 @@
+order_id,customer_id,status,amount,age_days
+1,10,delivered,8,2
+2,10,delivered,12,1
+3,20,pending,11,0

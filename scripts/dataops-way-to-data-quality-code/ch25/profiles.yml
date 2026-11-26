@@ -1,0 +1,7 @@
+quality_book:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('BOOK_DBT_DATABASE') }}"
+      threads: 1
