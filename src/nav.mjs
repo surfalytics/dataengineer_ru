@@ -101,6 +101,11 @@ export const topics = [
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-pipelines-with-apache-airflow' } }],
           },
           {
+            label: 'Apache Iceberg: The Definitive Guide',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/apache-iceberg-the-definitive-guide' } }],
+          },
+          {
             label: 'Learning Spark',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/learning-spark' } }],
