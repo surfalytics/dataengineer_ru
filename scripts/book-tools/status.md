@@ -35,4 +35,4 @@ One row per book. Update it after every run or PR. `python3 -I scripts/book-tool
 | Crafting Engineering Strategy | `business/crafting-engineering-strategy` | 24 | done | 2026-11-16 | #110 | — |
 | The Engineering Executive's Primer | `business/engineering-executives-primer` | 24 | done | 2026-11-16 | #110 | — |
 | Learning Spark, 2nd Edition | `engineering/learning-spark` | 12 | done | 2026-11-24 | #113 | — |
-| The DataOps Way to Data Quality and Data Observability | `engineering/dataops-way-to-data-quality` | 63 | done | 2026-11-26 | [PR по ветке](https://github.com/surfalytics/dataengineer_ru/pulls?q=is%3Apr+head%3ADWH-dataops-way-to-data-quality) | — |
+| The DataOps Way to Data Quality and Data Observability | `engineering/dataops-way-to-data-quality` | 63 | done | 2026-11-26 | #115 | — |

@@ -2,7 +2,7 @@
 title: "The DataOps Way to Data Quality and Data Observability — конспект книги"
 head:
   - tag: title
-    content: "The DataOps Way to Data Quality and Data Observability | Инжиниринг Данных"
+    content: "DataOps: качество и наблюдаемость данных | Инжиниринг Данных"
 description: "Конспект 63 глав книги DataKitchen о качестве и наблюдаемости данных. Проверки, мониторинг, организационные решения, кейсы и практические примеры."
 author: "Christopher Bergh, Charles Bloche, Gil Benghiat"
 sidebar:
