@@ -28,6 +28,7 @@ tags:
 | Инжиниринг | [Data Engineering Design Patterns](/book-summaries/engineering/data-engineering-design-patterns/) | Около 70 паттернов: загрузка, идемпотентность, ошибки, качество, наблюдаемость |
 | Инжиниринг | [Data Quality Fundamentals](/book-summaries/engineering/data-quality-fundamentals/) | Качество данных: data downtime, тесты, мониторинг, lineage, SLA, инциденты, data mesh. SQL-практика на DuckDB |
 | Инжиниринг | [Analytics Engineering with SQL and dbt](/book-summaries/engineering/analytics-engineering-with-sql-and-dbt/) | Analytics engineering на `dbt`: моделирование данных, SQL, модели, тесты, документация, `incremental`, `snapshot`, `semantic layer`. SQL-практика на DuckDB |
+| Инжиниринг | [Practical Lakehouse Architecture](/book-summaries/engineering/practical-lakehouse-architecture/) | Архитектура lakehouse, открытые форматы, каталоги, движки, безопасность и миграция. Восемь глав Early Release |
 | Инжиниринг | [Redefining Data Engineering with AI](/book-summaries/engineering/redefining-data-engineering-with-ai/) | Инжиниринг данных в эпоху AI: data governance, AI slop, LLM, RAG, MCP, агенты. Early Release, вышли главы 1–2 |
 | AI и ML | [AI Engineering](/book-summaries/ai/ai-engineering/) | Как строить приложения на foundation models: оценка, prompt, RAG, агенты, finetuning, данные, inference, архитектура |
 | AI и ML | [Machines that Think](/book-summaries/ai/machines-that-think/) | Как работают LLM и думают ли они: история AI, токены и embeddings, нейросети, transformer, ошибки, этика, влияние на работу |
