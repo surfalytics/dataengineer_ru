@@ -1,5 +1,24 @@
 # Схемы конспекта
 
+Редактируемые сцены Excalidraw лежат в [`src/`](src/).
+
+## Пересборка PNG
+
+Команды выполняются из корня репозитория. Для пересборки нужны зависимости
+проекта и CLI Excalidraw версии 2.2.0.
+
+```sh
+npm ci
+npm install --prefix ../excalidraw-canvas --save-exact mcp-excalidraw-server@2.2.0
+node scripts/practical-lakehouse-architecture-diagrams/build.mjs
+```
+
+Для другой установки укажите путь к CLI npm-пакета в `EXCALIDRAW_CLI`.
+Скрипт экспортирует все сцены в `public/assets/practical-lakehouse-architecture/`
+и сохраняет редактируемую сцену внутри каждого PNG.
+
+## Список схем
+
 | Глава | Рисунок в книге | Содержание | Файл | Статус |
 |---|---|---|---|---|
 | Обзор | Главы 1–8 | Порядок проектирования lakehouse | book-map.png | Схема по материалам книги |
