@@ -1,5 +1,8 @@
 ---
 title: "Apache Flink, глава 3. Архитектура Apache Flink"
+head:
+  - tag: title
+    content: "Архитектура Apache Flink и checkpoint | Инжиниринг Данных"
 description: "Как Flink 1.7 передаёт записи между задачами, продвигает время события, распределяет состояние и восстанавливает задание из снимка."
 sidebar:
   order: 3

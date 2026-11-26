@@ -1,5 +1,8 @@
 ---
 title: "Apache Flink, глава 6. Операторы на основе времени и оконные операторы"
+head:
+  - tag: title
+    content: "Event time, watermark и окна во Flink | Инжиниринг Данных"
 description: "Время события, таймеры, оконные функции и соединения в DataStream API. Что делать с опозданиями и повторным результатом одного окна."
 sidebar:
   order: 6

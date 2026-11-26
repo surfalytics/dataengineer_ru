@@ -1,5 +1,8 @@
 ---
 title: "Apache Flink, глава 11. Что дальше?"
+head:
+  - tag: title
+    content: "Экосистема Flink: Table API, SQL и CEP | Инжиниринг Данных"
 description: "Экосистема Flink на момент выхода книги: пакетные вычисления, реляционные запросы, шаблоны событий, графы и сообщество."
 sidebar:
   order: 11

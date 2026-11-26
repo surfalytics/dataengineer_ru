@@ -1,5 +1,8 @@
 ---
 title: "Apache Flink, глава 5. API DataStream (v1.7)"
+head:
+  - tag: title
+    content: "DataStream API во Flink 1.7: основы | Инжиниринг Данных"
 description: "DataStream API версии 1.7 на примере измерений датчиков. Преобразования, разбиение по ключу, типизация и упаковка пользовательских функций."
 sidebar:
   order: 5

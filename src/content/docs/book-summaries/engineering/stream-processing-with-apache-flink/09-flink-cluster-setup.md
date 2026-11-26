@@ -1,5 +1,8 @@
 ---
 title: "Apache Flink, глава 9. Настройка Flink для потоковых приложений"
+head:
+  - tag: title
+    content: "Настройка кластера Apache Flink | Инжиниринг Данных"
 description: "Развёртывание Flink 1.7 в автономном режиме, Docker, YARN и Kubernetes. Высокая доступность, файловые системы и бюджет памяти рабочего процесса."
 sidebar:
   order: 9

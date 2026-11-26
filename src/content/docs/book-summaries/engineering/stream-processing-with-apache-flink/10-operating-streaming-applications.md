@@ -1,5 +1,8 @@
 ---
 title: "Apache Flink, глава 10. Работа с Flink и потоковыми приложениями"
+head:
+  - tag: title
+    content: "Эксплуатация Flink: savepoint и мониторинг | Инжиниринг Данных"
 description: "Жизненный цикл задания Flink 1.7, управление через CLI и REST, настройка снимков, перезапуск, метрики и журналы."
 sidebar:
   order: 10

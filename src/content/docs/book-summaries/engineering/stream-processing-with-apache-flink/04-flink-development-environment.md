@@ -1,5 +1,8 @@
 ---
 title: "Apache Flink, глава 4. Настройка рабочей среды для Apache Flink"
+head:
+  - tag: title
+    content: "Как настроить Apache Flink 1.7 и Maven | Инжиниринг Данных"
 description: "JDK, Maven и IntelliJ IDEA для Flink 1.7.1. Локальный запуск, точка останова и сборка приложения в JAR."
 sidebar:
   order: 4
