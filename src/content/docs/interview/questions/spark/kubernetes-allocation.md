@@ -10,9 +10,17 @@ tableOfContents: false
 editUrl: false
 ---
 
-Представь, что одно Spark-приложение загружает год данных по месяцам. Несколько месяцев обработаны успешно, а на очередной итерации падает executor pod. В статусе его контейнера видишь `OOMKilled`. Почему память закончилась, если после каждой сборки мусора занятая Java heap возвращалась примерно к прежнему уровню?
+Представь, что одно Spark-приложение загружает год данных по месяцам. Несколько месяцев обработаны успешно, а на очередной итерации кластер разрастается или падает executor pod с `OOMKilled`.
 
-Лимит контейнера учитывает и память вне Java heap. Если после каждого месяца RSS процесса остаётся чуть выше, на очередном пике памяти может не хватить. Одна из возможных причин — то, как нативный аллокатор **glibc malloc** переиспользует память между итерациями.
+Сначала отдели две разные ситуации — на собеседовании и в проде это первый шаг диагностики:
+
+| Что именно растёт между месяцами | Что проверить в первую очередь |
+| --- | --- |
+| **Стало больше executor pods** | Сверь вкладку **Executors** с числом живых pods. Проверь `spark.dynamicAllocation.maxExecutors` (или `spark.executor.instances` без динамики) и убедись, что все месяцы идут в одном `Application ID`. |
+| **Pods столько же, растёт Java heap или память Python** | Проверь базовые утечки: забытые кеши без `unpersist()`, broadcast-переменные без `destroy()`, накопленные Python-списки или разрастающиеся планы. `maxExecutors` эти объекты не освободит. |
+| **Pods столько же, Java heap после GC возвращается на место, но pod получает `OOMKilled`** | Значит, растёт память **вне Java heap**: нативные буферы, Python workers или страницы, которые удерживает нативный аллокатор **glibc malloc**. |
+
+Если базовые причины исключены, а резидентная память процесса (RSS) после каждого месяца остаётся чуть выше и на очередном пике пробивает лимит контейнера, стоит проверить, как **glibc malloc** переиспользует память между итерациями.
 
 ## Что такое арена malloc?
 
@@ -22,19 +30,26 @@ editUrl: false
 
 ## Как здесь связаны CPU и Kubernetes?
 
-Namespace Kubernetes сам по себе не определяет, сколько CPU видит процесс. У контейнера есть CPU request для размещения, а CPU limit обычно задаёт квоту процессорного времени через cgroup. Отдельно может быть ограничен набор доступных CPU (cpuset). Поэтому процесс может видеть много логических CPU узла даже при небольшом бюджете процессорного времени. У glibc и JVM свои механизмы определения этого числа. [Ресурсы контейнеров Kubernetes](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+В Spark на Kubernetes за CPU отвечают три разные настройки — их важно не путать:
+
+- **`spark.executor.cores`** — сколько слотов задач планирует сам Spark внутри одного executor (на Kubernetes по умолчанию `1`).
+- **`spark.kubernetes.executor.request.cores`** — CPU request pod, по которому планировщик Kubernetes ищет место на узле.
+- **`spark.kubernetes.executor.limit.cores`** — потолок процессорного времени контейнера через cgroup-квоту.
+
+Namespace Kubernetes сам по себе не определяет, сколько CPU видит процесс. Отдельно может быть ограничен набор доступных CPU (`cpuset`). Поэтому, даже если ты выдал executor `spark.executor.cores=2`, процесс внутри контейнера может видеть все логические ядра большого узла (например, 32 или 64) — и glibc поднимет верхний предел арен пропорционально числу ядер узла, а JVM может создать избыточно большие внутренние пулы потоков. У glibc и JVM свои механизмы определения этого числа. [CPU в Spark на Kubernetes](https://spark.apache.org/docs/4.1.1/running-on-kubernetes.html#spark-properties) · [Ресурсы контейнеров Kubernetes](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
 
 Для приложения с небольшим бюджетом CPU можно задать следующие параметры в `spark-defaults.conf` до запуска в режиме `cluster`.
 
 ```properties
 spark.executorEnv.MALLOC_ARENA_MAX                 4
 spark.kubernetes.driverEnv.MALLOC_ARENA_MAX        4
-spark.executorEnv.JAVA_TOOL_OPTIONS                -XX:ActiveProcessorCount=2
-spark.kubernetes.driverEnv.JAVA_TOOL_OPTIONS       -XX:ActiveProcessorCount=2
+spark.executor.extraJavaOptions                    -XX:ActiveProcessorCount=2
+spark.driver.extraJavaOptions                      -XX:ActiveProcessorCount=2
 ```
 
-- **`MALLOC_ARENA_MAX=4`** ограничивает число арен glibc четырьмя **на процесс**. В образе с glibc значения 2 и 4 можно сравнить на одинаковой загрузке. Меньшее число арен иногда снижает RSS ценой большей конкуренции потоков. У процесса с другим аллокатором эта настройка может не дать эффекта.
-- **`-XX:ActiveProcessorCount=2`** задаёт JVM два активных процессора для расчёта размеров внутренних пулов, например потоков GC. Проверить видимое JVM число CPU можно через `Runtime.getRuntime().availableProcessors()`. Если JVM уже видит два процессора, этот флаг не уменьшит её пулы дополнительно. Квоту контейнера, число слотов Spark и лимит арен glibc задают отдельно. Если `JAVA_TOOL_OPTIONS` уже содержит другие нужные флаги, добавь опцию к ним. [Параметры JVM](https://docs.oracle.com/en/java/javase/17/docs/specs/man/java.html)
+- **`MALLOC_ARENA_MAX=4`** ограничивает число арен glibc четырьмя **на процесс**. В образе с glibc значения 2 и 4 можно сравнить на одинаковой загрузке. Меньшее число арен иногда снижает RSS ценой большей конкуренции потоков. У процесса с другим аллокатором (например, musl или jemalloc) эта настройка может не дать эффекта.
+- **`-XX:ActiveProcessorCount=2`** задаёт JVM два активных процессора для расчёта размеров внутренних пулов, например потоков GC. Проверить видимое JVM число CPU можно через `Runtime.getRuntime().availableProcessors()`. Если JVM уже видит два процессора (например, по cgroup-лимиту), этот флаг не уменьшит её пулы дополнительно. Квоту контейнера (`limit.cores`), число слотов Spark (`spark.executor.cores`) и лимит арен glibc задают отдельно.
+- **Почему `extraJavaOptions`, а не `JAVA_TOOL_OPTIONS`?** В Spark стандартный способ передать флаги JVM — `spark.executor.extraJavaOptions` и `spark.driver.extraJavaOptions`. Передача через переменную окружения `spark.executorEnv.JAVA_TOOL_OPTIONS` тоже работает (и действует на любой JVM-процесс внутри контейнера), но **перезаписывает** переменную `JAVA_TOOL_OPTIONS`, если она уже была задана в Docker-образе — в таком случае старые флаги нужно сохранить вручную. [Параметры JVM](https://docs.oracle.com/en/java/javase/17/docs/specs/man/java.html) · [Настройки среды выполнения Spark](https://spark.apache.org/docs/4.1.1/configuration.html#runtime-environment)
 
 ## Как проверить гипотезу?
 
