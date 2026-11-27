@@ -795,8 +795,16 @@ export const topics = [
           "collapsed": true,
           "items": [
             {
-              "label": "Все подтемы",
+              "label": "Все вопросы",
               "link": "/interview/questions/spark/"
+            },
+            {
+              "label": "Компоненты Spark",
+              "link": "/interview/questions/spark/components/"
+            },
+            {
+              "label": "Вкладки Spark UI",
+              "link": "/interview/questions/spark/web-ui/"
             },
             {
               "label": "Выполнение задач",
