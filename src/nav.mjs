@@ -831,16 +831,48 @@ export const topics = [
           "collapsed": true,
           "items": [
             {
-              "label": "Все подтемы",
+              "label": "Все вопросы",
               "link": "/interview/questions/kafka/"
             },
             {
-              "label": "Партиции",
+              "label": "Что такое Kafka",
+              "link": "/interview/questions/kafka/what-is-kafka/"
+            },
+            {
+              "label": "Компоненты Kafka",
+              "link": "/interview/questions/kafka/components/"
+            },
+            {
+              "label": "Топики и партиции",
               "link": "/interview/questions/kafka/partitions/"
+            },
+            {
+              "label": "Ключ и порядок событий",
+              "link": "/interview/questions/kafka/partition-key/"
             },
             {
               "label": "Группы потребителей",
               "link": "/interview/questions/kafka/consumer-groups/"
+            },
+            {
+              "label": "Offset и его коммит",
+              "link": "/interview/questions/kafka/offsets/"
+            },
+            {
+              "label": "Ребалансировка группы",
+              "link": "/interview/questions/kafka/rebalance/"
+            },
+            {
+              "label": "Репликация, leader и ISR",
+              "link": "/interview/questions/kafka/replication/"
+            },
+            {
+              "label": "Гарантии доставки",
+              "link": "/interview/questions/kafka/delivery-semantics/"
+            },
+            {
+              "label": "Retention и compaction",
+              "link": "/interview/questions/kafka/retention/"
             }
           ]
         },

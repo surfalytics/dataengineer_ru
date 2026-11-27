@@ -1,14 +1,32 @@
 ---
-title: Kafka
+title: "Kafka"
+head:
+  - tag: title
+    content: "Вопросы по Apache Kafka для собеседования | Инжиниринг Данных"
+description: "Десять вопросов с ответами по Apache Kafka для собеседования. Устройство брокера, партиции, группы потребителей, репликация, доставка и хранение событий."
 prev: false
-next: false
+next: {"label":"Что такое Apache Kafka и зачем она нужна?","link":"/interview/questions/kafka/what-is-kafka/"}
 tableOfContents: false
 editUrl: false
 ---
 
-[Вопросы с разбором](/interview/questions/)
+10 базовых вопросов по Apache Kafka для собеседования.
 
-## Подтемы
+## Вопросы с разбором
 
-- [Партиции](/interview/questions/kafka/partitions/)
-- [Группы потребителей](/interview/questions/kafka/consumer-groups/)
+1. [Что такое Apache Kafka и зачем она нужна?](/interview/questions/kafka/what-is-kafka/)
+2. [Какие основные компоненты есть в Kafka?](/interview/questions/kafka/components/)
+3. [Что такое topic и partition?](/interview/questions/kafka/partitions/)
+4. [Как Kafka определяет partition и гарантирует порядок?](/interview/questions/kafka/partition-key/)
+5. [Что такое consumer group?](/interview/questions/kafka/consumer-groups/)
+6. [Что такое offset и зачем его коммитить?](/interview/questions/kafka/offsets/)
+7. [Что такое consumer rebalance?](/interview/questions/kafka/rebalance/)
+8. [Как работают replication, leader и ISR?](/interview/questions/kafka/replication/)
+9. [Чем отличаются at-most-once, at-least-once и exactly-once?](/interview/questions/kafka/delivery-semantics/)
+10. [Как Kafka хранит и удаляет события?](/interview/questions/kafka/retention/)
+
+## Источники
+
+Материал проверен 7 августа 2026 года по [официальной документации Apache Kafka](https://kafka.apache.org/documentation/) и актуальным разделам документации по [consumer rebalance](https://kafka.apache.org/documentation/#consumerrebalance) и [конфигурации](https://kafka.apache.org/documentation/#configuration).
+
+Набор тем сверен со специализированными подборками [Kafka Interview Questions 2026](https://datadriven.io/tools/kafka-interview-questions) и [30+ Real Kafka Interview Questions](https://www.articuler.ai/resources/guides/kafka-interview-questions/).

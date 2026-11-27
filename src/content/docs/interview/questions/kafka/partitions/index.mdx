@@ -1,9 +1,19 @@
 ---
-title: "Партиции"
-prev: false
-next: false
+title: "Что такое topic и partition в Kafka?"
+head:
+  - tag: title
+    content: "Топики и партиции Kafka | Инжиниринг Данных"
+description: "Как связаны topic, partition и offset, где Kafka гарантирует порядок событий и как число партиций влияет на параллелизм чтения."
+prev: {"label":"Какие основные компоненты есть в Kafka и как проходит сообщение?","link":"/interview/questions/kafka/components/"}
+next: {"label":"Как Kafka определяет partition для события и какой порядок она гарантирует?","link":"/interview/questions/kafka/partition-key/"}
 tableOfContents: false
 editUrl: false
 ---
 
-Вопросов по этой подтеме пока нет.
+Topic — именованный поток событий одного назначения. Например, в topic `payments` я могу складывать события о платежах.
+
+Partition — физическая часть topic и одновременно упорядоченный append-only log. Каждая новая запись добавляется в конец partition и получает возрастающий offset.
+
+Partitions нужны для масштабирования. Они распределяются по brokers, поэтому разные partitions можно записывать и читать параллельно. В consumer group одна partition в каждый момент назначается только одному consumer, поэтому число partitions задаёт максимальный параллелизм этой группы.
+
+Порядок Kafka гарантирует только внутри отдельной partition, а не между всеми partitions topic. Поэтому количество partitions — это компромисс: больше параллелизма и пропускной способности, но нет общего порядка для всего topic.
