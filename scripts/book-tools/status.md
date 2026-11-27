@@ -17,6 +17,7 @@ One row per book. Update it after every run or PR. `python3 -I scripts/book-tool
 | Data Pipelines with Apache Airflow | `engineering/data-pipelines-with-apache-airflow` | 17 | done | 2026-11-15 | #105 | — |
 | Data Engineering Design Patterns | `engineering/data-engineering-design-patterns` | 10 | done | 2026-11-16 | #108 | — |
 | Data Quality Fundamentals | `engineering/data-quality-fundamentals` | 10 | done | 2026-11-15 | #103 | — |
+| The DataOps Way to Data Quality and Data Observability | `engineering/dataops-way-to-data-quality` | 63 | done | 2026-11-26 | #115 | — |
 | Analytics Engineering with SQL and dbt | `engineering/analytics-engineering-with-sql-and-dbt` | 6 | done | 2026-11-15 | #105 | — |
 | Redefining Data Engineering with AI | `engineering/redefining-data-engineering-with-ai` | 2 | done | 2026-11-15 | #103 | Early Release: add chapters when they come out |
 | AI Engineering | `ai/ai-engineering` | 10 | done | 2026-11-16 | #108 | reviewed against the German edition (only copy); recheck with the English original if available |

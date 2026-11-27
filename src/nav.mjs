@@ -116,6 +116,11 @@ export const topics = [
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-quality-fundamentals' } }],
           },
           {
+            label: 'The DataOps Way to Data Quality and Data Observability',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/dataops-way-to-data-quality' } }],
+          },
+          {
             label: 'Analytics Engineering with SQL and dbt',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/analytics-engineering-with-sql-and-dbt' } }],
