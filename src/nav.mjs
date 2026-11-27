@@ -825,6 +825,30 @@ export const topics = [
             {
               "label": "Job -> Stages -> Task",
               "link": "/interview/questions/spark/execution/"
+            },
+            {
+              "label": "Catalyst",
+              "link": "/interview/questions/spark/catalyst/"
+            },
+            {
+              "label": "Логический план запроса",
+              "link": "/interview/questions/spark/logical-plan/"
+            },
+            {
+              "label": "Физический план запроса",
+              "link": "/interview/questions/spark/physical-plan/"
+            },
+            {
+              "label": "Полный план запроса",
+              "link": "/interview/questions/spark/query-lifecycle/"
+            },
+            {
+              "label": "Adaptive Query Execution (AQE)",
+              "link": "/interview/questions/spark/aqe/"
+            },
+            {
+              "label": "Является ли план запроса конечным?",
+              "link": "/interview/questions/spark/final-plan/"
             }
           ]
         },

@@ -1,0 +1,40 @@
+---
+title: "Полный план запроса в Spark"
+head:
+  - tag: title
+    content: "Полный план запроса в Spark SQL | Инжиниринг Данных"
+description: "Путь запроса от SQL на driver до задач на executors. Живая схема показывает работу парсера, Analyzer, оптимизатора, генерации кода и AQE."
+prev: {"label":"Кто строит физический план запроса?","link":"/interview/questions/spark/physical-plan/"}
+next: {"label":"Как работает Adaptive Query Execution (AQE)?","link":"/interview/questions/spark/aqe/"}
+tableOfContents: false
+editUrl: false
+---
+
+import SparkQueryPlan from '../../../../../components/interview/SparkQueryPlan.astro';
+
+Проследим один запрос от SQL на драйвере до двух строк результата. В таблице `orders` четыре заказа. У магазина № 1 оплачены заказы на 100 и 20, ещё один на 40 ждёт оплаты. У магазина № 2 оплачен заказ на 50.
+
+```python
+totals = spark.sql("""
+    SELECT shop_id, SUM(amount) AS revenue
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY shop_id
+""")
+totals.explain("extended")
+```
+
+<SparkQueryPlan />
+
+**На драйвере.** Для `spark.sql(...)` парсер проверяет синтаксис и строит исходный логический план. Если написать тот же расчёт через `filter()`, `groupBy()` и `agg()`, план соберётся из вызовов DataFrame API. Дальше путь общий. Анализатор находит таблицу и колонки, проверяет типы. Оптимизатор Catalyst приближает фильтр к чтению и убирает лишние колонки. Планировщик выбирает чтение Parquet, фильтрацию, частичную сумму по магазину, shuffle и итоговую сумму.
+
+**Где здесь Tungsten?** Одна из его оптимизаций — *whole-stage code generation*. Spark может объединить соседние физические операторы, например фильтр и выбор колонок, и сгенерировать для них общий Java-код. На executors он компилируется в байткод JVM и обрабатывает строки за один проход. Обмен данными между партициями остаётся отдельной операцией. [Генерация кода в Spark SQL](https://github.com/apache/spark/blob/v4.1.1/sql/core/src/main/scala/org/apache/spark/sql/execution/WholeStageCodegenExec.scala)
+
+**На executors.** Когда вызываем `totals.collect()`, драйвер выдаёт задачи. Они считают частичные суммы и записывают данные для shuffle. Теперь драйвер знает реальные размеры партиций. Если включён AQE, он может объединить мелкие партиции для следующего чтения. Последние задачи складывают суммы, и `collect()` возвращает на драйвер две строки.
+
+| shop_id | revenue |
+| --- | --- |
+| 1 | 120 |
+| 2 | 50 |
+
+Без `ORDER BY` строки могут прийти в любом порядке.
