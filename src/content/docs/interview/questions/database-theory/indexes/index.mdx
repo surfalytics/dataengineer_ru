@@ -1,0 +1,52 @@
+---
+title: "Индексы в PostgreSQL"
+prev: {"label":"Что даёт партиционирование?","link":"/interview/questions/database-theory/partitioning/"}
+next: {"label":"Как работает B-tree?","link":"/interview/questions/database-theory/indexes/btree/"}
+editUrl: false
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Что физически хранится в индексе
+
+Индекс — отдельная структура, которую PostgreSQL хранит на диске и читает по страницам. Обычная таблица хранит версии строк в области, которую называют *heap*. Индекс хранит сведения, помогающие найти нужные строки или страницы. Какие именно сведения — зависит от метода индексации. [Физическое устройство индекса](https://www.postgresql.org/docs/19/indexam.html)
+
+Представьте поиск заказа № 42. В листе B-tree может лежать запись `42 → (7, 3)`. Число 42 — ключ поиска, а `(7, 3)` — адрес версии строки: блок таблицы номер 7, позиция 3. Адрес, или TID, может измениться при обновлении строки. Ключи в B-tree упорядочены, а строки самой таблицы могут лежать в любом порядке. У других методов своё представление: Hash хранит хеши, а BRIN — сводки по группам страниц.
+
+При обычном индексном поиске PostgreSQL находит адрес и обращается к таблице. Если индекс хранит все данные запроса, метод поддерживает *index-only scan*, а карта видимости подтверждает видимость всех строк страницы, чтение этой страницы таблицы можно пропустить. [Как работает Index Only Scan](https://www.postgresql.org/docs/19/indexes-index-only-scans.html)
+
+## Сколько индексов можно создать
+
+| Что считаем | Ограничение PostgreSQL 19 |
+| --- | --- |
+| Индексы на одной таблице | Отдельного лимита нет. Действует общий предел в 1 431 650 303 объекта типа *relation* на базу. В него вместе входят таблицы, индексы и другие объекты этого типа. |
+| Столбцы в одном индексе | До **32** в стандартной сборке. Ключевые столбцы и столбцы `INCLUDE` считаются вместе. Предел можно изменить при сборке сервера. |
+| Несколько ключевых столбцов | Поддерживают B-tree, GiST, GIN и BRIN. У Hash и SP-GiST один ключевой столбец. |
+| Уникальность | Из встроенных методов `CREATE UNIQUE INDEX` поддерживает B-tree. Ограничения `PRIMARY KEY` и `UNIQUE` по умолчанию сами создают уникальный B-tree. |
+| Размер записи B-tree | Одна индексная запись может занимать примерно до трети страницы с учётом возможного сжатия. Длинные значения, в том числе в `INCLUDE`, могут превысить предел. |
+
+[Лимиты PostgreSQL](https://www.postgresql.org/docs/19/limits.html) · [Ограничения CREATE INDEX](https://www.postgresql.org/docs/19/sql-createindex.html) · [Размер записи B-tree](https://www.postgresql.org/docs/19/btree.html)
+
+## Сколько индексов имеет смысл держать
+
+Допустим, у заказов уже есть первичный ключ `id`. Ещё один B-tree на `id` с теми же параметрами продублирует существующий. А запросу «покажи последние заказы клиента» может помочь другой индекс:
+
+```sql
+CREATE INDEX orders_customer_created_idx
+    ON orders (customer_id, created_at DESC);
+```
+
+По `customer_id` PostgreSQL находит начало заказов клиента, а внутри этой группы записи уже идут от новых к старым. Каждый дополнительный индекс занимает место, требует работы при вставке и может удорожать обновления. Решение принимают по запросам и нагрузке. На характерном `SELECT` сравнивают планы и фактические чтения через `EXPLAIN (ANALYZE, BUFFERS)`. Если запрос возвращает большую часть таблицы, планировщик может выбрать последовательное чтение. [Когда использовать индексы](https://www.postgresql.org/docs/19/indexes-intro.html)
+
+## Как работают разные индексы
+
+В PostgreSQL шесть встроенных методов. На каждой странице схема показывает выполнение одного конкретного запроса. Частичный индекс, индекс по выражению и покрывающий индекс описывают способ построения или использования индекса. Дополнительные методы доступны через расширения, например `bloom`. [Методы индексации PostgreSQL](https://www.postgresql.org/docs/19/indexes-types.html)
+
+<CardGrid>
+  <LinkCard title="B-tree" description="Равенство, диапазоны и чтение в порядке ключа." href="/interview/questions/database-theory/indexes/btree/" />
+  <LinkCard title="Hash" description="Точное равенство по 32-битному хешу." href="/interview/questions/database-theory/indexes/hash/" />
+  <LinkCard title="GiST" description="Дерево с границами значений в каждой ветви." href="/interview/questions/database-theory/indexes/gist/" />
+  <LinkCard title="SP-GiST" description="Поиск через последовательное разбиение пространства." href="/interview/questions/database-theory/indexes/spgist/" />
+  <LinkCard title="GIN" description="Обратный индекс для поиска по элементам составного значения." href="/interview/questions/database-theory/indexes/gin/" />
+  <LinkCard title="BRIN" description="Компактные сводки по соседним страницам таблицы." href="/interview/questions/database-theory/indexes/brin/" />
+</CardGrid>

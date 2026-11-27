@@ -1,0 +1,25 @@
+---
+title: "Что Spark пересчитывает при потере executor?"
+head:
+  - tag: title
+    content: "Потеря executor и checkpoint в Spark | Инжиниринг Данных"
+description: "Как lineage и родительские зависимости помогают восстановить потерянные партиции и чем надёжный checkpoint отличается от кеша и localCheckpoint."
+prev: {"label":"Что такое RDD и как он восстанавливает данные?","link":"/interview/questions/spark/rdd/"}
+next: {"label":"Какие вкладки есть в Spark UI и для чего они нужны?","link":"/interview/questions/spark/web-ui/"}
+tableOfContents: false
+editUrl: false
+---
+
+**Потеря executor обычно не требует перезапуска всего приложения.** Драйвер знает, какие задачи выполнялись и какие партиции или shuffle-блоки стали недоступны. Незавершённую задачу можно назначить другому executor. Дальше всё зависит от того, какие данные уцелели.
+
+| Что доступно после сбоя | Откуда возьмутся данные |
+| --- | --- |
+| Сохранилась доступная копия блока | Spark может прочитать её, например с другого executor при использовании уровня хранения с репликацией. Пересчитывать этот блок не требуется. |
+| Нужная партиция потеряна | У неизменяемого RDD есть разбиение на партиции, зависимости от родителей и функция вычисления. По этой истории, **lineage**, Spark повторяет нужные операции от доступных родительских данных или источника. |
+| Успел завершиться надёжный checkpoint | Партиции записаны в доступное кластеру отказоустойчивое хранилище. После материализации checkpoint Spark обрезает прежнюю цепочку зависимостей. Восстановление может начаться с записанных данных. |
+
+После цепочки `read → filter → map` одной задаче обычно достаточно соответствующей родительской партиции. После `reduceByKey` она зависит от частичных результатов нескольких задач. Если вместе с executor пропали необходимые shuffle-файлы, Spark может повторить часть предыдущей стадии. Значит, объём повторной работы определяется зависимостями и доступностью блоков.
+
+**Кеш и checkpoint решают разные задачи.** Потерянный кеш можно восстановить по сохраняющемуся lineage. Для надёжного RDD checkpoint в классическом Spark задают общий каталог через `sc.setCheckpointDir(...)`, вызывают `rdd.checkpoint()` до действия и запускают вычисление. `localCheckpoint()` тоже укорачивает lineage, но полагается на локальные блоки executors: их потеря может сделать восстановление невозможным. [RDD.checkpoint](https://spark.apache.org/docs/4.1.1/api/python/reference/api/pyspark.RDD.checkpoint.html) · [RDD.localCheckpoint](https://spark.apache.org/docs/4.1.1/api/python/reference/api/pyspark.RDD.localCheckpoint.html)
+
+В DataFrame API у `df.checkpoint()` и `df.localCheckpoint()` по умолчанию `eager=True`. Оба вызова сразу запускают расчёт и возвращают новый DataFrame. Чтобы отложить материализацию до действия, передай `eager=False`. Различие в надёжности хранения остаётся тем же. [DataFrame.checkpoint](https://spark.apache.org/docs/4.1.1/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.checkpoint.html) · [DataFrame.localCheckpoint](https://spark.apache.org/docs/4.1.1/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.localCheckpoint.html)

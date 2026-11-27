@@ -1,0 +1,28 @@
+---
+title: "SP-GiST"
+prev: {"label":"Как работает GiST?","link":"/interview/questions/database-theory/indexes/gist/"}
+next: {"label":"Как работает GIN?","link":"/interview/questions/database-theory/indexes/gin/"}
+tableOfContents: false
+editUrl: false
+---
+
+import IndexSearch from '../../../../../../components/interview/IndexSearch.astro';
+
+SP-GiST поддерживает деревья, в которых каждый внутренний узел делит пространство поиска на части. Для столбца `p` типа `point` возьмём встроенный класс операторов `quad_point_ops`. Каждая развилка делит плоскость на четыре квадранта. Запрос ищет точку с координатами `(7, 7)`.
+
+<IndexSearch method="spgist" />
+
+Оператор `~=` для типа `point` проверяет совпадение координат. Цветом выделяется область, в которой ещё может находиться искомая точка.
+
+```sql
+CREATE INDEX places_p_idx ON places USING spgist (p quad_point_ops);
+```
+
+<details>
+<summary>Всегда ли SP-GiST делит пространство на четыре части?</summary>
+
+Правило зависит от класса операторов. Квадродерево удобно показать на точках. Другие классы могут делить пространство по одной координате или разбирать текст по префиксам. В нашем примере точный поиск выбирает один квадрант на каждом уровне. Запрос по области может затронуть несколько.
+
+</details>
+
+[SP-GiST в документации PostgreSQL](https://www.postgresql.org/docs/19/spgist.html)

@@ -1,0 +1,28 @@
+---
+title: "Hash"
+prev: {"label":"Как работает B-tree?","link":"/interview/questions/database-theory/indexes/btree/"}
+next: {"label":"Как работает GiST?","link":"/interview/questions/database-theory/indexes/gist/"}
+tableOfContents: false
+editUrl: false
+---
+
+import IndexSearch from '../../../../../../components/interview/IndexSearch.astro';
+
+Для условия `sku = 'SKU-7'` PostgreSQL вычисляет хеш искомого значения и определяет корзину. В записи индекса хранятся 32-битный хеш и адрес строки. Одинаковый хеш возможен у разных значений, поэтому PostgreSQL перепроверяет исходное значение в таблице.
+
+<IndexSearch method="hash" />
+
+Обозначения `h₃`, `h₇` и `h₈` на схеме заменяют длинные хеш-коды. Корзина может занимать несколько страниц.
+
+```sql
+CREATE INDEX products_sku_idx ON products USING hash (sku);
+```
+
+<details>
+<summary>Подойдёт ли Hash для диапазона или сортировки?</summary>
+
+Hash поддерживает поиск по равенству. По хешу нельзя восстановить порядок исходных значений и определить, какие из них больше заданной границы. Для диапазона по `sku` или `ORDER BY sku` пригодится B-tree.
+
+</details>
+
+[Hash в документации PostgreSQL](https://www.postgresql.org/docs/19/hash-index.html)

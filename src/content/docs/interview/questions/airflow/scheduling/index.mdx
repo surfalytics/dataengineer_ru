@@ -1,0 +1,17 @@
+---
+title: "Catchup и расписание DAG"
+prev: {"label":"Чем max_active_tasks отличается от Pool и max_active_runs?","link":"/interview/questions/airflow/task-limits/"}
+next: {"label":"Как пересчитать историю за выбранные даты?","link":"/interview/questions/airflow/backfill/"}
+editUrl: false
+---
+
+**Catchup** определяет, создаст ли scheduler запуски за пропущенные интервалы расписания. Допустим, у суточного DAG с интервальным расписанием завершились периоды 1, 2 и 3 марта, за которые ещё нет запусков.
+
+| Настройка | Что сделает scheduler при включении DAG |
+| --- | --- |
+| `catchup=True` | Создаст недостающие запуски за все три завершённых интервала с учётом лимитов. |
+| `catchup=False` | Запланирует последний актуальный завершённый интервал. Предыдущие два автоматически навёрстывать не будет. |
+
+В конфигурации по умолчанию у **2.11** catchup включён, у **3.x** выключен. Явное значение на DAG делает поведение понятным при переносе. Для управляемой обработки конкретного исторического диапазона используют **backfill**, а `retries` повторяет упавший экземпляр задачи.
+
+Нагонять историю имеет смысл, если каждый запуск читает свой период. DAG, который всегда берёт «вчера относительно текущего времени», при трёх запусках может трижды обработать один день. [DAG Run и catchup](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dag-run.html) · [Изменения значений по умолчанию](https://airflow.apache.org/docs/apache-airflow/3.0.0/installation/upgrading_to_airflow3.html) · [Backfill](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/backfill.html)

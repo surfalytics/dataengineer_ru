@@ -1,0 +1,18 @@
+---
+title: "Что изменится, если заменить GROUP BY на PARTITION BY в SUM?"
+prev: {"label":"Какие бывают оконные функции?","link":"/interview/questions/sql/windows/"}
+next: {"label":"Как RANK и DENSE_RANK обрабатывают одинаковые значения?","link":"/interview/questions/sql/windows/ranking/"}
+tableOfContents: false
+editUrl: false
+---
+
+[Оконные функции](/interview/questions/sql/windows/)
+
+Для каждой поездки нужно вывести её длительность и сумму длительностей всех поездок с той же станции. Сколько строк вернёт каждый вариант?
+
+<details>
+<summary>Показать ответ</summary>
+
+`GROUP BY station_id` даст одну строку на станцию. `SUM(duration) OVER (PARTITION BY station_id)` сохранит строку каждой поездки и добавит к ней сумму по станции. Если со станции было пять поездок, в первом результате для неё будет одна строка, во втором — пять.
+
+</details>

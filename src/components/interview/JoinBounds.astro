@@ -1,0 +1,49 @@
+---
+import { joinPairs } from './sql-join-rows';
+const seq = (n: number) => Array.from({length: n}, (_, i) => i + 1);
+const examples = [
+  { title: 'Ключи не пересекаются', a: Array<number>(100).fill(1), b: Array<number>(10).fill(2),
+    left: '100 строк с id = 1', right: '10 строк с id = 2' },
+  { title: 'Каждая правая строка нашла одну левую', a: seq(100), b: seq(10),
+    left: 'id от 1 до 100, по одной строке', right: 'id от 1 до 10, по одной строке' },
+  { title: 'У всех строк один ключ', a: Array<number>(100).fill(1), b: Array<number>(10).fill(1),
+    left: '100 строк с id = 1', right: '10 строк с id = 1' },
+];
+---
+<div class="examples not-content">
+  {examples.map((ex, i) => {
+    const pairs = joinPairs(ex.a, ex.b, 'INNER');
+    const leftOnly = ex.a.length - new Set(pairs.map(p => p.left)).size;
+    const rightOnly = ex.b.length - new Set(pairs.map(p => p.right)).size;
+    const matched = pairs.length;
+    return <details open={i===0} name="sql-join-bound-case">
+      <summary>{ex.title}</summary>
+      <div class="flow">
+        <div><small>t1</small>{ex.left}</div>
+        <div><small>t2</small>{ex.right}</div>
+      </div>
+      <p class="groups">Совпавших пар — <b>{matched}</b>. Без пары слева — <b>{leftOnly}</b>, справа — <b>{rightOnly}</b>.</p>
+      <table><thead><tr><th scope="col">JOIN</th><th scope="col">Что войдёт в результат</th><th scope="col">Строк</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">INNER</th><td>{matched} пар</td><td>{matched}</td></tr>
+          <tr><th scope="row">LEFT</th><td>{matched} + {leftOnly} слева</td><td>{matched + leftOnly}</td></tr>
+          <tr><th scope="row">RIGHT</th><td>{matched} + {rightOnly} справа</td><td>{matched + rightOnly}</td></tr>
+          <tr><th scope="row">FULL</th><td>{matched} + {leftOnly} + {rightOnly}</td><td>{matched + leftOnly + rightOnly}</td></tr>
+          <tr><th scope="row">CROSS</th><td>100 × 10</td><td>{ex.a.length * ex.b.length}</td></tr>
+        </tbody>
+      </table>
+    </details>;
+  })}
+</div>
+<style>
+  .examples {margin:1rem 0;}
+  details {border:1px solid var(--sl-color-gray-5);border-radius:.45rem;padding:.65rem .85rem;margin:.45rem 0;}
+  summary {cursor:pointer;font-weight:600;color:var(--sl-color-white);}
+  .flow {display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.7rem;}
+  .flow div {border:1px solid var(--sl-color-gray-5);border-radius:.35rem;padding:.5rem;line-height:1.45;}
+  small {display:block;font-family:var(--sl-font-mono);color:var(--sl-color-text-accent);}
+  .groups {margin:.7rem 0;}
+  table {display:table;border-collapse:collapse;width:100%;font-size:.88rem;}
+  td,th {text-align:left;padding:.3rem .4rem;border-bottom:1px solid var(--sl-color-gray-5);}
+  td:last-child,th:last-child {text-align:right;font-variant-numeric:tabular-nums;}
+</style>

@@ -1,0 +1,33 @@
+---
+title: "WHERE и HAVING"
+prev: {"label":"Когда CTE делает запрос понятнее?","link":"/interview/questions/sql/cte/"}
+next: {"label":"Как убрать дубли?","link":"/interview/questions/sql/duplicates/"}
+editUrl: false
+---
+
+**`WHERE` фильтрует исходные строки до группировки. `HAVING` фильтрует группы после вычисления агрегатов.**
+
+Нужны регионы с оплаченной выручкой от 1000. У Севера две оплаты по 600 и один неоплаченный заказ на 5000. У Юга одна оплата на 800.
+
+```sql
+SELECT region, SUM(amount) AS revenue
+FROM sales
+WHERE status = 'paid'
+GROUP BY region
+HAVING SUM(amount) >= 1000;
+```
+
+`WHERE` уберёт неоплаченные 5000. После `GROUP BY` останутся два итога — Север с 1200 и Юг с 800. `HAVING` оставит только Север. Если вместо этого поставить `WHERE amount >= 1000`, обе оплаты по 600 исчезнут до суммирования.
+
+## Нужен ли GROUP BY для HAVING?
+
+Без `GROUP BY` агрегат по всем отобранным строкам образует одну группу. Поэтому `HAVING` может вернуть один итог или ни одного.
+
+```sql
+SELECT SUM(amount) AS revenue
+FROM sales
+WHERE status = 'paid'
+HAVING SUM(amount) >= 1000;
+```
+
+Для тех же данных запрос вернёт 2000. [Группировка и HAVING](https://www.postgresql.org/docs/18/queries-table-expressions.html#QUERIES-GROUP)

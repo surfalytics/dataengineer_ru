@@ -1,0 +1,163 @@
+---
+title: "План запроса"
+description: "Как PostgreSQL превращает SQL в дерево операций и что показывает EXPLAIN ANALYZE."
+prev: {"label":"Когда нужна блокировка?","link":"/interview/questions/database-theory/transactions/locks/"}
+next: {"label":"Что даёт партиционирование?","link":"/interview/questions/database-theory/partitioning/"}
+editUrl: false
+---
+
+import QueryPipeline from '../../../../../components/interview/QueryPipeline.astro';
+
+## Что такое план запроса?
+
+**План запроса** — дерево операций, которые PostgreSQL выбирает для получения результата. В нём видно, как сервер прочитает данные, соединит таблицы и отсортирует строки.
+
+## Как посмотреть план запроса?
+
+```sql
+EXPLAIN SELECT n FROM generate_series(1, 5) AS g(n) WHERE n > 2;
+EXPLAIN ANALYZE SELECT n FROM generate_series(1, 5) AS g(n) WHERE n > 2;
+```
+
+- **`EXPLAIN`** показывает выбранный физический план с оценками затрат и числа строк без выполнения запроса.
+- **`EXPLAIN ANALYZE`** выполняет запрос один раз и добавляет к плану фактическое время и число строк. `loops` показывает, сколько раз выполнился отдельный узел плана.
+
+## Какой запрос отправил клиент?
+
+Найдём три магазина с наибольшим числом оплаченных заказов. В таблице `orders` лежат 20 000 заказов, в `shops` — 100 магазинов. Представление `paid_orders` выбирает из `orders` заказы со статусом `paid`. Если у двух магазинов одинаковое число оплат, первым покажем тот, чьё название раньше по алфавиту.
+
+```sql
+SELECT s.name, count(*) AS paid_count
+FROM paid_orders AS o
+JOIN shops AS s ON s.id = o.shop_id
+GROUP BY s.name
+ORDER BY paid_count DESC, s.name
+LIMIT 3;
+```
+
+## От SQL до результата
+
+<QueryPipeline>
+
+| Магазин | Оплаченных заказов |
+| --- | ---: |
+| Магазин 1 | 3 107 |
+| Магазин 2 | 1 801 |
+| Магазин 18 | 129 |
+
+</QueryPipeline>
+
+## Как выглядит реальный план?
+
+Для отчёта по магазинам запросим также статистику обращений к страницам данных с помощью `BUFFERS`. В дереве увидим операции исполнителя. Разбор SQL, передачу по сети и отображение результата в приложении в нём искать не нужно.
+
+```sql
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT s.name, count(*) AS paid_count
+FROM paid_orders AS o
+JOIN shops AS s ON s.id = o.shop_id
+GROUP BY s.name
+ORDER BY paid_count DESC, s.name
+LIMIT 3;
+```
+
+Ниже вывод одного запуска в **PostgreSQL 18.7**. Отступ показывает, какому родительскому узлу передаёт строки дочерний узел.
+
+```text
+Limit  (cost=480.59..480.59 rows=3 width=25) (actual time=3.498..3.500 rows=3.00 loops=1)
+  Buffers: shared hit=116
+  ->  Sort  (cost=480.59..480.84 rows=100 width=25) (actual time=3.498..3.499 rows=3.00 loops=1)
+        Sort Key: (count(*)) DESC, s.name
+        Sort Method: top-N heapsort  Memory: 25kB
+        Buffers: shared hit=116
+        ->  HashAggregate  (cost=478.29..479.29 rows=100 width=25) (actual time=3.464..3.471 rows=100.00 loops=1)
+              Group Key: s.name
+              Batches: 1  Memory Usage: 32kB
+              Buffers: shared hit=110
+              ->  Hash Join  (cost=3.25..403.29 rows=15000 width=17) (actual time=0.027..2.128 rows=15000.00 loops=1)
+                    Hash Cond: (orders.shop_id = s.id)
+                    Buffers: shared hit=110
+                    ->  Seq Scan on orders  (cost=0.00..359.00 rows=15000 width=4) (actual time=0.005..1.008 rows=15000.00 loops=1)
+                          Filter: (status = 'paid'::text)
+                          Rows Removed by Filter: 5000
+                          Buffers: shared hit=109
+                    ->  Hash  (cost=2.00..2.00 rows=100 width=21) (actual time=0.016..0.016 rows=100.00 loops=1)
+                          Buckets: 1024  Batches: 1  Memory Usage: 14kB
+                          Buffers: shared hit=1
+                          ->  Seq Scan on shops s  (cost=0.00..2.00 rows=100 width=21) (actual time=0.002..0.006 rows=100.00 loops=1)
+                                Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=237
+Planning Time: 0.552 ms
+Execution Time: 3.534 ms
+```
+
+## Как из 20 000 заказов получились три строки?
+
+```text
+Limit  ·  3 строки клиенту
+└─ Sort  ·  тройка лидеров из 100 групп
+   └─ HashAggregate  ·  100 групп
+      └─ Hash Join  ·  15 000 совпадений
+         ├─ Seq Scan orders  ·  15 000 оплат
+         └─ Hash  ·  по ключу shops.id
+            └─ Seq Scan shops  ·  100 магазинов
+```
+
+**Исполнитель запрашивает строки от корня к листьям, а готовые строки поднимаются от дочерних узлов к родительским.** Отступы показывают зависимости. Например, ветка `Hash` напечатана второй, хотя хеш-таблица нужна уже для поиска первого совпадения.
+
+1. **Построить справочник.** `Seq Scan on shops` читает 100 магазинов. `Hash` строит в памяти таблицу, в которой по `shops.id` можно найти магазин.
+2. **Прочитать и соединить заказы.** `Seq Scan on orders` проверяет 20 000 строк. Фильтр пропускает 15 000 оплат и отбрасывает 5 000 заказов. Для каждой оплаты `Hash Join` ищет магазин по `orders.shop_id`. Поэтому в узле `HashAggregate` окажутся ровно 15 000 строк.
+3. **Посчитать оплаты.** `HashAggregate` группирует эти строки по названию магазина и считает заказы в каждой группе. На выходе остаются 100 строк, по одной на магазин.
+4. **Определить тройку.** `Sort` рассматривает все 100 итогов. Метод `top-N heapsort` позволяет удерживать только кандидатов в первую тройку. `Limit` запрашивает три строки и завершает чтение. Ограничение помогло сортировке, но для подсчёта оплат всё равно понадобились все 15 000 совпадений.
+
+## Что искать в EXPLAIN ANALYZE?
+
+| Поле | Как прочитать этот запуск |
+| --- | --- |
+| `cost`, `rows`, `width` | Первая пара у `Seq Scan on orders` — оценка затрат до первой строки и до полного завершения, в условных единицах планировщика. Он ожидал выдать 15 000 строк средней шириной 4 байта. |
+| `actual time`, `rows`, `loops` | У того же узла первая строка появилась через 0,005 мс, все строки он отдал за 1,008 мс. Фактически выдал 15 000 строк за один проход. При нескольких проходах время и число строк указаны в среднем за проход. |
+| `Filter`, `Rows Removed by Filter` | Видны условие и число отброшенных строк. Вместе с 15 000 выданных строк они объясняют, почему таблица дала 20 000 проверок. |
+| `Sort Method`, `Memory`, `Batches` | Для поиска тройки сортировке хватило 25 КБ. У `Hash` одна партия (`Batches: 1`), хеш-таблица магазинов поместилась в памяти. |
+| `Buffers` | Корневой узел сообщил `shared hit=116`. Это число обращений, при которых нужная страница уже была в общих буферах PostgreSQL. При `shared read` страницу пришлось бы загрузить в буферы, возможно из кеша ОС. Счётчик родителя включает работу потомков, складывать его по уровням нельзя. |
+| `Planning Time`, `Execution Time` | Сервер потратил 0,552 мс на планирование и 3,534 мс на выполнение с измерениями. Время доставки строк и их отображения у клиента измеряется отдельно. |
+
+Для разбора покажите пальцем на `Sort`: оценка `rows=100`, фактически выдано `rows=3`. Причина видна прямо над узлом — родительский `Limit` запросил только три результата. Сравнивать прогноз и факт полезно с учётом того, сколько строк потребовал родитель. [Как читать EXPLAIN в PostgreSQL](https://www.postgresql.org/docs/18/using-explain.html)
+
+<details>
+<summary>Как воспроизвести пример в пустой базе?</summary>
+
+```sql
+CREATE TABLE shops (
+    id integer PRIMARY KEY,
+    name text NOT NULL UNIQUE
+);
+CREATE TABLE orders (
+    id integer PRIMARY KEY,
+    shop_id integer NOT NULL REFERENCES shops,
+    status text NOT NULL
+);
+
+INSERT INTO shops
+SELECT i, 'Магазин ' || i FROM generate_series(1, 100) AS g(i);
+
+INSERT INTO orders
+SELECT i,
+       CASE WHEN i % 5 = 0 THEN 1
+            WHEN i % 7 = 0 THEN 2
+            ELSE 1 + (i / 8) % 100 END,
+       CASE WHEN i % 4 = 0 THEN 'new' ELSE 'paid' END
+FROM generate_series(1, 20000) AS g(i);
+
+CREATE VIEW paid_orders AS
+SELECT shop_id FROM orders WHERE status = 'paid';
+
+ANALYZE shops;
+ANALYZE orders;
+```
+
+После подготовки данных выполните оба запроса выше. При повторном запуске время и обращения к буферам могут отличаться. Версия PostgreSQL, статистика и настройки планировщика также влияют на выбор операций.
+
+</details>
+
+[Стадии обработки запроса](https://www.postgresql.org/docs/18/query-path.html) · [Параметры EXPLAIN](https://www.postgresql.org/docs/18/sql-explain.html)

@@ -1,0 +1,190 @@
+---
+import { leftRows, rightRows } from './join-trace.mjs';
+const { trace } = Astro.props;
+const nodes = [
+  { name: 'A0', rows: leftRows }, { name: 'B0', rows: rightRows },
+  { name: 'A', rows: leftRows }, { name: 'B', rows: rightRows },
+  { name: 'A1', rows: leftRows }, { name: 'B1', rows: rightRows },
+];
+const corners = ['A0', 'B0', 'A1', 'B1'];
+---
+<hash-partitions data-trace={JSON.stringify(trace)}>
+  <div class="board">
+    <svg class="routes" aria-hidden="true">
+      {corners.map(name => <path data-route={name} />)}
+      <path data-match hidden />
+    </svg>
+    {nodes.map(({name, rows}) => {
+      const isInput = name.length === 1;
+      const shown = isInput ? rows : rows.filter(row => row.key % 2 === Number(name[1]));
+      return (
+        <section class:list={['node', { source: isInput }]} data-node={name} data-side={name[0]} style={`grid-area:${name}`}>
+          <div class="box-title">{isInput ? 'Таблица' : 'Партиция'} <b>{name}</b></div>
+          <table aria-label={`${isInput ? 'Таблица' : 'Партиция'} ${name}`}>
+            <thead><tr><th scope="col">Ключ</th><th scope="col">Значение</th></tr></thead>
+            <tbody>{shown.map(row => (
+              <tr data-row={row.id} data-filled={isInput ? 'yes' : 'no'}>
+                <td>{row.key}</td><td>{row.value}</td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </section>
+      );
+    })}
+    <span class="token" aria-hidden="true" hidden></span>
+  </div>
+  <div class="index-strip">
+    <span data-index-label>Номер партиции</span>
+    <code data-index-value>ключ % 2</code>
+  </div>
+</hash-partitions>
+
+<script>
+  type Move = { side: string; target: string; row: { id: string; key: number } };
+  interface Frame {
+    partitions?: Record<string, string[]>;
+    move?: Move;
+    group?: number;
+    focus?: string[];
+    index?: string;
+  }
+  class HashPartitions extends HTMLElement {
+    private cleanup?: () => void;
+    connectedCallback() {
+      const player = this.closest('join-walkthrough')!;
+      const board = this.querySelector<HTMLElement>('.board')!;
+      const token = this.querySelector<HTMLElement>('.token')!;
+      const paths = Array.from(this.querySelectorAll<SVGPathElement>('[data-route]'));
+      const match = this.querySelector<SVGPathElement>('[data-match]')!;
+      const plates = Array.from(this.querySelectorAll<HTMLElement>('[data-node]'));
+      const nodes = Object.fromEntries(plates.map(node => [node.dataset.node!, node]));
+      const label = this.querySelector<HTMLElement>('[data-index-label]')!;
+      const value = this.querySelector<HTMLElement>('[data-index-value]')!;
+      const trace: (Frame | null)[] = JSON.parse(this.dataset.trace!);
+      const listeners = new AbortController();
+      let frame: Frame = {};
+      let flight: Animation | undefined;
+      let arrival: Animation | undefined;
+
+      function connect(from: HTMLElement, to: HTMLElement, fromRow?: string, toRow?: string) {
+        const area = board.getBoundingClientRect();
+        const a = from.getBoundingClientRect();
+        const b = to.getBoundingClientRect();
+        const rowY = (node: HTMLElement, row: string | undefined, box: DOMRect) => {
+          const cell = row && node.querySelector<HTMLElement>('[data-row="' + row + '"]');
+          const bounds = cell ? cell.getBoundingClientRect() : box;
+          return bounds.top + bounds.height / 2 - area.top;
+        };
+        const vertical = Math.abs(a.left + a.width / 2 - b.left - b.width / 2) < 12;
+        if (vertical) {
+          const down = b.top > a.top;
+          const x = a.left + a.width / 2 - area.left;
+          return `M ${x} ${(down ? a.bottom : a.top) - area.top} V ${(down ? b.top : b.bottom) - area.top}`;
+        }
+        const right = b.left > a.left;
+        const x1 = (right ? a.right : a.left) - area.left;
+        const x2 = (right ? b.left : b.right) - area.left;
+        const y1 = rowY(from, fromRow, a);
+        const y2 = rowY(to, toRow, b);
+        const mid = (x1 + x2) / 2;
+        return `M ${x1} ${y1} C ${mid} ${y1}, ${mid} ${y2}, ${x2} ${y2}`;
+      }
+      function layout() {
+        const move = frame.move;
+        for (const path of paths) {
+          const name = path.dataset.route!;
+          const active = move?.target === name;
+          const row = active ? move?.row.id : undefined;
+          const d = connect(nodes[name[0]], nodes[name], row, row);
+          path.setAttribute('d', d);
+          path.toggleAttribute('data-active', active);
+          if (active) token.style.offsetPath = 'path("' + d + '")';
+        }
+        const hasPair = frame.group !== undefined && frame.focus?.length === 2;
+        match.style.display = hasPair ? 'block' : 'none';
+        if (hasPair) {
+          match.removeAttribute('hidden');
+          match.setAttribute('d', connect(nodes['A' + frame.group], nodes['B' + frame.group], frame.focus![0], frame.focus![1]));
+        }
+      }
+      function render() {
+        flight?.cancel();
+        arrival?.cancel();
+        frame = trace[Number(player.getAttribute('data-current') ?? 0)] ?? {};
+        const move = frame.move;
+        for (const node of plates) {
+          const name = node.dataset.node!;
+          const isSource = name.length === 1;
+          const members = frame.partitions?.[name] ?? [];
+          node.toggleAttribute('data-active', move ? name === move.target || name === move.side : String(frame.group) === name[1]);
+          for (const row of node.querySelectorAll<HTMLElement>('[data-row]')) {
+            const id = row.dataset.row!;
+            row.dataset.filled = isSource || members.includes(id) ? 'yes' : 'no';
+            const highlight = move ? id === move.row.id : !isSource && frame.focus?.includes(id);
+            row.toggleAttribute('data-reading', Boolean(highlight));
+          }
+        }
+        label.textContent = frame.group === undefined ? 'Номер партиции' : 'Хеш-таблица B' + frame.group;
+        value.textContent = frame.index ?? 'ключ % 2';
+        token.hidden = true;
+        layout();
+        if (!move || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        token.hidden = false;
+        token.textContent = String(move.row.key);
+        token.dataset.side = move.side;
+        const destination = nodes[move.target].querySelector<HTMLElement>('[data-row="' + move.row.id + '"]')!;
+        flight = token.animate([
+          { offsetDistance: '0%', opacity: 0 }, { offsetDistance: '8%', opacity: 1, offset: .08 },
+          { offsetDistance: '94%', opacity: 1, offset: .94 }, { offsetDistance: '100%', opacity: 0 },
+        ], { duration: 600, easing: 'ease-in-out', fill: 'forwards' });
+        arrival = destination.animate([{opacity:0}, {opacity:0,offset:.88}, {opacity:1}], {duration:600, fill:'forwards'});
+      }
+      function syncMotion() {
+        if (player.hasAttribute('data-halted')) {
+          flight?.pause();
+          arrival?.pause();
+        }
+      }
+      player.addEventListener('join-frame', render, {signal:listeners.signal});
+      player.addEventListener('join-playback', syncMotion, {signal:listeners.signal});
+      const resize = new ResizeObserver(layout);
+      resize.observe(board);
+      render();
+      syncMotion();
+      this.cleanup = () => { listeners.abort(); resize.disconnect(); flight?.cancel(); arrival?.cancel(); };
+    }
+    disconnectedCallback() { this.cleanup?.(); }
+  }
+  if (!customElements.get('hash-partitions')) customElements.define('hash-partitions', HashPartitions);
+</script>
+
+<style>
+  hash-partitions { display:block; container-type:inline-size; }
+  .board { position:relative; isolation:isolate; display:grid; align-items:center; grid-template-columns:minmax(0,1fr) 8% minmax(0,1.1fr) 2% minmax(0,1.1fr) 8% minmax(0,1fr); grid-template-areas:'A0 . A . B . B0' 'A1 . A . B . B1'; row-gap:2.7rem; }
+  .routes { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+  .routes path { fill:none; stroke:var(--sl-color-gray-5); stroke-width:1.5; }
+  .routes [data-active], .routes [data-match] { stroke:var(--sl-color-accent); stroke-width:2; }
+  [data-side="A"] { --ink:var(--sl-color-accent-high); --wash:var(--sl-color-accent-low); }
+  [data-side="B"] { --ink:light-dark(#634199,#dbc7ff); --wash:light-dark(#eee7fa,#30243e); }
+  .routes [data-route^="B"][data-active] {stroke:light-dark(#8563b5,#bf9fe8);}
+  .node { position:relative; min-width:0; min-height:6.6rem; background:var(--sl-color-bg); border:1px solid var(--sl-color-gray-5); border-radius:.45rem; overflow:hidden; }
+  .node[data-active] { border-color:var(--ink); }
+  .source { border-top:2px solid var(--ink); }
+  .box-title { display:flex; align-items:baseline; justify-content:space-between; gap:.25rem; padding:.38rem .6rem; border-bottom:1px solid var(--line); font-size:.85rem; font-weight:600; color:var(--sl-color-white); }
+  .box-title b {color:var(--ink); font:600 .85rem var(--sl-font-mono);}
+  .node table { display:table; width:100%; table-layout:fixed; margin:0; border-collapse:collapse; font: .82rem/1.35 var(--sl-font-mono); }
+  .node th,.node td { text-align:left; padding:.18rem .4rem; border:0; }
+  .node th:first-child {width:36%;}
+  .node th { color:var(--sl-color-gray-3); font-size:.72rem; font-weight:normal; }
+  [data-filled="no"] { visibility:hidden; }
+  [data-reading] { background:var(--wash); color:var(--ink); font-weight:700; }
+  .token { position:absolute; z-index:2; top:0; left:0; width:1.45rem; height:1.45rem; display:grid; place-items:center; border-radius:50%; box-shadow:0 0 0 2px var(--sl-color-bg); background:var(--ink); color:var(--sl-color-bg); font:700 .85rem var(--sl-font-mono); offset-anchor:center; offset-rotate:0deg; pointer-events:none; }
+  .token[hidden] {display:none;}
+  .index-strip { display:flex; align-items:baseline; flex-wrap:wrap; gap:.35rem .8rem; margin:.8rem 0 0; font-size:.82rem; color:var(--sl-color-gray-3); }
+  .index-strip code { background:transparent; padding:0; font:.82rem var(--sl-font-mono); color:var(--sl-color-white); }
+  @container (max-width:39rem) {
+    .board {grid-template-columns:1fr 1fr; grid-template-areas:'A0 B0' 'A B' 'A1 B1'; gap:1.8rem 1.2rem;}
+    .node {min-height:5.4rem;}
+    .node th,.node td {padding:.12rem .4rem;}
+  }
+</style>

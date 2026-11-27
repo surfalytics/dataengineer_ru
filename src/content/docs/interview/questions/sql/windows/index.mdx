@@ -1,0 +1,47 @@
+---
+title: "Оконные функции"
+prev: {"label":"Все подтемы SQL","link":"/interview/questions/sql/"}
+next: {"label":"Что изменится, если заменить GROUP BY на PARTITION BY в SUM?","link":"/interview/questions/sql/windows/partition-by/"}
+editUrl: false
+---
+
+Оконная функция вычисляет значение для каждой строки с учётом других строк. `OVER` задаёт окно. `PARTITION BY` разделяет строки на независимые группы, `ORDER BY` внутри окна задаёт порядок, а рамка (`ROWS`, `RANGE` или `GROUPS`) уточняет, какие строки участвуют в вычислении для текущей строки.
+
+## Какие бывают оконные функции?
+
+| Группа | Примеры | Что получим для текущей строки |
+| --- | --- | --- |
+| Агрегирующие | `SUM`, `AVG`, `COUNT`, `MIN`, `MAX` с `OVER` | Итог по окну или по его рамке. |
+| Ранжирующие | `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `NTILE` | Порядковый номер, место с учётом равенств или номер группы. |
+| Навигационные | `LAG`, `LEAD`, `FIRST_VALUE`, `LAST_VALUE`, `NTH_VALUE` | Значение из другой строки. `LAG` и `LEAD` ищут по смещению внутри раздела, а `FIRST_VALUE` и `LAST_VALUE` учитывают рамку. |
+
+**Скользящее окно** — это рамка, которая сдвигается вместе с текущей строкой. Например, среднее текущей и предыдущей продажи вычисляет обычная агрегирующая функция `AVG` в такой рамке.
+
+## Один набор данных, три вида вычислений
+
+```sql
+WITH sales(day_no, amount) AS (
+    VALUES (1, 10), (2, 20), (3, 30)
+)
+SELECT day_no, amount,
+       LAG(amount) OVER (ORDER BY day_no) AS prev_amount,
+       RANK() OVER (ORDER BY amount DESC) AS place,
+       ROUND(AVG(amount) OVER (
+           ORDER BY day_no ROWS BETWEEN 1 PRECEDING AND CURRENT ROW
+       ), 1) AS moving_avg
+FROM sales
+ORDER BY day_no;
+```
+
+| day_no | amount | prev_amount | place | moving_avg |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 10 | NULL | 3 | 10,0 |
+| 2 | 20 | 10 | 2 | 15,0 |
+| 3 | 30 | 20 | 1 | 25,0 |
+
+Для третьего дня рамка содержит 20 и 30. Первая продажа уже за её границей. `ORDER BY` внутри `OVER` определяет расчёт, а последний `ORDER BY` задаёт порядок выдачи результата. [Оконные функции PostgreSQL](https://www.postgresql.org/docs/18/functions-window.html)
+
+## Вопросы для самопроверки
+
+- [Что изменится, если заменить GROUP BY на PARTITION BY в SUM?](/interview/questions/sql/windows/partition-by/)
+- [Как RANK и DENSE_RANK обрабатывают одинаковые значения?](/interview/questions/sql/windows/ranking/)

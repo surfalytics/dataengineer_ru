@@ -1,0 +1,10 @@
+SET 'execution.runtime-mode' = 'batch';
+SET 'table.dml-sync' = 'true';
+SET 'sql-client.execution.result-mode' = 'tableau';
+CREATE CATALOG local_catalog WITH ('type'='iceberg','catalog-type'='hadoop','warehouse'='file:///tmp/iceberg-warehouse');
+USE CATALOG local_catalog;
+CREATE DATABASE iceberg_db;
+USE iceberg_db;
+CREATE TABLE employee (id BIGINT, role STRING, department STRING, salary FLOAT, region STRING);
+INSERT INTO employee VALUES (1, 'Software Engineer', 'Engineering', 25000, 'NA');
+SELECT * FROM employee;

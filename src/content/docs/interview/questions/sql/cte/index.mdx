@@ -1,0 +1,31 @@
+---
+title: "CTE"
+prev: {"label":"Как RANK и DENSE_RANK обрабатывают одинаковые значения?","link":"/interview/questions/sql/windows/ranking/"}
+next: {"label":"Чем WHERE отличается от HAVING?","link":"/interview/questions/sql/aggregation/"}
+editUrl: false
+---
+
+**CTE (Common Table Expression)** — именованный результат запроса в секции `WITH`. Его имя доступно внутри одной SQL-команды. CTE улучшает читаемость, когда у промежуточного результата есть понятный смысл и его можно назвать.
+
+## Как разделить запрос на понятные части?
+
+Нужно найти регионы с оплаченной выручкой от 1000. В `revenue_by_region` одна строка означает один регион. Основной запрос читает готовые итоги и выбирает подходящие.
+
+```sql
+WITH revenue_by_region AS (
+    SELECT region, SUM(amount) AS revenue
+    FROM sales
+    WHERE status = 'paid'
+    GROUP BY region
+)
+SELECT region, revenue
+FROM revenue_by_region
+WHERE revenue >= 1000
+ORDER BY revenue DESC;
+```
+
+Название `revenue_by_region` подсказывает, что уже посчитано. Второй CTE имеет смысл, когда появляется следующий самостоятельный шаг, например ранжирование регионов.
+
+## Выполняется ли CTE отдельно?
+
+PostgreSQL может встроить нерекурсивный CTE без побочных эффектов в основной запрос. При одном обращении это обычное поведение. При нескольких обращениях такой CTE по умолчанию материализуется, и дальнейшие обращения используют общий результат. Проверить выбранный вариант помогает `EXPLAIN`. [WITH в PostgreSQL](https://www.postgresql.org/docs/18/queries-with.html)
