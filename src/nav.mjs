@@ -126,6 +126,11 @@ export const topics = [
             items: [{ autogenerate: { directory: 'book-summaries/engineering/analytics-engineering-with-sql-and-dbt' } }],
           },
           {
+            label: 'Practical Lakehouse Architecture',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/practical-lakehouse-architecture' } }],
+          },
+          {
             label: 'Redefining Data Engineering with AI',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/redefining-data-engineering-with-ai' } }],
