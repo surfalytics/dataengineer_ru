@@ -1,0 +1,23 @@
+---
+title: "Как диагностировать data skew на вкладке Stages?"
+head:
+  - tag: title
+    content: "Диагностика skew в Stages в Spark | Инжиниринг Данных"
+description: "Как читать Min, Median и Max для времени, объёма и числа записей и отличить горячую shuffle-партицию от медленного executor."
+prev: {"label":"Что такое data skew?","link":"/interview/questions/spark/data-skew/"}
+next: {"label":"Как устранять data skew?","link":"/interview/questions/spark/skew-solutions/"}
+tableOfContents: false
+editUrl: false
+---
+
+Открой нужную стадию на вкладке **Stages** и найди таблицу **Summary Metrics for Completed Tasks**. Сравни `Min`, `Median` (50-й процентиль) и `Max` внутри **одной стадии**. Пока самая долгая задача работает, её ещё нет в сводке завершённых задач. Посмотри также список активных задач и повтори сравнение после завершения.
+
+| Метрика | Min | Median | Max |
+| --- | ---: | ---: | ---: |
+| Duration | 2 с | 5 с | 3 мин |
+| Shuffle Read Size | 2 МиБ | 8 МиБ | 1,4 ГиБ |
+| Shuffle Read Records | 12 тыс. | 48 тыс. | 8 млн |
+
+Это учебный пример. Медианная задача закончила за пять секунд, а максимальная получила на порядки больше строк. **Проверь в таблице Tasks, что максимумы времени и чтения относятся к одной задаче.** Посмотри её ID, партицию, executor, spill и время GC. Маленький Min сам по себе может означать просто пустую партицию.
+
+Для стадии чтения файлов сравни `Input Size / Records`, для стадии после обмена — `Shuffle Read Size / Records`. Если время сильно различается при похожем объёме чтения, проверь GC, ожидание сети и повторы задач. Один высокий Max по длительности ещё не доказывает перекос по ключу. [Метрики вкладки Stages](https://spark.apache.org/docs/4.1.1/web-ui.html#stages-tab)

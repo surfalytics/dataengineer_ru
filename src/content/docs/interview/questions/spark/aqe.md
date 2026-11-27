@@ -4,7 +4,7 @@ head:
   - tag: title
     content: "Как работает AQE в Spark SQL | Инжиниринг Данных"
 description: "Как Spark использует статистику завершённых этапов, объединяет мелкие shuffle-партиции, меняет стратегию join и обрабатывает перекос данных."
-prev: {"label":"Полный план запроса в Spark","link":"/interview/questions/spark/query-lifecycle/"}
+prev: {"label":"Как Apache Arrow ускоряет Pandas UDF?","link":"/interview/questions/spark/pandas-udf-arrow/"}
 next: {"label":"Является ли план запроса конечным?","link":"/interview/questions/spark/final-plan/"}
 tableOfContents: false
 editUrl: false

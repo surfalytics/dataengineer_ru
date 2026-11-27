@@ -3,7 +3,7 @@ title: "Spark"
 head:
   - tag: title
     content: "Вопросы по Apache Spark для собеседования | Инжиниринг Данных"
-description: "Вопросы по Spark для собеседования. Архитектура, Spark UI, MapReduce, Shuffle и задачи. Как Catalyst строит план запроса и что AQE меняет во время выполнения."
+description: "Вопросы по Apache Spark для собеседования. Архитектура, DataFrame и SQL, кеш, перекос данных, память, диагностика OOM и ресурсы в Kubernetes."
 prev: false
 next: {"label":"Из каких компонентов состоит Spark-приложение?","link":"/interview/questions/spark/components/"}
 tableOfContents: false
@@ -14,17 +14,69 @@ editUrl: false
 
 ## Вопросы с разбором
 
+### Архитектура и восстановление
+
 1. [Из каких компонентов состоит Spark-приложение?](/interview/questions/spark/components/)
 2. [Как запускается Spark-приложение](/interview/questions/spark/application-launch/)
-3. [Какие вкладки есть в Spark UI и для чего они нужны?](/interview/questions/spark/web-ui/)
-4. [Как работают Map и Reduce?](/interview/questions/spark/map-reduce/)
-5. [Как работает Shuffle в Spark?](/interview/questions/spark/shuffle/)
-6. [Что такое lazy evaluation в Spark?](/interview/questions/spark/lazy-evaluation/)
-7. [Job -> Stages -> Task](/interview/questions/spark/execution/)
-8. [Что такое Catalyst и как он работает с DataFrame API?](/interview/questions/spark/catalyst/)
-9. [Кто строит логический план запроса?](/interview/questions/spark/logical-plan/)
-10. [Кто строит физический план запроса?](/interview/questions/spark/physical-plan/)
-11. [Полный план запроса в Spark](/interview/questions/spark/query-lifecycle/)
-12. [Как работает Adaptive Query Execution (AQE)?](/interview/questions/spark/aqe/)
-13. [Является ли план запроса конечным?](/interview/questions/spark/final-plan/)
-14. [Как Spark выбирает стратегию JOIN?](/interview/questions/spark/join-strategies/)
+3. [Что такое SparkSession?](/interview/questions/spark/spark-session/)
+4. [Как работает Spark Connect?](/interview/questions/spark/spark-connect/)
+5. [Что такое RDD и как он восстанавливает данные?](/interview/questions/spark/rdd/)
+6. [Что Spark пересчитывает при потере executor?](/interview/questions/spark/executor-loss/)
+7. [Какие вкладки есть в Spark UI и для чего они нужны?](/interview/questions/spark/web-ui/)
+
+### Как выполняются вычисления
+
+8. [Как работают Map и Reduce?](/interview/questions/spark/map-reduce/)
+9. [Как работает Shuffle в Spark?](/interview/questions/spark/shuffle/)
+10. [Что такое lazy evaluation в Spark?](/interview/questions/spark/lazy-evaluation/)
+11. [Job -> Stages -> Task](/interview/questions/spark/execution/)
+12. [Чем отличаются where() и filter()?](/interview/questions/spark/where-filter/)
+13. [Когда выбрать coalesce(), а когда repartition()?](/interview/questions/spark/repartition-coalesce/)
+14. [Почему окно без partitionBy() может стать узким местом?](/interview/questions/spark/global-window/)
+
+### Планы и оптимизация Spark SQL
+
+15. [Что такое Catalyst и как он работает с DataFrame API?](/interview/questions/spark/catalyst/)
+16. [Кто строит логический план запроса?](/interview/questions/spark/logical-plan/)
+17. [Кто строит физический план запроса?](/interview/questions/spark/physical-plan/)
+18. [Полный план запроса в Spark](/interview/questions/spark/query-lifecycle/)
+19. [Что такое Column Pruning?](/interview/questions/spark/column-pruning/)
+20. [Как работает Dynamic Partition Pruning (DPP)?](/interview/questions/spark/dynamic-partition-pruning/)
+21. [Что такое UDF и почему для Catalyst это «чёрный ящик»?](/interview/questions/spark/udf/)
+22. [Как Apache Arrow ускоряет Pandas UDF?](/interview/questions/spark/pandas-udf-arrow/)
+23. [Как работает Adaptive Query Execution (AQE)?](/interview/questions/spark/aqe/)
+24. [Является ли план запроса конечным?](/interview/questions/spark/final-plan/)
+
+### JOIN и broadcast
+
+25. [Как Spark выбирает стратегию JOIN?](/interview/questions/spark/join-strategies/)
+26. [Как работает Broadcast JOIN и какие у него ограничения?](/interview/questions/spark/broadcast-join/)
+27. [Что такое хинты в Spark?](/interview/questions/spark/join-hints/)
+28. [Почему broadcast() может не дать BroadcastHashJoin?](/interview/questions/spark/broadcast-hint-failure/)
+29. [Что такое Broadcast Variable?](/interview/questions/spark/broadcast-variable/)
+
+### Кеш, действия и файлы
+
+30. [Чем cache() отличается от persist()?](/interview/questions/spark/cache-persist/)
+31. [Почему повторный Action снова вычисляет DataFrame?](/interview/questions/spark/repeated-actions/)
+32. [Чем опасен cache() без unpersist()?](/interview/questions/spark/cache-lifetime/)
+33. [Чем опасны collect() и toPandas()?](/interview/questions/spark/collect-to-pandas/)
+34. [В чём проблема маленьких файлов?](/interview/questions/spark/small-files/)
+
+### Перекос и параллелизм
+
+35. [Что такое data skew?](/interview/questions/spark/data-skew/)
+36. [Как диагностировать data skew на вкладке Stages?](/interview/questions/spark/skew-ui/)
+37. [Как устранять data skew?](/interview/questions/spark/skew-solutions/)
+38. [Когда параллелизм Spark стоит увеличить, а когда уменьшить?](/interview/questions/spark/parallelism/)
+39. [Когда менять размер партиций и что это меняет?](/interview/questions/spark/partition-size/)
+
+### Память и ресурсы
+
+40. [Сколько ресурсов дать драйверу и executors?](/interview/questions/spark/cluster-sizing/)
+41. [Как устроена память драйвера?](/interview/questions/spark/driver-memory/)
+42. [Как устроена память executor?](/interview/questions/spark/executor-memory/)
+43. [Executor упал по OOM. Как найти причину?](/interview/questions/spark/executor-oom/)
+44. [В каких случаях драйвер может упасть по памяти?](/interview/questions/spark/driver-oom/)
+45. [Как работает Dynamic Resource Allocation?](/interview/questions/spark/dynamic-allocation/)
+46. [Почему в одном длинном запуске растёт число pods или расход памяти?](/interview/questions/spark/kubernetes-allocation/)

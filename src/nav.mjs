@@ -807,6 +807,22 @@ export const topics = [
               "link": "/interview/questions/spark/application-launch/"
             },
             {
+              "label": "SparkSession",
+              "link": "/interview/questions/spark/spark-session/"
+            },
+            {
+              "label": "Spark Connect",
+              "link": "/interview/questions/spark/spark-connect/"
+            },
+            {
+              "label": "RDD и lineage",
+              "link": "/interview/questions/spark/rdd/"
+            },
+            {
+              "label": "Потеря executor и checkpoint",
+              "link": "/interview/questions/spark/executor-loss/"
+            },
+            {
               "label": "Вкладки Spark UI",
               "link": "/interview/questions/spark/web-ui/"
             },
@@ -827,6 +843,18 @@ export const topics = [
               "link": "/interview/questions/spark/execution/"
             },
             {
+              "label": "where() и filter()",
+              "link": "/interview/questions/spark/where-filter/"
+            },
+            {
+              "label": "coalesce() и repartition()",
+              "link": "/interview/questions/spark/repartition-coalesce/"
+            },
+            {
+              "label": "Окна без partitionBy()",
+              "link": "/interview/questions/spark/global-window/"
+            },
+            {
               "label": "Catalyst",
               "link": "/interview/questions/spark/catalyst/"
             },
@@ -843,6 +871,22 @@ export const topics = [
               "link": "/interview/questions/spark/query-lifecycle/"
             },
             {
+              "label": "Column Pruning",
+              "link": "/interview/questions/spark/column-pruning/"
+            },
+            {
+              "label": "Dynamic Partition Pruning",
+              "link": "/interview/questions/spark/dynamic-partition-pruning/"
+            },
+            {
+              "label": "UDF и Catalyst",
+              "link": "/interview/questions/spark/udf/"
+            },
+            {
+              "label": "Apache Arrow и Pandas UDF",
+              "link": "/interview/questions/spark/pandas-udf-arrow/"
+            },
+            {
               "label": "Adaptive Query Execution (AQE)",
               "link": "/interview/questions/spark/aqe/"
             },
@@ -853,6 +897,90 @@ export const topics = [
             {
               "label": "Стратегии JOIN в Spark",
               "link": "/interview/questions/spark/join-strategies/"
+            },
+            {
+              "label": "Broadcast JOIN и его ограничения",
+              "link": "/interview/questions/spark/broadcast-join/"
+            },
+            {
+              "label": "Хинты в Spark",
+              "link": "/interview/questions/spark/join-hints/"
+            },
+            {
+              "label": "Когда broadcast() не срабатывает",
+              "link": "/interview/questions/spark/broadcast-hint-failure/"
+            },
+            {
+              "label": "Broadcast Variable",
+              "link": "/interview/questions/spark/broadcast-variable/"
+            },
+            {
+              "label": "cache() и persist()",
+              "link": "/interview/questions/spark/cache-persist/"
+            },
+            {
+              "label": "Повторный Action и пересчёт",
+              "link": "/interview/questions/spark/repeated-actions/"
+            },
+            {
+              "label": "Когда нужен unpersist()",
+              "link": "/interview/questions/spark/cache-lifetime/"
+            },
+            {
+              "label": "collect() и toPandas()",
+              "link": "/interview/questions/spark/collect-to-pandas/"
+            },
+            {
+              "label": "Проблема маленьких файлов",
+              "link": "/interview/questions/spark/small-files/"
+            },
+            {
+              "label": "Что такое data skew",
+              "link": "/interview/questions/spark/data-skew/"
+            },
+            {
+              "label": "Диагностика skew в Stages",
+              "link": "/interview/questions/spark/skew-ui/"
+            },
+            {
+              "label": "Как устранять data skew",
+              "link": "/interview/questions/spark/skew-solutions/"
+            },
+            {
+              "label": "Настройка параллелизма",
+              "link": "/interview/questions/spark/parallelism/"
+            },
+            {
+              "label": "Размер партиций",
+              "link": "/interview/questions/spark/partition-size/"
+            },
+            {
+              "label": "Как подобрать размер кластера",
+              "link": "/interview/questions/spark/cluster-sizing/"
+            },
+            {
+              "label": "Память драйвера",
+              "link": "/interview/questions/spark/driver-memory/"
+            },
+            {
+              "label": "Память executor",
+              "link": "/interview/questions/spark/executor-memory/"
+            },
+            {
+              "label": "Диагностика Executor OOM",
+              "link": "/interview/questions/spark/executor-oom/"
+            },
+            {
+              "label": "Причины Driver OOM",
+              "link": "/interview/questions/spark/driver-oom/"
+            },
+            {
+              "label": "Dynamic Resource Allocation",
+              "link": "/interview/questions/spark/dynamic-allocation/"
+            },
+            {
+              "label": "Аллокации в Spark на Kubernetes",
+              "link": "/interview/questions/spark/kubernetes-allocation/"
             }
           ]
         },

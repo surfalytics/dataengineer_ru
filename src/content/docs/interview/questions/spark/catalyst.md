@@ -4,7 +4,7 @@ head:
   - tag: title
     content: "Оптимизатор Catalyst в SQL и DataFrame API | Инжиниринг Данных"
 description: "Как Catalyst оптимизирует запросы SQL и DataFrame API в Spark. Сравниваем два способа посчитать выручку по магазинам и прослеживаем путь до физического плана."
-prev: {"label":"Job -> Stages -> Task","link":"/interview/questions/spark/execution/"}
+prev: {"label":"Почему окно без partitionBy() может стать узким местом?","link":"/interview/questions/spark/global-window/"}
 next: {"label":"Кто строит логический план запроса?","link":"/interview/questions/spark/logical-plan/"}
 tableOfContents: false
 editUrl: false
