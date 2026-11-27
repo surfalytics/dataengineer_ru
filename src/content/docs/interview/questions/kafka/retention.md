@@ -5,7 +5,7 @@ head:
     content: "Хранение событий в Apache Kafka | Инжиниринг Данных"
 description: "Как Kafka хранит записи в сегментах, чем удаление по сроку хранения отличается от log compaction и для чего нужна запись с пустым значением."
 prev: {"label":"Чем отличаются at-most-once, at-least-once и exactly-once в Kafka?","link":"/interview/questions/kafka/delivery-semantics/"}
-next: false
+next: {"label":"Почему растёт consumer lag и как догнать поток?","link":"/interview/questions/kafka/consumer-lag/"}
 tableOfContents: false
 editUrl: false
 ---

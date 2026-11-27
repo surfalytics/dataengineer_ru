@@ -1049,6 +1049,14 @@ export const topics = [
             {
               "label": "Retention и compaction",
               "link": "/interview/questions/kafka/retention/"
+            },
+            {
+              "label": "Как диагностировать consumer lag",
+              "link": "/interview/questions/kafka/consumer-lag/"
+            },
+            {
+              "label": "Ошибки обработки и DLQ",
+              "link": "/interview/questions/kafka/poison-record/"
             }
           ]
         },
