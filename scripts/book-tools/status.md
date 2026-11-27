@@ -36,3 +36,4 @@ One row per book. Update it after every run or PR. `python3 -I scripts/book-tool
 | The Engineering Executive's Primer | `business/engineering-executives-primer` | 24 | done | 2026-11-16 | #110 | — |
 | Learning Spark, 2nd Edition | `engineering/learning-spark` | 12 | done | 2026-11-24 | #113 | — |
 | Потоковая обработка данных с Apache Flink | `engineering/stream-processing-with-apache-flink` | 11 | done | 2026-11-26 | #114 | — |
+| Practical Lakehouse Architecture | `engineering/practical-lakehouse-architecture` | 8 | done | 2026-11-27 | #117 | — |
