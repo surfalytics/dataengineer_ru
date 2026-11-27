@@ -1,0 +1,21 @@
+---
+title: "Nested Loop"
+description: "Для каждой строки внешнего входа просматривается внутренний."
+prev: {"label":"Как работает Merge Join?","link":"/interview/questions/database-theory/physical-joins/merge-join/"}
+next: {"label":"С чего начать оптимизацию запроса?","link":"/interview/questions/database-theory/query-optimization/"}
+tableOfContents: false
+editUrl: false
+---
+
+import JoinWalkthrough from '../../../../../../components/interview/JoinWalkthrough.astro';
+
+Nested Loop для каждой строки A ищет совпадения в B. Если каждый раз приходится читать B целиком, число сравнений растёт как произведение размеров входов. На двух больших наборах такой перебор быстро становится дорогим.
+
+<JoinWalkthrough algorithm="nested-loop" />
+
+<details>
+<summary>Всегда ли приходится сравнивать каждую пару строк?</summary>
+
+В схеме три строки A и три строки B дают девять сравнений. Если после фильтра в A осталось всего несколько строк, а по ключу B есть индекс, для каждой строки A достаточно точечного поиска. В таком запросе Nested Loop может оказаться самым быстрым вариантом, даже если в B миллионы строк.
+
+</details>

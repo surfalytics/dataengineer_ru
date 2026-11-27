@@ -1,0 +1,28 @@
+---
+title: "B-tree"
+prev: {"label":"Что такое индекс?","link":"/interview/questions/database-theory/indexes/"}
+next: {"label":"Как работает Hash?","link":"/interview/questions/database-theory/indexes/hash/"}
+tableOfContents: false
+editUrl: false
+---
+
+import IndexSearch from '../../../../../../components/interview/IndexSearch.astro';
+
+B-tree — сбалансированное дерево и метод по умолчанию в PostgreSQL. На внутренних страницах лежат разделители и ссылки на дочерние страницы. В листьях — упорядоченные ключи и адреса версий строк таблицы (TID). У одной страницы может быть много потомков. На схеме оставлены две ветки у каждой развилки.
+
+<IndexSearch method="btree" />
+
+Анимация по очереди ищет 42 и 75. Число на линии — искомый ключ. Из найденного листа движется метка TID. Например, `(7, 3)` означает блок 7 и позицию 3 внутри блока.
+
+```sql
+CREATE INDEX readings_k_idx ON readings (k);
+```
+
+<details>
+<summary>Зачем связывать соседние листовые страницы?</summary>
+
+Для условия `k BETWEEN 42 AND 75` поиск сначала спускается к началу диапазона, затем идёт по соседним листьям, пока ключи подходят. Искать каждое следующее значение от корня было бы лишней работой. Порядок в индексе также может помочь выполнить `ORDER BY k`.
+
+</details>
+
+[B-tree в документации PostgreSQL](https://www.postgresql.org/docs/19/btree.html)

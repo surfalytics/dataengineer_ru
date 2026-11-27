@@ -1,0 +1,21 @@
+---
+title: "Merge Join"
+description: "Слияние отсортированных входов с помощью двух указателей."
+prev: {"label":"Как работает Hash Join?","link":"/interview/questions/database-theory/physical-joins/hash-join/"}
+next: {"label":"Как работает Nested Loop?","link":"/interview/questions/database-theory/physical-joins/nested-loop/"}
+tableOfContents: false
+editUrl: false
+---
+
+import JoinWalkthrough from '../../../../../../components/interview/JoinWalkthrough.astro';
+
+Merge Join особенно эффективен на больших наборах, когда строки с обеих сторон уже поступают в порядке ключа соединения, например из индекса. Движок читает оба потока последовательно и при совпадении ключей соединяет строки. Если нужного порядка нет, входы придётся сначала отсортировать. Эта работа может занять больше времени, чем само слияние.
+
+<JoinWalkthrough algorithm="merge-join" />
+
+<details>
+<summary>Что меняется, если ключ повторяется?</summary>
+
+В примере у ключа 2 с каждой стороны по две строки. Если после первого совпадения сдвинуть оба указателя на одну строку, часть пар пропадёт. Поэтому для этого ключа нужны все четыре сочетания. Повторный просмотр или буферизация совпавшей группы позволяют их выдать.
+
+</details>

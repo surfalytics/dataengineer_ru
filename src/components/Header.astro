@@ -10,7 +10,7 @@ import { topics } from '../nav.mjs';
 const path = Astro.url.pathname;
 const isCurrent = (t: (typeof topics)[number]) => t.match.some((p) => path.startsWith(p));
 // Короткие подписи для экранов 800–1360 px: там все разделы с полными подписями не влезают в одну строку.
-const SHORT: Record<string, string> = { 'База знаний': 'Знания', 'Конспекты книг': 'Книги', 'Конспекты лекций': 'Лекции' };
+const SHORT: Record<string, string> = { 'База знаний': 'Знания', 'Конспекты книг': 'Книги', 'Конспекты лекций': 'Лекции', 'Подготовка к интервью': 'Интервью' };
 ---
 
 <!-- Яндекс Метрика без JavaScript. Тег <noscript> с картинкой нельзя ставить в <head>, поэтому он здесь. -->
@@ -100,6 +100,9 @@ const SHORT: Record<string, string> = { 'База знаний': 'Знания',
     .mh-nav {
       gap: 0.75rem;
     }
+  }
+  @media (min-width: 85rem) and (max-width: 99.99rem) {
+    .mh, .mh-nav { gap: 0.85rem; }
   }
   /* 800–1024 px: разделы не влезают. Край ряда гаснет: видно, что ряд прокручивается. */
   @media (min-width: 50rem) and (max-width: 63.99rem) {

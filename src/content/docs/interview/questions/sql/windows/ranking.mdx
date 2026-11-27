@@ -1,0 +1,18 @@
+---
+title: "Как RANK и DENSE_RANK обрабатывают одинаковые значения?"
+prev: {"label":"Что изменится, если заменить GROUP BY на PARTITION BY в SUM?","link":"/interview/questions/sql/windows/partition-by/"}
+next: {"label":"Когда CTE делает запрос понятнее?","link":"/interview/questions/sql/cte/"}
+tableOfContents: false
+editUrl: false
+---
+
+[Оконные функции](/interview/questions/sql/windows/)
+
+Время трёх участников — 10, 10 и 12 секунд. Какие места они получат при сортировке по возрастанию?
+
+<details>
+<summary>Показать ответ</summary>
+
+Обе функции присвоят первым двум участникам первое место. При `RANK()` третий участник получит место 3, поскольку перед ним два участника. При `DENSE_RANK()` он получит место 2, поскольку перед ним только одно уникальное время.
+
+</details>

@@ -1,0 +1,28 @@
+---
+title: "GIN"
+prev: {"label":"Как работает SP-GiST?","link":"/interview/questions/database-theory/indexes/spgist/"}
+next: {"label":"Как работает BRIN?","link":"/interview/questions/database-theory/indexes/brin/"}
+tableOfContents: false
+editUrl: false
+---
+
+import IndexSearch from '../../../../../../components/interview/IndexSearch.astro';
+
+В таблице `articles` у каждой статьи есть массив `tags` типа `text[]`. GIN извлекает из массивов отдельные теги. Для каждого тега индекс хранит ссылки на версии строк, в которых он встречается. Так можно искать статьи по содержимому массива.
+
+<IndexSearch method="gin" />
+
+На схеме `R1`–`R4` — короткие обозначения адресов строк. Запрос с `@>` ищет статьи, в которых присутствуют сразу оба тега.
+
+```sql
+CREATE INDEX articles_tags_idx ON articles USING gin (tags);
+```
+
+<details>
+<summary>Что происходит, когда один тег встречается очень часто?</summary>
+
+Короткий список адресов помещается в индексную запись как posting list. Для большого числа адресов PostgreSQL использует отдельное posting tree. При записи одного массива приходится учитывать несколько индексных ключей.
+
+</details>
+
+[GIN в документации PostgreSQL](https://www.postgresql.org/docs/19/gin.html)
