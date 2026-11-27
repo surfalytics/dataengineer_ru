@@ -5,7 +5,7 @@ head:
     content: "Dynamic Resource Allocation в Spark | Инжиниринг Данных"
 description: "Как Spark меняет число executors по очереди задач и по времени простоя, какие границы задать и как сохранить доступ к shuffle-данным."
 prev: {"label":"В каких случаях драйвер может упасть по памяти?","link":"/interview/questions/spark/driver-oom/"}
-next: {"label":"Почему у Spark в Kubernetes растёт память при длительной загрузке?","link":"/interview/questions/spark/kubernetes-allocation/"}
+next: {"label":"Почему Executors могут падать при длительной загрузке?","link":"/interview/questions/spark/kubernetes-allocation/"}
 tableOfContents: false
 editUrl: false
 ---

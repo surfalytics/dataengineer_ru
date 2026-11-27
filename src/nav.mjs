@@ -979,7 +979,7 @@ export const topics = [
               "link": "/interview/questions/spark/dynamic-allocation/"
             },
             {
-              "label": "Арены malloc в Kubernetes",
+              "label": "Почему Executors могут падать при длительной загрузке?",
               "link": "/interview/questions/spark/kubernetes-allocation/"
             }
           ]
