@@ -106,6 +106,11 @@ export const topics = [
             items: [{ autogenerate: { directory: 'book-summaries/engineering/learning-spark' } }],
           },
           {
+            label: 'Потоковая обработка данных с Apache Flink',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/engineering/stream-processing-with-apache-flink' } }],
+          },
+          {
             label: 'Data Engineering Design Patterns',
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/engineering/data-engineering-design-patterns' } }],

@@ -25,6 +25,7 @@ tags:
 | Инжиниринг | [DuckDB: Up and Running](/book-summaries/engineering/duckdb-up-and-running/) | DuckDB: CSV, Parquet, JSON, Polars, JupySQL, удалённые данные, MotherDuck. SQL-практика |
 | Инжиниринг | [Data Pipelines with Apache Airflow](/book-summaries/engineering/data-pipelines-with-apache-airflow/) | Airflow 3: DAG, расписания, assets, операторы, тесты, production и безопасность |
 | Инжиниринг | [Learning Spark, 2-е издание](/book-summaries/engineering/learning-spark/) | Apache Spark: `DataFrame`, Spark SQL, оптимизация, Structured Streaming, Delta Lake, MLlib и MLflow. Код проверен на Spark 4.3 |
+| Инжиниринг | [Потоковая обработка данных с Apache Flink](/book-summaries/engineering/stream-processing-with-apache-flink/) | Время события, окна, состояние и эксплуатация. Примеры проверены на Flink 1.7.1. |
 | Инжиниринг | [Data Engineering Design Patterns](/book-summaries/engineering/data-engineering-design-patterns/) | Около 70 паттернов: загрузка, идемпотентность, ошибки, качество, наблюдаемость |
 | Инжиниринг | [Data Quality Fundamentals](/book-summaries/engineering/data-quality-fundamentals/) | Качество данных: data downtime, тесты, мониторинг, lineage, SLA, инциденты, data mesh. SQL-практика на DuckDB |
 | Инжиниринг | [Analytics Engineering with SQL and dbt](/book-summaries/engineering/analytics-engineering-with-sql-and-dbt/) | Analytics engineering на `dbt`: моделирование данных, SQL, модели, тесты, документация, `incremental`, `snapshot`, `semantic layer`. SQL-практика на DuckDB |

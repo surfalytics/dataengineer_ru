@@ -16,6 +16,43 @@ Helpers for book summaries (`book-summary` skill) and the `book-prep` / `book-su
 
 Book text from `split_source.py` stays in the scratchpad. Never commit it.
 
+## Codex
+
+Open Codex in the repository. Use [$book-prep](../../.agents/skills/book-prep/SKILL.md)
+with a local PDF or EPUB. It produces a chapter plan and glossary for review.
+Pass the approved `book-plan.json` to [$book-summary](../../.agents/skills/book-summary/SKILL.md).
+Use `only: [1]` to check one chapter before running the whole book.
+
+### Excalidraw for Codex
+
+From the repository root, run `npm ci` for the existing diagram builders and
+install the renderer alongside the repository if it is unavailable:
+
+```sh
+npm install --prefix ../excalidraw-canvas --save-exact mcp-excalidraw-server@2.2.0
+```
+
+Start the renderer in its own terminal from the repository root:
+
+```sh
+canvas_dir="$(cd ../excalidraw-canvas && pwd)"
+mkdir -p "$canvas_dir/state"
+HOST=127.0.0.1 PORT=3457 EXCALIDRAW_DATA_DIR="$canvas_dir/state" \
+  LOG_FILE_PATH="$canvas_dir/canvas.log" node "$canvas_dir/node_modules/mcp-excalidraw-server/dist/server.js"
+```
+
+Run the adapter in a second terminal:
+
+```sh
+python3 scripts/book-tools/excalidraw_adapter.py
+```
+
+`curl -fsS http://127.0.0.1:3456/health` checks that the renderer is reachable.
+The diagram builders use port 3456 as usual. The adapter maps scene creation,
+opening and saving to named snapshots in the renderer. They persist in
+`EXCALIDRAW_DATA_DIR`. PNG export runs headlessly. Stop both processes with
+Ctrl+C when you finish drawing.
+
 ## Measured cost
 
 First test: "Redefining Data Engineering with AI" (Early Release, 2 chapters, 18,300 source words), 2026-11-14.
