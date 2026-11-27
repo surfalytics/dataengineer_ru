@@ -5,7 +5,7 @@ head:
     content: "Вкладки Spark UI: Jobs, Stages, Executors и SQL | Инжиниринг Данных"
 description: "Как найти ошибку в конкретной задаче Spark, увидеть физический план запроса, проверить кэш и сравнить скорость чтения и обработки потока в Spark UI."
 prev: {"label":"Как запускается Spark-приложение","link":"/interview/questions/spark/application-launch/"}
-next: {"label":"Как связаны Action, Job, Stage и Task?","link":"/interview/questions/spark/execution/"}
+next: {"label":"Как работают Map и Reduce?","link":"/interview/questions/spark/map-reduce/"}
 tableOfContents: false
 editUrl: false
 ---

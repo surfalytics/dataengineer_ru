@@ -811,20 +811,20 @@ export const topics = [
               "link": "/interview/questions/spark/web-ui/"
             },
             {
-              "label": "Job, Stage и Task",
-              "link": "/interview/questions/spark/execution/"
-            },
-            {
-              "label": "Lazy evaluation",
-              "link": "/interview/questions/spark/lazy-evaluation/"
-            },
-            {
               "label": "MapReduce",
               "link": "/interview/questions/spark/map-reduce/"
             },
             {
               "label": "Shuffle",
               "link": "/interview/questions/spark/shuffle/"
+            },
+            {
+              "label": "Lazy evaluation",
+              "link": "/interview/questions/spark/lazy-evaluation/"
+            },
+            {
+              "label": "Job, Stage и Task",
+              "link": "/interview/questions/spark/execution/"
             }
           ]
         },
