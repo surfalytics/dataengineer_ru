@@ -40,6 +40,7 @@ tags:
 | Предпринимательство | [The Diary of a CEO](/book-summaries/entrepreneurship/diary-of-a-ceo/) | 33 закона бизнеса и жизни: личность, история, философия, команда |
 | Бизнес | [Lean Analytics](/book-summaries/business/lean-analytics/) | Как измерять стартап, метрики по бизнес-моделям и стадиям |
 | Бизнес | [Escaping the Build Trap](/book-summaries/business/escaping-the-build-trap/) | Как строится продукт: роль PM, стратегия, Product Kata, product-led компания |
+| Бизнес | [Measure What Matters](/book-summaries/business/measure-what-matters/) | Как ставить цели по системе `OKR`: фокус, согласованность, контроль прогресса, смелые цели, `CFR` и истории Intel, Google, YouTube |
 | Лидерство | [The Manager's Path](/book-summaries/business/managers-path/) | Путь от ментора и техлида до CTO: встречи 1:1, команды, менеджеры, стратегия, культура |
 | Лидерство | [Staff Engineer](/book-summaries/business/staff-engineer/) | Техническая линия роста после Senior: архетипы Staff-инженера, стратегия, качество, влияние, повышение и 14 историй |
 | Лидерство | [The Staff Engineer's Path](/book-summaries/business/staff-engineers-path/) | Как вырасти до Staff-инженера: роль, три карты организации, стратегия, большие проекты, влияние на коллег и карьера |

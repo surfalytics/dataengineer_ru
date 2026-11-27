@@ -195,6 +195,11 @@ export const topics = [
             collapsed: true,
             items: [{ autogenerate: { directory: 'book-summaries/business/escaping-the-build-trap' } }],
           },
+          {
+            label: 'Measure What Matters',
+            collapsed: true,
+            items: [{ autogenerate: { directory: 'book-summaries/business/measure-what-matters' } }],
+          },
         ],
       },
       {
