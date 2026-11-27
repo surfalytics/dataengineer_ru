@@ -1,0 +1,3 @@
+pyiceberg[sql-sqlite,pyarrow]==0.10.0
+pyarrow==26.0.1
+sqlalchemy==2.1.9
