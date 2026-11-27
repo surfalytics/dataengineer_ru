@@ -10,7 +10,9 @@ tableOfContents: false
 editUrl: false
 ---
 
-**Producer** создаёт событие и отправляет его в topic.
+**Producer** — любое приложение, которое записывает события в Kafka. Например, сервис заказов может сам отправить в топик `orders` событие «заказ оплачен».
+
+Другой пример — Debezium в Kafka Connect. Сервис меняет статус заказа в PostgreSQL. Debezium читает изменение из журнала транзакций (WAL) и формирует событие, а встроенный producer Kafka Connect записывает его в Kafka. В этом варианте сервису заказов достаточно обновить строку в базе. [Как работает коннектор Debezium для PostgreSQL](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#how-the-postgresql-connector-works)
 
 **Topic** — логическое имя потока событий, например `orders`.
 
