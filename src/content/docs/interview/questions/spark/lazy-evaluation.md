@@ -5,7 +5,7 @@ head:
     content: "Lazy evaluation в Spark: трансформации и действия | Инжиниринг Данных"
 description: "Когда Spark начинает вычисления, как отличить трансформацию от действия и почему узкие зависимости объединяются в одну стадию, а широкие требуют обмена данными."
 prev: {"label":"Как работает Shuffle в Spark?","link":"/interview/questions/spark/shuffle/"}
-next: {"label":"Как связаны Action, Job, Stage и Task?","link":"/interview/questions/spark/execution/"}
+next: {"label":"Action, Job и Task","link":"/interview/questions/spark/execution/"}
 tableOfContents: false
 editUrl: false
 ---
