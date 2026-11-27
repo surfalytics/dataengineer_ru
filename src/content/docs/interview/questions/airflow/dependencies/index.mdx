@@ -1,0 +1,26 @@
+---
+title: "Триггеры, сенсоры и зависимости DAG"
+prev: {"label":"Как выбрать оператор для выполнения работы?","link":"/interview/questions/airflow/operators/"}
+next: {"label":"Как расширить оператор и сохранить запуск родительской задачи?","link":"/interview/questions/airflow/custom-operators/"}
+editUrl: false
+---
+
+**Sensor** ждёт, пока выполнится условие. **TriggerDagRunOperator** создаёт запуск другого DAG. Слово *trigger* в Airflow также встречается в других значениях.
+
+| Механизм | На какой вопрос отвечает |
+| --- | --- |
+| `TriggerDagRunOperator` | «Как запустить DAG B из DAG A?» Можно передать `conf` и при необходимости дождаться завершения через `wait_for_completion=True`. Проверьте поведение при ретрае, чтобы повторно не создать другой запуск за ту же обработку. |
+| `ExternalTaskSensor` | «Успел ли независимо запущенный DAG B или его задача завершиться за нужную логическую дату?» Согласуйте расписания, состояния ошибки и таймаут. Если даты не совпадают, задайте соответствие через `execution_delta` или `execution_date_fn`. |
+| `FileSensor`, `S3KeySensor`, `SqlSensor` | «Действительно ли пришёл внешний файл или появилась готовая контрольная запись?» Успех соседнего DAG сам по себе этого не доказывает. |
+| Асинхронный `Trigger` | Объект, через который triggerer наблюдает за условием для отложенной задачи и сообщает о событии для её возобновления. |
+| `trigger_rule` | Правило готовности задачи по статусам её непосредственных предшественников внутри DAG, например `all_success` или `all_done`. |
+
+### Как сенсор ждёт
+
+В режиме **poke** задача остаётся на воркере между проверками. **Reschedule** освобождает worker slot до следующей проверки. У **deferrable**-оператора ожидание передаётся triggerer, после события задачу можно продолжить на воркере. Для этого нужны поддержка оператором и работающий triggerer. [Sensors](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/sensors.html) · [Deferrable operators](https://airflow.apache.org/docs/apache-airflow/stable/authoring-and-scheduling/deferring.html)
+
+### Два практических случая
+
+Если A — единственный инициатор B и именно A знает, какой файл обрабатывать, явный запуск B с параметрами убирает отдельное расписание и опрос состояния A. Если B ждёт **два независимых DAG** за один период и запускать их сам не должен, можно поставить в B по `ExternalTaskSensor` на каждый, а обработку начать после успеха обоих. Если производители публикуют готовность данных, альтернатива — расписание по нескольким datasets в 2.x или assets в 3.x. Совпадение бизнес-периода у двух поставок при этом проверяют отдельно.
+
+Сенсор особенно уместен, когда внешний поставщик кладёт файл в произвольное время, не шлёт событие и не даёт способа инициировать загрузку. Тогда потребитель сам проверяет факт готовности. [Запуск другого DAG](https://airflow.apache.org/docs/apache-airflow-providers-standard/stable/operators/trigger_dag_run.html) · [Между DAG](https://airflow.apache.org/docs/apache-airflow-providers-standard/stable/sensors/external_task_sensor.html) · [Assets](https://airflow.apache.org/docs/apache-airflow/stable/authoring-and-scheduling/asset-scheduling.html)

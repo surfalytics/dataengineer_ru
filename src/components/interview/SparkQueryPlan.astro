@@ -1,0 +1,77 @@
+---
+import SparkFlowPlayer from './SparkFlowPlayer.astro';
+
+const steps = [
+  [['SQL', 'spark.sql(…)'], ['DataFrame API', 'filter, groupBy, agg']],
+  [['Парсер SQL', 'Разбирает SQL'], ['Операции API', 'Строят дерево']],
+  [['Анализатор Catalyst', 'Проверяет таблицу, колонки и типы']],
+  [['Оптимизатор Catalyst', 'Фильтр ближе к чтению Parquet']],
+  [['Физический план', 'Частичная сумма → shuffle → итог']],
+  [['Генерация кода', 'Общий код для совместимых операторов']],
+  [['Задачи на executors', 'Частичные суммы записаны для shuffle']],
+  [['Итоговая агрегация', 'Две строки с выручкой → драйвер']],
+];
+const boxWidth = 291;
+const columnGap = 13;
+const halfWidth = (boxWidth - columnGap) / 2;
+const spacing = 67;
+const boxHeight = 51;
+const top = 6;
+const cycle = 27;
+const feedback = `M${boxWidth + 4} ${top + 6 * spacing + 26} H333 V${top + 4 * spacing + 26} H${boxWidth + 6}`;
+const clock = { begin: 'indefinite', dur: cycle + 's', repeatCount: 'indefinite' };
+---
+<SparkFlowPlayer title="Как Spark выполняет запрос" cycle={cycle}>
+  <svg viewBox="0 0 355 533" role="img" aria-labelledby="spark-plan-title spark-plan-description">
+    <title id="spark-plan-title">От SQL или DataFrame API до выручки по магазинам</title>
+    <desc id="spark-plan-description">На драйвере исходный план строится либо из текста SQL через парсер, либо из операций DataFrame API. Оба пути сходятся у анализатора и оптимизатора Catalyst. Executors вычисляют частичные суммы. Пунктир показывает, как AQE использует статистику shuffle для уточнения оставшегося плана.</desc>
+    <defs>
+      <marker id="spark-plan-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M0 0 L8 4 L0 8 Z" fill="var(--sl-color-gray-3)" />
+      </marker>
+      <marker id="spark-aqe-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0 0 L8 4 L0 8 Z" fill="var(--sl-color-text-accent)" />
+      </marker>
+    </defs>
+    {steps.map((nodes, i) => {
+      const y = top + i * spacing;
+      // The AQE feedback arrow takes one interval before the final aggregation.
+      const startSecond = i * 3 + (i === steps.length - 1 ? 3 : 0);
+      const start = (startSecond + .05) / cycle;
+      const end = (startSecond + 2.95) / cycle;
+      const width = nodes.length === 2 ? halfWidth : boxWidth;
+      return <g transform={`translate(4 ${y})`}>
+        {nodes.map(([label, detail], column) => <g transform={`translate(${column * (width + columnGap)} 0)`}>
+          {i < steps.length - 1 && <path class="connector" d={`M${width / 2} ${boxHeight} V${spacing - 2}`} marker-end="url(#spark-plan-arrow)" />}
+          <rect class="node" width={width} height={boxHeight} rx="7" />
+          <rect class="active" width={width} height={boxHeight} rx="7" opacity="0" aria-hidden="true">
+            <animate {...clock} attributeName="opacity" values="0;1;0;0" calcMode="discrete" keyTimes={`0;${start};${end};1`} />
+          </rect>
+          <text class="label" x="13" y="21">{label}</text>
+          <text class="detail" x="13" y="41">{detail}</text>
+        </g>)}
+      </g>;
+    })}
+    <path class="feedback" d={feedback} marker-end="url(#spark-aqe-arrow)" />
+    <rect class="label-bg" x="312" y="355" width="41" height="22" rx="3" />
+    <text class="aqe" x="332.5" y="371">AQE</text>
+    <circle r="4" fill="var(--sl-color-text-accent)" visibility="hidden" aria-hidden="true">
+      <animate {...clock} attributeName="visibility" values="hidden;visible;hidden;hidden" calcMode="discrete" keyTimes="0;0.778;0.885;1" />
+      <animateMotion {...clock} path={feedback} calcMode="linear" keyTimes="0;0.778;0.885;1" keyPoints="0;0;1;1" />
+    </circle>
+  </svg>
+</SparkFlowPlayer>
+
+<style>
+  svg { display: block; width: 100%; height: auto; }
+  text { font-family: var(--sl-font); }
+  .node, .label-bg { fill: var(--sl-color-bg); }
+  .node { stroke: var(--sl-color-gray-4); }
+  .active { fill: var(--sl-color-accent-low); stroke: var(--sl-color-text-accent); stroke-width: 1.6; }
+  .label { font-size: 15px; font-weight: 650; fill: var(--sl-color-white); }
+  .detail { font-size: 12.8px; fill: var(--sl-color-text); }
+  .connector, .feedback { fill: none; stroke-width: 1.6; }
+  .connector { stroke: var(--sl-color-gray-3); }
+  .feedback { stroke: var(--sl-color-text-accent); stroke-dasharray: 4 3; }
+  .aqe { text-anchor: middle; font-size: 13px; font-weight: 650; fill: var(--sl-color-text-accent); }
+</style>

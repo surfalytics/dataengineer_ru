@@ -1,0 +1,55 @@
+---
+import SparkFlowPlayer from './SparkFlowPlayer.astro';
+
+const actors = ['Airflow', 'Kubernetes', 'Driver', 'Executors'];
+const steps = [
+  { from: 0, to: 1, label: 'Создать driver pod' },
+  { from: 1, to: 2, label: 'Запустить driver' },
+  { from: 2, to: 1, label: 'Запросить два pod' },
+  { from: 1, to: 3, label: 'Разместить и запустить executors' },
+  { from: 3, to: 2, label: 'Регистрация' },
+  { from: 2, to: 3, label: 'Назначить tasks' },
+  { from: 1, to: 0, label: 'Статус driver pod' },
+];
+const laneX = (i: number) => 52 + 108 * i;
+const cycle = 25;
+const clock = { begin: 'indefinite', dur: cycle + 's', repeatCount: 'indefinite' };
+---
+<SparkFlowPlayer title="Airflow → Spark на Kubernetes" cycle={cycle}>
+  <svg viewBox="0 0 430 372" role="img" aria-label="Сначала Airflow отправляет заявку в Kubernetes. После запуска driver запрашивает executor pods. Executors регистрируются у driver и получают от него задачи. Airflow отслеживает итоговый статус драйвера.">
+    <defs>
+      <marker id="spark-launch-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0 0 L8 4 L0 8 Z" fill="var(--sl-color-gray-3)" />
+      </marker>
+    </defs>
+    {actors.map((actor, i) => <g transform={`translate(${laneX(i)}, 0)`}>
+      <path class="lane" d="M0 40 V365" />
+      <rect x="-47" y="7" width="94" height="32" rx="6" />
+      <text class="actor" y="28">{actor}</text>
+    </g>)}
+    {steps.map(({from, to, label}, i) => {
+      const x = laneX(from), target = laneX(to), y = 78 + 46 * i;
+      const start = (3.2 * i + .4) / cycle, end = (3.2 * i + 3.1) / cycle;
+      const path = `M${x} ${y} H${target}`;
+      return <g class="step">
+        <text class="label" x={(x + target) / 2} y={y - 9}>{label}</text>
+        <path class="arrow" d={path} marker-end="url(#spark-launch-arrow)" />
+        <circle r="5" visibility="hidden" aria-hidden="true">
+          <animate {...clock} attributeName="visibility" calcMode="discrete" keyTimes={`0;${start};${end};1`} values="hidden;visible;hidden;hidden" />
+          <animateMotion {...clock} path={path} calcMode="linear" keyTimes={`0;${start};${end};1`} keyPoints="0;0;1;1" />
+        </circle>
+      </g>;
+    })}
+  </svg>
+</SparkFlowPlayer>
+
+<style>
+  svg { display:block; width:100%; height:auto; }
+  .lane { stroke:var(--sl-color-gray-5); stroke-dasharray:3 5; }
+  rect { fill:var(--sl-color-bg); stroke:var(--sl-color-gray-4); }
+  text { text-anchor:middle; font:15px var(--sl-font); fill:var(--sl-color-text); }
+  .actor { fill:var(--sl-color-white); font-weight:650; }
+  .label { paint-order:stroke; stroke:var(--sl-color-bg); stroke-width:5px; stroke-linejoin:round; }
+  .arrow { stroke:var(--sl-color-gray-3); stroke-width:1.6; }
+  circle { fill:var(--sl-color-text-accent); }
+</style>

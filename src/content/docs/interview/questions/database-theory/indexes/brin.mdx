@@ -1,0 +1,29 @@
+---
+title: "BRIN"
+prev: {"label":"Как работает GIN?","link":"/interview/questions/database-theory/indexes/gin/"}
+next: {"label":"Как PostgreSQL соединяет таблицы?","link":"/interview/questions/database-theory/physical-joins/"}
+tableOfContents: false
+editUrl: false
+---
+
+import IndexSearch from '../../../../../../components/interview/IndexSearch.astro';
+
+BRIN хранит сводку для группы физически соседних страниц таблицы. В примере для целого числа `k` записаны минимум и максимум. По сводке PostgreSQL исключает целые группы страниц. В оставшихся группах читает строки и проверяет условие.
+
+<IndexSearch method="brin" />
+
+Чтобы группы было видно целиком, в примере задано по две страницы на сводку. Даже если 42 попало между минимумом и максимумом, в самой группе такого значения может не быть.
+
+```sql
+CREATE INDEX events_k_idx ON events USING brin (k)
+WITH (pages_per_range = 2);
+```
+
+<details>
+<summary>Почему BRIN подходит для большой таблицы событий по времени?</summary>
+
+Если события поступают примерно в порядке времени, у соседних страниц близкие даты. Запрос за короткий период пропустит большую часть таблицы. При перемешанных датах диапазоны сильнее перекрываются, приходится читать больше страниц. Параметр `pages_per_range` меняет компромисс между размером индекса и точностью отбора.
+
+</details>
+
+[BRIN в документации PostgreSQL](https://www.postgresql.org/docs/19/brin.html)

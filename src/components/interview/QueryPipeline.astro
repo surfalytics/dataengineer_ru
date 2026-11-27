@@ -1,0 +1,110 @@
+---
+const stages = [
+  {
+    title: 'Запрос клиента',
+    detail: 'Клиент отправляет PostgreSQL запрос на три магазина с наибольшим числом оплаченных заказов.',
+    output: 'SELECT … FROM paid_orders … LIMIT 3',
+  },
+  {
+    title: 'Парсер',
+    detail: 'Парсер проверяет синтаксис и строит дерево выражений. Затем анализатор находит таблицы и столбцы в каталоге базы, определяет типы. Здесь выясняется, что s.name — столбец таблицы shops.',
+    output: 's.name → shops.name → text',
+  },
+  {
+    title: 'Оптимизатор',
+    detail: 'Планировщик оценивает число строк и стоимость разных способов чтения и соединения. Для наших данных он выбирает полный просмотр заказов и соединение по хешу.',
+    output: 'Seq Scan → Hash Join → HashAggregate → Sort → Limit',
+  },
+  {
+    title: 'Выполнение',
+    detail: 'Верхний узел Limit просит строки у Sort. Чтобы определить тройку лидеров, Sort получает итоги по всем магазинам. Узлы ниже читают таблицы, соединяют строки и считают заказы.',
+    output: '20 000 заказов → 15 000 оплаченных → 100 групп → 3 строки',
+  },
+  {
+    title: 'Возврат пользователю',
+    detail: 'Пользователь получает три строки, по одной на магазин. COUNT(*) посчитал оплаченные заказы каждого магазина, ORDER BY расположил магазины по убыванию этого числа, а LIMIT 3 оставил первые три строки.',
+  },
+];
+---
+<query-pipeline class="pipeline not-content">
+  <div class="toolbar">
+    <strong>Путь запроса в PostgreSQL</strong>
+    <button type="button" hidden>Пауза</button>
+  </div>
+  <ol aria-label="Стадии обработки SQL">
+    {stages.map((stage, i) => (
+      <li>
+        <span class="marker" aria-hidden="true">{i + 1}</span>
+        <div class="stage">
+          <strong>{stage.title}</strong>
+          <p>{stage.detail}</p>
+          {stage.output ? <samp>{stage.output}</samp> : <div class="result"><slot /></div>}
+        </div>
+      </li>
+    ))}
+  </ol>
+</query-pipeline>
+
+<script>
+  class QueryPipeline extends HTMLElement {
+    private cleanup?: () => void;
+
+    connectedCallback() {
+      const stages = Array.from(this.querySelectorAll('li'));
+      const button = this.querySelector('button')!;
+      let current = 0;
+      let paused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let timer: number | undefined;
+
+      const sync = () => {
+        window.clearInterval(timer);
+        button.textContent = paused ? 'Продолжить' : 'Пауза';
+        if (paused || document.hidden) return;
+        timer = window.setInterval(() => {
+          stages[current].removeAttribute('data-current');
+          current = (current + 1) % stages.length;
+          stages[current].setAttribute('data-current', '');
+        }, 1000);
+      };
+      const toggle = () => {
+        paused = !paused;
+        sync();
+      };
+
+      stages.forEach((stage, index) => stage.toggleAttribute('data-current', index === current));
+      button.hidden = false;
+      button.addEventListener('click', toggle);
+      document.addEventListener('visibilitychange', sync);
+      sync();
+      this.cleanup = () => {
+        window.clearInterval(timer);
+        button.removeEventListener('click', toggle);
+        document.removeEventListener('visibilitychange', sync);
+      };
+    }
+    disconnectedCallback() {
+      this.cleanup?.();
+    }
+  }
+  if (!customElements.get('query-pipeline')) customElements.define('query-pipeline', QueryPipeline);
+</script>
+
+<style>
+  .pipeline { display: block; border: 1px solid var(--sl-color-gray-5); border-radius: .6rem; padding: clamp(.85rem, 2.4vw, 1.4rem); margin-block: 1.25rem; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: .6rem; margin-bottom: 1rem; }
+  strong { color: var(--sl-color-white); }
+  button { font: inherit; font-size: .85rem; color: var(--sl-color-text); background: var(--sl-color-bg); border: 1px solid var(--sl-color-gray-5); border-radius: .35rem; padding: .4rem .7rem; cursor: pointer; }
+  button:hover { border-color: var(--sl-color-accent); }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li { position: relative; display: grid; grid-template-columns: 1.65rem minmax(0, 1fr); column-gap: .8rem; }
+  li:not(:last-child)::before { content: ''; position: absolute; left: .8rem; top: 1.65rem; bottom: 0; border-left: 1px solid var(--sl-color-gray-5); }
+  .marker { display: grid; place-items: center; width: 1.65rem; height: 1.65rem; border: 1px solid var(--sl-color-gray-5); border-radius: 50%; font: .8rem var(--sl-font-mono); color: var(--sl-color-gray-2); }
+  [data-current] .marker { background: var(--sl-color-accent-low); color: var(--sl-color-accent-high); border-color: var(--sl-color-accent); }
+  [data-current] strong { color: var(--sl-color-text-accent); }
+  li:not(:last-child) .stage { padding-bottom: 1.1rem; }
+  p { margin: .15rem 0 .25rem; line-height: 1.55; }
+  .result :global(table) { border-collapse: collapse; margin-top: .5rem; font-variant-numeric: tabular-nums; }
+  .result :global(:is(th, td)) { padding: .25rem .65rem; border-bottom: 1px solid var(--sl-color-gray-5); text-align: left; }
+  .result :global(:is(th, td):last-child) { text-align: right; }
+  samp { display: block; color: var(--sl-color-text-accent); font: .85rem/1.55 var(--sl-font-mono); overflow-wrap: anywhere; }
+</style>

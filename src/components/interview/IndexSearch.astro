@@ -1,0 +1,143 @@
+---
+import { scenes, edgePath } from './index-scenes';
+const { method } = Astro.props as { method: keyof typeof scenes };
+const scene = scenes[method];
+const first = scene.frames[0];
+---
+<index-search class="diagram not-content" data-query={scene.query} data-frames={JSON.stringify(scene.frames)}>
+  <div class="toolbar"><strong>Поиск по индексу</strong><button type="button" hidden>Пауза</button></div>
+  <code class="predicate">{first.query ?? scene.query}</code>
+  <svg viewBox="0 0 412 292" role="img" aria-label={scene.description}>
+    {method === 'spgist' && <>
+      <rect class="plane" x="78" y="24" width="248" height="248" />
+      <rect class="region" data-part="quad" x="202" y="24" width="124" height="124" />
+      <rect class="region inner" data-part="subquad" x="264" y="24" width="62" height="62" />
+      <path class="divider" d="M78 148 H326 M202 24 V272 M202 86 H326 M264 24 V148" />
+      {[0,4,8].map(v=><><text class="tick" x={78+31*v} y="288">{v}</text><text class="tick" x="63" y={276-31*v}>{v}</text></>)}
+      {[[2,6],[1,2],[6,2],[5,5],[7,5]].map(([x,y])=><circle class="point other" cx={78+31*x} cy={272-31*y} r="4" />)}
+    </>}
+    {scene.edges.map(edge => <path class="edge" data-from={edge.from} data-to={edge.to} d={edgePath(edge,scene.nodes)} />)}
+    {method === 'spgist' && <>
+      {[{id:'origin',x:202,y:148,label:'(4,4)'},{id:'ne',x:264,y:86,label:'(6,6)'},{id:'point',x:295,y:55,label:'(7,7)'}].map(p=>
+        <g class="map-point" data-part={p.id} data-on={first.on.includes(p.id) || undefined}>
+          <circle cx={p.x} cy={p.y} r="5"/><text x={p.x-8} y={p.y-8} text-anchor="end">{p.label}</text>
+        </g>
+      )}
+    </>}
+    {scene.nodes.map(n => <g class="node" transform={`translate(${n.x},${n.y})`} data-part={n.id} data-on={first.on.includes(n.id) || undefined}>
+      <rect x={-n.width/2} y="-21" width={n.width} height="42" rx="5"/>
+      <text class="node-label" text-anchor="middle" y="-3">{n.label}</text>
+      <text class="node-value" text-anchor="middle" y="13">{n.detail}</text>
+    </g>)}
+    <g class="traveler" aria-hidden="true" style="display:none"><rect x="-14" y="-9" width="28" height="18" rx="8"/><text text-anchor="middle" y="4"></text></g>
+  </svg>
+  <div class="caption"><strong data-title>{first.title}</strong><p data-note>{first.note}</p></div>
+  <noscript><p>{scene.description}</p></noscript>
+</index-search>
+
+<script>
+  import type { Frame } from './index-scenes';
+  class IndexSearch extends HTMLElement {
+    private dispose?: () => void;
+    connectedCallback() {
+      const frames: Frame[] = JSON.parse(this.dataset.frames!);
+      const button = this.querySelector('button')!;
+      const sql = this.querySelector('.predicate')!;
+      const title = this.querySelector('[data-title]')!;
+      const note = this.querySelector('[data-note]')!;
+      const nodes = Array.from(this.querySelectorAll<SVGElement>('[data-part]'));
+      const edges = Array.from(this.querySelectorAll<SVGPathElement>('.edge'));
+      const ball = this.querySelector<SVGGElement>('.traveler')!;
+      const token = ball.querySelector('text')!;
+      const listeners = new AbortController();
+      const options = {signal:listeners.signal};
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const duration = 800;
+      let frameIndex = 0;
+      let elapsed = 0;
+      let request = 0;
+      let lastTime: number | undefined;
+      let paused = false;
+      let path: SVGPathElement | undefined;
+      let pathLength = 0;
+      function paint() {
+        if (!path || reduced.matches) { ball.style.display='none'; return; }
+        const t = Math.min(1, elapsed / (duration * .84));
+        const at = path.getPointAtLength(pathLength*t);
+        ball.setAttribute('transform', `translate(${at.x},${at.y})`);
+        ball.style.display = t < 1 ? 'block' : 'none';
+      }
+      const render = () => {
+        const f = frames[frameIndex];
+        this.dataset.frame = String(frameIndex);
+        sql.textContent = f.query ?? this.dataset.query!;
+        title.textContent = f.title;
+        note.textContent = f.note;
+        for (const n of nodes) n.toggleAttribute('data-on', f.on.includes(n.dataset.part!));
+        for (const e of edges) e.toggleAttribute('data-on', f.on.includes(e.dataset.from!) && f.on.includes(e.dataset.to!));
+        path = f.via && edges.find(e=>e.dataset.from===f.via![0] && e.dataset.to===f.via![1]);
+        pathLength = path?.getTotalLength() ?? 0;
+        token.textContent = f.token ?? '•';
+        paint();
+      };
+      const tick = (now: number) => {
+        elapsed += lastTime === undefined ? 0 : now - lastTime;
+        lastTime = now;
+        if (elapsed >= duration) {
+          frameIndex = (frameIndex + Math.floor(elapsed / duration)) % frames.length;
+          elapsed %= duration;
+          render();
+        } else { paint(); }
+        request = requestAnimationFrame(tick);
+      };
+      function sync() {
+        cancelAnimationFrame(request);
+        lastTime = undefined;
+        if (!paused && !document.hidden) request = requestAnimationFrame(tick);
+      }
+      button.addEventListener('click', () => {
+        paused = !paused;
+        button.textContent = paused ? 'Продолжить' : 'Пауза';
+        sync();
+      }, options);
+      document.addEventListener('visibilitychange',sync,options);
+      render();
+      button.hidden = false;
+      sync();
+      this.dispose = () => {cancelAnimationFrame(request);listeners.abort();};
+    }
+    disconnectedCallback() { this.dispose?.(); }
+  }
+  if (!customElements.get('index-search')) customElements.define('index-search', IndexSearch);
+</script>
+
+<style>
+  .diagram { display:block; container-type:inline-size; max-width:46rem; margin-block:1.3rem; padding:clamp(.75rem,2.3vw,1.35rem); border:1px solid var(--sl-color-gray-5); border-radius:.6rem; background:var(--sl-color-bg); }
+  .toolbar { display:flex; align-items:center; justify-content:space-between; gap:.8rem; }
+  .toolbar strong { color:var(--sl-color-white); font-size:1.06rem; }
+  button { border:1px solid var(--sl-color-gray-5); border-radius:.35rem; background:var(--sl-color-bg); color:var(--sl-color-white); font:inherit; font-size:.85rem; min-height:2.4rem; padding:.4rem .7rem; cursor:pointer; }
+  button:hover {border-color:var(--sl-color-accent);}
+  .predicate { display:block; background:transparent; color:var(--sl-color-text-accent); font: .9rem/1.5 var(--sl-font-mono); padding:0; margin:.45rem 0 .75rem; overflow-wrap:anywhere; }
+  svg { display:block; width:100%; max-width:36rem; height:auto; margin:auto; overflow:visible; }
+  .edge,.divider { fill:none; stroke:var(--sl-color-gray-4); stroke-width:1.4; }
+  .edge[data-on] { stroke:var(--sl-color-accent); stroke-width:2.5; }
+  .node rect,.plane { fill:var(--sl-color-bg); stroke:var(--sl-color-gray-5); stroke-width:1.3; }
+  .node[data-on] rect { fill:var(--sl-color-accent-low); stroke:var(--sl-color-accent); stroke-width:1.8; }
+  .node-label { font:12px var(--sl-font); fill:var(--sl-color-gray-2); }
+  .node-value { font:600 13px var(--sl-font-mono); fill:var(--sl-color-white); }
+  .node[data-on] .node-value { fill:var(--sl-color-accent-high); }
+  .traveler { pointer-events:none; } .traveler rect { fill:var(--sl-color-accent); stroke:var(--sl-color-bg); stroke-width:1.5; }
+  .traveler text { font:700 11px var(--sl-font-mono); fill:var(--sl-color-bg); }
+  .region { fill:transparent; } .region[data-on] { fill:var(--sl-color-accent-low); }
+  .inner[data-on] {stroke:var(--sl-color-accent); stroke-width:2.5;}
+  .point.other { fill:var(--sl-color-gray-3); } .map-point circle {fill:var(--sl-color-gray-2); }
+  .map-point[data-on] circle {fill:var(--sl-color-accent);stroke:var(--sl-color-accent-high);stroke-width:2;}
+  .map-point text,.tick { font:13px var(--sl-font-mono); fill:var(--sl-color-gray-2); }
+  .map-point text {paint-order:stroke;stroke:var(--sl-color-bg);stroke-width:3;stroke-linejoin:round;}
+  .tick { text-anchor:middle; }
+  .caption { border-top:1px solid var(--line); margin-top:.75rem; padding-top:.65rem; min-height:4.8rem; }
+  .caption strong {color:var(--sl-color-white);} .caption p { margin:.15rem 0 0; font-size:.94rem; line-height:1.5; }
+  @container (max-width:24rem) {
+    .caption {min-height:6rem;} .node-value {font-size:14px;} .node-label {font-size:13px;}
+  }
+</style>

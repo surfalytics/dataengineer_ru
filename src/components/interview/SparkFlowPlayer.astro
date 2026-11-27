@@ -1,0 +1,58 @@
+---
+interface Props { title: string; cycle: number }
+const { title, cycle } = Astro.props;
+---
+<spark-data-flow class="flow not-content" data-cycle={cycle}>
+  <div class="toolbar">
+    <strong>{title}</strong>
+    <button type="button" hidden>Пауза</button>
+  </div>
+  <slot />
+</spark-data-flow>
+
+<script>
+  class SparkDataFlow extends HTMLElement {
+    private dispose?: () => void;
+    connectedCallback() {
+      const svg = this.querySelector('svg')!;
+      const button = this.querySelector('button')!;
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+      let paused = reduced.matches;
+      let inView = false;
+      svg.pauseAnimations();
+      svg.setCurrentTime(0);
+      svg.querySelectorAll<SVGAnimationElement>('animate, animateMotion').forEach(el => el.beginElement());
+      const showResult = () => svg.setCurrentTime(Number(this.dataset.cycle) * .91);
+      if (paused) showResult();
+      const sync = () => {
+        if (paused || !inView || document.hidden) svg.pauseAnimations();
+        else svg.unpauseAnimations();
+        button.textContent = paused ? 'Продолжить' : 'Пауза';
+      };
+      const observer = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; sync(); });
+      const events = new AbortController();
+      const options = { signal: events.signal };
+      button.addEventListener('click', () => { paused = !paused; sync(); }, options);
+      reduced.addEventListener('change', () => {
+        paused = reduced.matches;
+        if (paused) showResult();
+        sync();
+      }, options);
+      document.addEventListener('visibilitychange', sync, options);
+      button.hidden = false;
+      observer.observe(this);
+      sync();
+      this.dispose = () => { observer.disconnect(); events.abort(); svg.pauseAnimations(); };
+    }
+    disconnectedCallback() { this.dispose?.(); }
+  }
+  if (!customElements.get('spark-data-flow')) customElements.define('spark-data-flow', SparkDataFlow);
+</script>
+
+<style>
+  .flow { display:block; max-width:36rem; margin-block:1.3rem; padding:clamp(.65rem,2vw,1.15rem); border:1px solid var(--sl-color-gray-5); border-radius:.6rem; background:var(--sl-color-bg); }
+  .toolbar { display:flex; justify-content:space-between; align-items:center; gap:.75rem; margin-bottom:.65rem; }
+  .toolbar strong { color:var(--sl-color-white); }
+  button { font:inherit; font-size:.88rem; color:var(--sl-color-text); background:var(--sl-color-bg); border:1px solid var(--sl-color-gray-5); border-radius:.4rem; padding:.35rem .7rem; cursor:pointer; }
+  button:hover { border-color:var(--sl-color-accent); }
+</style>

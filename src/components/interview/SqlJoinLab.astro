@@ -1,0 +1,147 @@
+---
+import { joinPairs, joinTypes, type JoinType } from './sql-join-rows';
+const { exercise = false } = Astro.props as { exercise?: boolean };
+const left = [{ id: 1, value: 'Анна' }, { id: 2, value: 'Борис' }];
+const right = [{ id: 2, value: 'Омск' }, { id: 3, value: 'Тула' }];
+if (exercise) {
+  left.push({ id: 3, value: 'Вера' });
+  right[1].id = 2;
+  right.push({ id: 4, value: 'Пермь' });
+}
+const kinds: readonly JoinType[] = exercise ? ['LEFT', 'INNER', 'FULL'] : joinTypes;
+const leftKeys = left.map(row => row.id);
+const rightKeys = right.map(row => row.id);
+---
+<sql-join-lab class="lab not-content" aria-label="Заполнение результата JOIN">
+  <div class="inputs">
+    {[{ title: 't1', field: 'name', rows: left }, { title: 't2', field: 'city', rows: right }].map(source => (
+      <table data-source={source.title}>
+        <caption>{source.title}</caption>
+        <thead><tr><th scope="col">id</th><th scope="col">{source.field}</th></tr></thead>
+        <tbody>{source.rows.map(row => <tr><td>{row.id}</td><td>{row.value}</td></tr>)}</tbody>
+      </table>
+    ))}
+  </div>
+  <div class="controls" hidden>
+    <div role="group" aria-label="Вид JOIN" class="types">
+      {kinds.map((kind, index) => <button type="button" data-kind={kind} aria-pressed={index === 0}>{kind}</button>)}
+    </div>
+    <div class="actions">
+      <button type="button" data-play>Пауза</button>
+      <button type="button" data-all>Весь результат</button>
+    </div>
+  </div>
+  {kinds.map(kind => {
+    const pairs = joinPairs(leftKeys, rightKeys, kind);
+    const cross = kind === 'CROSS';
+    const query = cross
+      ? 'SELECT t1.id AS id_1, name, t2.id AS id_2, city FROM t1 CROSS JOIN t2;'
+      : `SELECT * FROM t1 ${kind} JOIN t2 USING (id);`;
+    return <section data-panel={kind} aria-label={kind + ' JOIN'}>
+      <code class="sql">{query}</code>
+      <div class="output" style={`--rows: ${pairs.length}`}>
+        <div class="bar"><strong>Результат</strong><span data-count>Строк: {pairs.length}</span></div>
+        <table aria-label={'Результат ' + kind}>
+          <thead><tr>{(cross ? ['id_1','name','id_2','city'] : ['id','name','city']).map(key => <th scope="col">{key}</th>)}</tr></thead>
+          <tbody>{pairs.map(pair => {
+            const l = pair.left === null ? undefined : left[pair.left];
+            const r = pair.right === null ? undefined : right[pair.right];
+            const cells = cross ? [l?.id, l?.value, r?.id, r?.value] : [l?.id ?? r?.id, l?.value, r?.value];
+            return <tr data-left={pair.left ?? -1} data-right={pair.right ?? -1}>
+              {cells.map(value => <td class:list={[{missing: value == null}]}>{value ?? 'NULL'}</td>)}
+            </tr>;
+          })}</tbody>
+        </table>
+      </div>
+    </section>;
+  })}
+</sql-join-lab>
+
+<script>
+  class SqlJoinLab extends HTMLElement {
+    private cleanup?: () => void;
+
+    connectedCallback() {
+      const controls = this.querySelector<HTMLElement>('.controls')!;
+      const buttons = Array.from(this.querySelectorAll<HTMLButtonElement>('[data-kind]'));
+      const panels = Array.from(this.querySelectorAll<HTMLElement>('[data-panel]'));
+      const left = this.querySelectorAll('[data-source="t1"] tbody tr');
+      const right = this.querySelectorAll('[data-source="t2"] tbody tr');
+      const play = this.querySelector<HTMLButtonElement>('[data-play]')!;
+      const all = this.querySelector<HTMLButtonElement>('[data-all]')!;
+      let selected = 0;
+      let shown = 0;
+      let paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let timer: number | undefined;
+      const events = new AbortController();
+      const options = { signal: events.signal };
+      const rows = () => Array.from(panels[selected].querySelectorAll<HTMLTableRowElement>('tbody tr'));
+      const draw = () => {
+        const result = rows();
+        const newest = result[shown - 1];
+        panels.forEach((panel, i) => { panel.hidden = i !== selected; });
+        buttons.forEach((button, i) => button.setAttribute('aria-pressed', String(i === selected)));
+        result.forEach((row, i) => {
+          row.hidden = i >= shown;
+          row.toggleAttribute('data-active', i === shown - 1);
+        });
+        left.forEach((row, i) => row.toggleAttribute('data-active', String(i) === newest?.dataset.left));
+        right.forEach((row, i) => row.toggleAttribute('data-active', String(i) === newest?.dataset.right));
+        panels[selected].querySelector('[data-count]')!.textContent = 'Строк: ' + shown;
+        play.textContent = paused ? 'Воспроизвести' : 'Пауза';
+      };
+      const schedule = () => {
+        window.clearTimeout(timer);
+        if (paused || document.hidden) return;
+        const complete = shown === rows().length;
+        timer = window.setTimeout(() => {
+          shown = complete ? 0 : shown + 1;
+          draw();
+          schedule();
+        }, complete ? 1900 : 800);
+      };
+      buttons.forEach((button, i) => button.addEventListener('click', () => {
+        selected = i;
+        shown = 0;
+        draw();
+        schedule();
+      }, options));
+      play.addEventListener('click', () => { paused = !paused; draw(); schedule(); }, options);
+      all.addEventListener('click', () => {
+        paused = true;
+        shown = rows().length;
+        draw();
+        schedule();
+      }, options);
+      controls.hidden = false;
+      document.addEventListener('visibilitychange', schedule, options);
+      draw();
+      schedule();
+      this.cleanup = () => { window.clearTimeout(timer); events.abort(); };
+    }
+    disconnectedCallback() { this.cleanup?.(); }
+  }
+  if (!customElements.get('sql-join-lab')) customElements.define('sql-join-lab', SqlJoinLab);
+</script>
+
+<style>
+  .lab {display:block;border:1px solid var(--sl-color-gray-5);border-radius:.55rem;padding:clamp(.7rem,2vw,1.25rem);margin:1rem 0;color:var(--sl-color-text);}
+  .inputs {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;align-items:start;}
+  table {display:table;width:100%;border-collapse:collapse;font:.86rem/1.5 var(--sl-font-mono);}
+  caption,.bar {text-align:left;font:600 .95rem var(--sl-font);color:var(--sl-color-white);}
+  caption {padding-bottom:.4rem;}
+  th,td {padding:.22rem .45rem;text-align:left;overflow-wrap:anywhere;border-bottom:1px solid var(--sl-color-gray-5);}
+  th,.missing,[data-count] {color:var(--sl-color-gray-3);}
+  th {font-weight:400;}
+  .controls,.actions,.types,.bar {display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;}
+  .controls,.bar {justify-content:space-between;}
+  .controls {margin:1rem 0 .7rem;}
+  button {font:inherit;font-size:.85rem;color:var(--sl-color-text);background:var(--sl-color-bg);border:1px solid var(--sl-color-gray-5);border-radius:.35rem;padding:.35rem .55rem;cursor:pointer;}
+  button:hover,button[aria-pressed=true] {border-color:var(--sl-color-accent);}
+  [data-active],button[aria-pressed=true] {background:var(--sl-color-accent-low);color:var(--sl-color-accent-high);}
+  .sql {display:block;font:.86rem/1.5 var(--sl-font-mono);overflow-wrap:anywhere;margin:.7rem 0;}
+  .output {min-height:calc(4rem + var(--rows) * 1.8rem);border:1px solid var(--sl-color-gray-5);border-radius:.4rem;overflow:hidden;}
+  .bar {padding:.55rem;}
+  [data-count] {font-size:.8rem;font-weight:400;}
+  [hidden] {display:none;}
+</style>

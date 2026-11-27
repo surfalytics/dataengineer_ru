@@ -1,0 +1,45 @@
+---
+title: "Как убрать дубли"
+prev: {"label":"Чем WHERE отличается от HAVING?","link":"/interview/questions/sql/aggregation/"}
+next: {"label":"Какие строки сохраняет каждый JOIN?","link":"/interview/questions/sql/joins/"}
+editUrl: false
+---
+
+Сначала определите, **по каким столбцам строки считаются одинаковыми**. Пусть значения `(region_id, email)` в трёх записях равны `(7, 'a')`, `(7, 'a')` и `(8, 'a')`. Если выбрать только email, получится одно уникальное значение. Если выбрать регион вместе с email — две разные пары.
+
+## DISTINCT или GROUP BY?
+
+```sql
+SELECT DISTINCT email FROM contacts;
+
+SELECT email FROM contacts GROUP BY email;
+```
+
+Оба запроса вернут по одной строке на email. `DISTINCT` удобен для списка уникальных значений. `GROUP BY` пригодится, когда вместе с ключом нужен агрегат. Например, этот запрос покажет, какие значения повторялись и сколько раз.
+
+```sql
+SELECT email, COUNT(*) AS copies
+FROM contacts
+GROUP BY email
+HAVING COUNT(*) > 1;
+```
+
+`SELECT DISTINCT *` сравнивает все выбранные столбцы. Если у каждой записи свой первичный ключ, две записи с одинаковым email останутся разными.
+
+## А если нужно удалить строки из таблицы?
+
+`DISTINCT` и `GROUP BY` меняют только результат чтения. Для физического удаления сначала выберите, какую запись сохранить. В этом примере `id` — уникальный первичный ключ, и для каждого email остаётся наименьший `id`.
+
+```sql
+WITH numbered AS (
+    SELECT id, ROW_NUMBER() OVER (
+        PARTITION BY email ORDER BY id
+    ) AS rn
+    FROM contacts
+)
+DELETE FROM contacts AS c
+USING numbered AS n
+WHERE c.id = n.id AND n.rn > 1;
+```
+
+Проверить список кандидатов до удаления можно тем же CTE, заменив `DELETE` на `SELECT id FROM numbered WHERE rn > 1`. [DISTINCT в PostgreSQL](https://www.postgresql.org/docs/18/queries-select-lists.html#QUERIES-DISTINCT)

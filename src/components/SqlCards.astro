@@ -1,0 +1,41 @@
+---
+const cards = [
+  ['Чем COUNT(*) отличается от COUNT(column)?', 'COUNT(*) считает строки. COUNT(column) считает строки, где значение column отличается от NULL.'],
+  ['В каком порядке WHERE и HAVING фильтруют результат?', 'WHERE фильтрует строки до группировки. HAVING фильтрует группы после группировки.'],
+  ['Что вернёт LEFT JOIN для строки слева, если совпадений справа нет?', 'Строка слева сохранится. Все столбцы правой таблицы в результате будут равны NULL.'],
+];
+---
+<section class="deck not-content" aria-label="Карточки SQL">
+  <div aria-live="polite">
+    {cards.map(([question, answer], idx) => (
+      <article hidden={idx !== 0}>
+        <small>Карточка {idx+1} из {cards.length}</small>
+        <h2>{question}</h2>
+        <details><summary>Показать ответ</summary><p>{answer}</p></details>
+      </article>
+    ))}
+  </div>
+  <button type="button">Следующая карточка →</button>
+</section>
+<script>
+  const deck = document.querySelector('.deck');
+  const items = deck?.querySelectorAll('article');
+  const button = deck?.querySelector('button');
+  let current = 0;
+  button?.addEventListener('click', () => {
+    if (!items?.length) return;
+    items[current].hidden = true;
+    items[current].querySelector('details')?.removeAttribute('open');
+    current = (current + 1) % items.length;
+    items[current].hidden = false;
+    button.textContent = current === items.length - 1 ? 'Начать сначала ↺' : 'Следующая карточка →';
+  });
+</script>
+<style>
+  .deck {border:1px solid var(--line);border-radius:.5rem;padding:clamp(1.25rem, 3vw, 2rem);max-width:48rem;}
+  small {color:var(--sl-color-gray-3);}
+  h2 {font-size:var(--sl-text-h3);margin-block:1rem;line-height:1.35;}
+  summary,button {cursor:pointer;color:var(--sl-color-text-accent);font:inherit;}
+  p {margin-top:.75rem;}
+  button {background:none;border:0;border-top:1px solid var(--line);color:var(--sl-color-white);width:100%;text-align:left;margin-top:1.5rem;padding:1rem 0 0;}
+</style>

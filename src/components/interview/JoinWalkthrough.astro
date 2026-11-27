@@ -1,0 +1,160 @@
+---
+import HashPartitions from './HashPartitions.astro';
+import { buildTrace } from './join-trace.mjs';
+
+type Algorithm = 'hash-join' | 'merge-join' | 'nested-loop';
+const { algorithm } = Astro.props as { algorithm: Algorithm };
+const steps = buildTrace(algorithm);
+const isHash = algorithm === 'hash-join';
+const operatorTitle = algorithm === 'merge-join' ? 'Указатели' : 'Текущая пара';
+const tables = [{ side: 'a', name: 'A', focus: 'left' }, { side: 'b', name: 'B', focus: 'right' }] as const;
+---
+<join-walkthrough data-hash={isHash || undefined} class="walk not-content" aria-label="Анимация алгоритма соединения">
+  <div class="bar">
+    <strong>Ход выполнения</strong>
+    <button type="button" data-play hidden>Пауза</button>
+  </div>
+  {isHash && <HashPartitions trace={steps.map(step => step.hash)} />}
+  {steps.map((step, index) => {
+    const l = step.left[0];
+    const r = step.right[0];
+    const sign = l && r ? (l.key === r.key ? '=' : l.key < r.key ? '<' : '>') : '';
+    return (
+      <div data-frame hidden={index !== 0}>
+        {!isHash && <div class="flow">
+          {tables.map(({ side, name, focus }) => (
+            <div class:list={['input', side, { reading: step[focus].length > 0 }]}>
+              <div class="box-heading">Таблица {name}</div>
+              <table aria-label={`Таблица ${name}`}>
+                <thead><tr><th scope="col">id</th><th scope="col">ключ</th></tr></thead>
+                <tbody>{step[side].map(row => {
+                  const active = step[focus].includes(row);
+                  return <tr class:list={{ active }}><td>{active && <span class="marker" aria-label="Текущая строка">▸</span>}{row.id}</td><td>{row.key}</td></tr>;
+                })}</tbody>
+              </table>
+            </div>
+          ))}
+          <div class="operator">
+            <div class="box-heading">{operatorTitle}</div>
+              <div class="comparison">
+                <span class="formula">A.ключ {sign || '⋈'} B.ключ</span>
+                <strong>{l && r ? `${l.key} ${sign} ${r.key}` : l ? `${l.id} · ключ ${l.key}` : '—'}</strong>
+                {step.left.length > 1 && <small>Размеры групп: {step.left.length} × {step.right.length}</small>}
+              </div>
+          </div>
+        </div>}
+        <div class="result">
+          <div class="result-header"><strong>Результат</strong><span>Строк: {step.result.length}</span></div>
+          <div class="pairs">
+            {step.result.length ? step.result.map((pair, i) => (
+              <code class:list={{ added: step.added && i === step.result.length - 1 }}>({pair})</code>
+            )) : <span class="empty">Пока нет совпадений</span>}
+          </div>
+        </div>
+        <div class="caption"><strong>{step.phase}</strong><p>{step.note}</p></div>
+      </div>
+    );
+  })}
+  <noscript><p>Включите JavaScript для воспроизведения схемы.</p></noscript>
+</join-walkthrough>
+
+<script>
+  class JoinWalkthrough extends HTMLElement {
+    private stopPlayback?: () => void;
+    private handlers?: AbortController;
+    connectedCallback() {
+      const frames = Array.from(this.querySelectorAll<HTMLElement>('[data-frame]'));
+      const play = this.querySelector<HTMLButtonElement>('[data-play]')!;
+      let current = frames.findIndex(frame => !frame.hidden);
+      let timer: number | undefined;
+      let paused = false;
+      const advance = () => {
+        frames[current].hidden = true;
+        current = (current + 1) % frames.length;
+        frames[current].hidden = false;
+        if (this.hasAttribute('data-hash')) {
+          this.dataset.current = String(current);
+          this.dispatchEvent(new Event('join-frame'));
+        }
+      };
+      const stop = () => {
+        window.clearInterval(timer);
+        timer = undefined;
+      };
+      const updatePlayback = () => {
+        this.toggleAttribute('data-halted', paused || document.hidden);
+        if (paused || document.hidden) {
+          stop();
+        } else if (timer === undefined) {
+          advance();
+          timer = window.setInterval(advance, 800);
+        }
+        if (this.hasAttribute('data-hash')) this.dispatchEvent(new Event('join-playback'));
+      };
+      this.handlers = new AbortController();
+      const options = { signal: this.handlers.signal };
+      play.addEventListener('click', () => {
+        paused = !paused;
+        play.textContent = paused ? 'Продолжить' : 'Пауза';
+        updatePlayback();
+      }, options);
+      document.addEventListener('visibilitychange', updatePlayback, options);
+      this.stopPlayback = stop;
+      play.textContent = 'Пауза';
+      play.hidden = false;
+      updatePlayback();
+    }
+    disconnectedCallback() { this.stopPlayback?.(); this.handlers?.abort(); }
+  }
+  if (!customElements.get('join-walkthrough')) customElements.define('join-walkthrough', JoinWalkthrough);
+</script>
+
+<style>
+  .walk {display:block; max-width:52rem; margin-block:1.25rem; padding:clamp(.8rem,2.4vw,1.5rem); border:1px solid var(--sl-color-gray-5); border-radius:.65rem; background:var(--sl-color-bg); color:var(--sl-color-text);}
+  .walk [hidden] {display:none !important;}
+  .bar,.result-header {display:flex; align-items:center; justify-content:space-between; gap:.5rem;}
+  .bar {margin-bottom:1rem;}
+  .bar strong {color:var(--sl-color-white); font-size:1.06rem;}
+  .result-header span,.empty,.formula {color:var(--sl-color-gray-3); font-size:.84rem;}
+  .flow {--wire:clamp(.65rem,2vw,1.7rem); display:grid; grid-template-columns:minmax(0,1fr) var(--wire) minmax(0,1.32fr) var(--wire) minmax(0,1fr); grid-template-areas:'a . op . b'; align-items:center; }
+  .a {grid-area:a;} .b {grid-area:b;} .operator {grid-area:op;align-self:stretch;display:flex;flex-direction:column;}
+  .input,.operator {position:relative; border:1px solid var(--sl-color-gray-5); border-radius:.4rem; min-width:0;}
+  .input::after {content:'';position:absolute;top:50%;width:var(--wire);border-top:1px solid var(--sl-color-gray-4);}
+  .a::after {left:100%;} .b::after {right:100%;}
+  .input.reading::after {border-color:var(--sl-color-accent);border-width:2px;}
+  .input::before {content:'';position:absolute;top:calc(50% - 3px);border-block:4px solid transparent;}
+  .a::before {left:calc(100% + var(--wire) - 5px);border-left:5px solid var(--sl-color-gray-4);}
+  .b::before {right:calc(100% + var(--wire) - 5px);border-right:5px solid var(--sl-color-gray-4);}
+  .a.reading::before {border-left-color:var(--sl-color-accent);}
+  .b.reading::before {border-right-color:var(--sl-color-accent);}
+  .box-heading,.result-header strong {font-size:.86rem; font-weight:600; color:var(--sl-color-white);}
+  .box-heading {padding:.42rem .6rem; border-bottom:1px solid var(--line);}
+  .input table {display:table; width:100%; margin:0; border-collapse:collapse; font: .84rem/1.45 var(--sl-font-mono); table-layout:fixed;}
+  th,td {border:0; text-align:left; padding:.2rem .55rem; position:relative;} th {font-size:.74rem; color:var(--sl-color-gray-3); font-weight:400;}
+  td:first-child,th:first-child {padding-left:1rem;}
+  tbody tr:last-child td {padding-bottom:.3rem;}
+  .active,.pairs .added {background:var(--sl-color-accent-low);color:var(--sl-color-accent-high);}
+  .active {font-weight:700;}
+  .marker {position:absolute;left:.22rem;}
+  .comparison {padding:.45rem .6rem; margin-block:auto;}
+  .formula {font: .75rem/1.6 var(--sl-font-mono);}
+  .comparison {display:grid;gap:.2rem; justify-items:center; min-height:4.9rem; align-content:center;}
+  .comparison strong {font:600 1.12rem/1.25 var(--sl-font-mono); color:var(--sl-color-white);}
+  .comparison small {font-size:.75rem;}
+  .result {position:relative; margin-top:1.25rem; border:1px solid var(--sl-color-gray-5); border-radius:.4rem; padding:.55rem .7rem;}
+  .walk:not([data-hash]) .result::before {content:'';position:absolute;bottom:100%;height:1.25rem;left:50%;border-left:1px solid var(--sl-color-gray-4);}
+  .pairs {display:flex; flex-wrap:wrap; gap:.4rem; min-height:1.8rem;align-items:center;margin-top:.3rem;}
+  .pairs code {border:1px solid var(--sl-color-gray-5); border-radius:.25rem; padding:.12rem .35rem; font: .83rem/1.4 var(--sl-font-mono);}
+  .caption {margin-top:1rem; min-height:4.8rem;}
+  .caption strong {font-size:.94rem;color:var(--sl-color-white);}
+  .caption p {font-size:.93rem; line-height:1.5;margin:.18rem 0 0;}
+  button {font:inherit; font-size:.85rem; line-height:1.25; min-height:2.45rem; padding:.4rem .68rem; border:1px solid var(--sl-color-gray-5); border-radius:.35rem; color:var(--sl-color-white); background:var(--sl-color-bg); cursor:pointer;}
+  button:hover:enabled {border-color:var(--sl-color-accent);}
+  @media(max-width:38rem) {
+    .flow {grid-template-columns:1fr 1fr;grid-template-areas:'a b' 'op op'; gap:.65rem;}
+    .input::after,.input::before {display:none;}
+    .operator {width:100%;}
+    .comparison {min-height:3.4rem;}
+    .caption {min-height:5.7rem;}
+  }
+</style>

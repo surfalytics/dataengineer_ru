@@ -1,0 +1,39 @@
+---
+title: "Транзакции в PostgreSQL"
+prev: false
+next: {"label":"Какие четыре гарантии даёт транзакция?","link":"/interview/questions/database-theory/transactions/acid/"}
+tableOfContents: false
+editUrl: false
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+**Транзакция** — одна или несколько операций с базой данных, которые выполняются как единое целое. В PostgreSQL даже одиночный `SELECT` выполняется в транзакции. Чтобы объединить несколько команд, транзакцию открывают явно с помощью `BEGIN`.
+
+Представьте, что на складе пять единиц товара и покупатель бронирует четыре. В одной транзакции приложение уменьшает остаток до одной единицы и создаёт запись о брони. Успешный `COMMIT` фиксирует оба изменения вместе. Если вместо этого выполнить `ROLLBACK`, PostgreSQL отменит все изменения транзакции. На складе останутся пять единиц, а новой брони не будет.
+
+Так работает **атомарность** — буква **A** в ACID. А что увидит второй покупатель, если в это же время попробует забронировать три единицы? Это уже вопрос **изоляции** — буквы **I**. Вместе с согласованностью и долговечностью эти свойства составляют ACID.
+
+<CardGrid>
+  <LinkCard title="ACID" description="Четыре гарантии на примере бронирования товара." href="/interview/questions/database-theory/transactions/acid/" />
+  <LinkCard title="Уровни изоляции" description="Что увидят два сеанса и кто первым обновит строку." href="/interview/questions/database-theory/transactions/isolation/" />
+  <LinkCard title="MVCC" description="Как один снимок определяет, что запрос видит в двух таблицах." href="/interview/questions/database-theory/transactions/mvcc/" />
+  <LinkCard title="Блокировки" description="Когда ждёт одна строка, а когда — все записи в таблицу." href="/interview/questions/database-theory/transactions/locks/" />
+</CardGrid>
+
+<details>
+<summary>Таблица для примеров</summary>
+
+```sql
+CREATE TABLE stock (
+    sku   text PRIMARY KEY,
+    qty   integer NOT NULL CHECK (qty >= 0),
+    share numeric
+);
+
+INSERT INTO stock (sku, qty) VALUES ('A', 5), ('B', 8);
+```
+
+Каждый сценарий начинается с этих остатков.
+
+</details>

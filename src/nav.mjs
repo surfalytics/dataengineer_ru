@@ -284,6 +284,948 @@ export const topics = [
     ],
   },
   {
+    label: 'Подготовка к интервью',
+    link: '/interview/',
+    icon: 'open-book',
+    match: ['/interview/'],
+    items: [
+      { label: 'Обзор', link: '/interview/' },
+      { label: 'Вопросы с разбором', collapsed: true, items: [
+        { label: 'Все темы', link: '/interview/questions/' },
+        {
+          "label": "SQL",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/sql/"
+            },
+            {
+              "label": "Оконные функции",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Типы и примеры",
+                  "link": "/interview/questions/sql/windows/"
+                },
+                {
+                  "label": "Группировка и окно",
+                  "link": "/interview/questions/sql/windows/partition-by/"
+                },
+                {
+                  "label": "Ранги при равенстве",
+                  "link": "/interview/questions/sql/windows/ranking/"
+                }
+              ]
+            },
+            {
+              "label": "CTE",
+              "link": "/interview/questions/sql/cte/"
+            },
+            {
+              "label": "WHERE и HAVING",
+              "link": "/interview/questions/sql/aggregation/"
+            },
+            {
+              "label": "Как убрать дубли",
+              "link": "/interview/questions/sql/duplicates/"
+            },
+            {
+              "label": "JOIN",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Виды JOIN",
+                  "link": "/interview/questions/sql/joins/"
+                },
+                {
+                  "label": "Задача 1. Границы числа строк",
+                  "link": "/interview/questions/sql/joins/bounds/"
+                },
+                {
+                  "label": "Задача 2. JOIN USING (id)",
+                  "link": "/interview/questions/sql/joins/using-id/"
+                }
+              ]
+            },
+            {
+              "label": "Подзапросы",
+              "link": "/interview/questions/sql/subqueries/"
+            },
+            {
+              "label": "Порядок выполнения SELECT",
+              "link": "/interview/questions/sql/query-order/"
+            }
+          ]
+        },
+        {
+          "label": "Python",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/python/"
+            },
+            {
+              "label": "Коллекции и хеширование",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Все вопросы",
+                  "link": "/interview/questions/python/collections/"
+                },
+                {
+                  "label": "Как устроен dict",
+                  "link": "/interview/questions/python/collections/dict/"
+                },
+                {
+                  "label": "Хешируемость ключа",
+                  "link": "/interview/questions/python/collections/hashable-keys/"
+                },
+                {
+                  "label": "Коллизии в dict",
+                  "link": "/interview/questions/python/collections/collisions/"
+                },
+                {
+                  "label": "Устройство list",
+                  "link": "/interview/questions/python/collections/list/"
+                },
+                {
+                  "label": "Кортеж и хешируемость",
+                  "link": "/interview/questions/python/collections/tuple/"
+                },
+                {
+                  "label": "Стек",
+                  "link": "/interview/questions/python/collections/stack/"
+                }
+              ]
+            },
+            {
+              "label": "Функции и декораторы",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Все вопросы",
+                  "link": "/interview/questions/python/functions/"
+                },
+                {
+                  "label": "Параметры и аргументы",
+                  "link": "/interview/questions/python/functions/arguments/"
+                },
+                {
+                  "label": "Распаковка аргументов",
+                  "link": "/interview/questions/python/functions/unpacking/"
+                },
+                {
+                  "label": "Области видимости",
+                  "link": "/interview/questions/python/functions/scope/"
+                },
+                {
+                  "label": "Декораторы с аргументами",
+                  "link": "/interview/questions/python/functions/decorators/"
+                },
+                {
+                  "label": "Декораторы классов",
+                  "link": "/interview/questions/python/functions/class-decorators/"
+                },
+                {
+                  "label": "Встроенные декораторы",
+                  "link": "/interview/questions/python/functions/built-in-decorators/"
+                }
+              ]
+            },
+            {
+              "label": "Итераторы и генераторы",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Все вопросы",
+                  "link": "/interview/questions/python/iterators/"
+                },
+                {
+                  "label": "Итераторы и генераторы",
+                  "link": "/interview/questions/python/iterators/protocol/"
+                },
+                {
+                  "label": "enumerate()",
+                  "link": "/interview/questions/python/iterators/enumerate/"
+                },
+                {
+                  "label": "zip()",
+                  "link": "/interview/questions/python/iterators/zip/"
+                }
+              ]
+            },
+            {
+              "label": "Типы, ссылки и память",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Все вопросы",
+                  "link": "/interview/questions/python/objects/"
+                },
+                {
+                  "label": "Динамическая и сильная типизация",
+                  "link": "/interview/questions/python/objects/typing/"
+                },
+                {
+                  "label": "Изменяемость и ссылки",
+                  "link": "/interview/questions/python/objects/mutability/"
+                },
+                {
+                  "label": "Равенство и идентичность",
+                  "link": "/interview/questions/python/objects/equality/"
+                },
+                {
+                  "label": "Неизменяемость строк",
+                  "link": "/interview/questions/python/objects/strings/"
+                },
+                {
+                  "label": "Почему присваивание не копирует список",
+                  "link": "/interview/questions/python/objects/assignment/"
+                },
+                {
+                  "label": "Поверхностная и глубокая копия",
+                  "link": "/interview/questions/python/objects/copy/"
+                },
+                {
+                  "label": "Циклические ссылки",
+                  "link": "/interview/questions/python/objects/cycles/"
+                },
+                {
+                  "label": "Освобождение памяти",
+                  "link": "/interview/questions/python/objects/memory/"
+                }
+              ]
+            },
+            {
+              "label": "Классы и методы",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Все вопросы",
+                  "link": "/interview/questions/python/classes/"
+                },
+                {
+                  "label": "Принципы ООП",
+                  "link": "/interview/questions/python/classes/oop/"
+                },
+                {
+                  "label": "Миксины",
+                  "link": "/interview/questions/python/classes/mixins/"
+                },
+                {
+                  "label": "Специальные методы",
+                  "link": "/interview/questions/python/classes/dunder/"
+                },
+                {
+                  "label": "classmethod и staticmethod",
+                  "link": "/interview/questions/python/classes/method-types/"
+                },
+                {
+                  "label": "Когда возвращают self",
+                  "link": "/interview/questions/python/classes/return-self/"
+                },
+                {
+                  "label": "Когда возвращают другой результат",
+                  "link": "/interview/questions/python/classes/method-result/"
+                },
+                {
+                  "label": "Контекстный менеджер",
+                  "link": "/interview/questions/python/classes/context-managers/"
+                }
+              ]
+            },
+            {
+              "label": "Потоки, процессы и asyncio",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Все вопросы",
+                  "link": "/interview/questions/python/concurrency/"
+                },
+                {
+                  "label": "GIL",
+                  "link": "/interview/questions/python/concurrency/gil/"
+                },
+                {
+                  "label": "Потоки и процессы",
+                  "link": "/interview/questions/python/concurrency/threads-processes/"
+                },
+                {
+                  "label": "Multiprocessing",
+                  "link": "/interview/questions/python/concurrency/multiprocessing/"
+                },
+                {
+                  "label": "Что такое асинхронность?",
+                  "link": "/interview/questions/python/concurrency/asynchrony/"
+                }
+              ]
+            },
+            {
+              "label": "Сортировки и инструменты",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Все вопросы",
+                  "link": "/interview/questions/python/algorithms/"
+                },
+                {
+                  "label": "Сортировка в Python",
+                  "link": "/interview/questions/python/algorithms/python-sort/"
+                },
+                {
+                  "label": "Нижняя граница сортировки",
+                  "link": "/interview/questions/python/algorithms/sort-bound/"
+                },
+                {
+                  "label": "QuickSort, MergeSort и HeapSort",
+                  "link": "/interview/questions/python/algorithms/sort-comparison/"
+                },
+                {
+                  "label": "Линтеры",
+                  "link": "/interview/questions/python/algorithms/linters/"
+                }
+              ]
+            },
+            {
+              "label": "Задачи",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Задача 1. Список по умолчанию",
+                  "link": "/interview/questions/python/exercises/mutable-default/"
+                },
+                {
+                  "label": "Задача 2. LEFT JOIN двух списков",
+                  "link": "/interview/questions/python/exercises/left-join/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Теория БД",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/database-theory/"
+            },
+            {
+              "label": "Транзакции",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Обзор",
+                  "link": "/interview/questions/database-theory/transactions/"
+                },
+                {
+                  "label": "ACID",
+                  "link": "/interview/questions/database-theory/transactions/acid/"
+                },
+                {
+                  "label": "Уровни изоляции",
+                  "link": "/interview/questions/database-theory/transactions/isolation/"
+                },
+                {
+                  "label": "MVCC",
+                  "link": "/interview/questions/database-theory/transactions/mvcc/"
+                },
+                {
+                  "label": "Блокировки",
+                  "link": "/interview/questions/database-theory/transactions/locks/"
+                }
+              ]
+            },
+            {
+              "label": "План запроса",
+              "link": "/interview/questions/database-theory/query-plan/"
+            },
+            {
+              "label": "Партиционирование",
+              "link": "/interview/questions/database-theory/partitioning/"
+            },
+            {
+              "label": "Индексы",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Теория и ограничения",
+                  "link": "/interview/questions/database-theory/indexes/"
+                },
+                {
+                  "label": "B-tree",
+                  "link": "/interview/questions/database-theory/indexes/btree/"
+                },
+                {
+                  "label": "Hash",
+                  "link": "/interview/questions/database-theory/indexes/hash/"
+                },
+                {
+                  "label": "GiST",
+                  "link": "/interview/questions/database-theory/indexes/gist/"
+                },
+                {
+                  "label": "SP-GiST",
+                  "link": "/interview/questions/database-theory/indexes/spgist/"
+                },
+                {
+                  "label": "GIN",
+                  "link": "/interview/questions/database-theory/indexes/gin/"
+                },
+                {
+                  "label": "BRIN",
+                  "link": "/interview/questions/database-theory/indexes/brin/"
+                }
+              ]
+            },
+            {
+              "label": "Типы физических джоинов",
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Обзор",
+                  "link": "/interview/questions/database-theory/physical-joins/"
+                },
+                {
+                  "label": "Hash Join",
+                  "link": "/interview/questions/database-theory/physical-joins/hash-join/"
+                },
+                {
+                  "label": "Merge Join",
+                  "link": "/interview/questions/database-theory/physical-joins/merge-join/"
+                },
+                {
+                  "label": "Nested Loop",
+                  "link": "/interview/questions/database-theory/physical-joins/nested-loop/"
+                }
+              ]
+            },
+            {
+              "label": "Оптимизация запроса",
+              "link": "/interview/questions/database-theory/query-optimization/"
+            },
+            {
+              "label": "WAL",
+              "link": "/interview/questions/database-theory/wal/"
+            },
+            {
+              "label": "VACUUM",
+              "link": "/interview/questions/database-theory/vacuum/"
+            }
+          ]
+        },
+        {
+          "label": "Airflow",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/airflow/"
+            },
+            {
+              "label": "Компоненты Airflow 2 и 3",
+              "link": "/interview/questions/airflow/components/"
+            },
+            {
+              "label": "Executors",
+              "link": "/interview/questions/airflow/executors/"
+            },
+            {
+              "label": "Pool",
+              "link": "/interview/questions/airflow/pools/"
+            },
+            {
+              "label": "Max active tasks и Pool",
+              "link": "/interview/questions/airflow/task-limits/"
+            },
+            {
+              "label": "Catchup и расписание DAG",
+              "link": "/interview/questions/airflow/scheduling/"
+            },
+            {
+              "label": "Backfill",
+              "link": "/interview/questions/airflow/backfill/"
+            },
+            {
+              "label": "Идемпотентность и инкрементальная загрузка",
+              "link": "/interview/questions/airflow/idempotency/"
+            },
+            {
+              "label": "XCom",
+              "link": "/interview/questions/airflow/xcom/"
+            },
+            {
+              "label": "Python, Bash, Kubernetes и Spark",
+              "link": "/interview/questions/airflow/operators/"
+            },
+            {
+              "label": "Триггеры, сенсоры и зависимости DAG",
+              "link": "/interview/questions/airflow/dependencies/"
+            },
+            {
+              "label": "Наследование операторов",
+              "link": "/interview/questions/airflow/custom-operators/"
+            },
+            {
+              "label": "TaskFlow API",
+              "link": "/interview/questions/airflow/taskflow/"
+            },
+            {
+              "label": "Генераторы DAG",
+              "link": "/interview/questions/airflow/dag-generation/"
+            },
+            {
+              "label": "Генератор задач (Dynamic Task Mapping)",
+              "link": "/interview/questions/airflow/task-mapping/"
+            },
+            {
+              "label": "Паттерны загрузки данных",
+              "link": "/interview/questions/airflow/loading-patterns/"
+            },
+            {
+              "label": "Сколько DAG и executors было в проекте?",
+              "link": "/interview/questions/airflow/scale/"
+            }
+          ]
+        },
+        {
+          "label": "Spark",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все вопросы",
+              "link": "/interview/questions/spark/"
+            },
+            {
+              "label": "Компоненты Spark",
+              "link": "/interview/questions/spark/components/"
+            },
+            {
+              "label": "Как запускается Spark-приложение",
+              "link": "/interview/questions/spark/application-launch/"
+            },
+            {
+              "label": "SparkSession",
+              "link": "/interview/questions/spark/spark-session/"
+            },
+            {
+              "label": "Spark Connect",
+              "link": "/interview/questions/spark/spark-connect/"
+            },
+            {
+              "label": "RDD и lineage",
+              "link": "/interview/questions/spark/rdd/"
+            },
+            {
+              "label": "Потеря executor и checkpoint",
+              "link": "/interview/questions/spark/executor-loss/"
+            },
+            {
+              "label": "Вкладки Spark UI",
+              "link": "/interview/questions/spark/web-ui/"
+            },
+            {
+              "label": "MapReduce",
+              "link": "/interview/questions/spark/map-reduce/"
+            },
+            {
+              "label": "Shuffle",
+              "link": "/interview/questions/spark/shuffle/"
+            },
+            {
+              "label": "Lazy evaluation",
+              "link": "/interview/questions/spark/lazy-evaluation/"
+            },
+            {
+              "label": "Job -> Stages -> Task",
+              "link": "/interview/questions/spark/execution/"
+            },
+            {
+              "label": "where() и filter()",
+              "link": "/interview/questions/spark/where-filter/"
+            },
+            {
+              "label": "coalesce() и repartition()",
+              "link": "/interview/questions/spark/repartition-coalesce/"
+            },
+            {
+              "label": "Окна без partitionBy()",
+              "link": "/interview/questions/spark/global-window/"
+            },
+            {
+              "label": "Catalyst",
+              "link": "/interview/questions/spark/catalyst/"
+            },
+            {
+              "label": "Логический план запроса",
+              "link": "/interview/questions/spark/logical-plan/"
+            },
+            {
+              "label": "Физический план запроса",
+              "link": "/interview/questions/spark/physical-plan/"
+            },
+            {
+              "label": "Полный план запроса",
+              "link": "/interview/questions/spark/query-lifecycle/"
+            },
+            {
+              "label": "Column Pruning",
+              "link": "/interview/questions/spark/column-pruning/"
+            },
+            {
+              "label": "Dynamic Partition Pruning",
+              "link": "/interview/questions/spark/dynamic-partition-pruning/"
+            },
+            {
+              "label": "UDF и Catalyst",
+              "link": "/interview/questions/spark/udf/"
+            },
+            {
+              "label": "Apache Arrow и Pandas UDF",
+              "link": "/interview/questions/spark/pandas-udf-arrow/"
+            },
+            {
+              "label": "Adaptive Query Execution (AQE)",
+              "link": "/interview/questions/spark/aqe/"
+            },
+            {
+              "label": "Является ли план запроса конечным?",
+              "link": "/interview/questions/spark/final-plan/"
+            },
+            {
+              "label": "Стратегии JOIN в Spark",
+              "link": "/interview/questions/spark/join-strategies/"
+            },
+            {
+              "label": "Broadcast JOIN и его ограничения",
+              "link": "/interview/questions/spark/broadcast-join/"
+            },
+            {
+              "label": "Хинты в Spark",
+              "link": "/interview/questions/spark/join-hints/"
+            },
+            {
+              "label": "Когда broadcast() не срабатывает",
+              "link": "/interview/questions/spark/broadcast-hint-failure/"
+            },
+            {
+              "label": "Broadcast Variable",
+              "link": "/interview/questions/spark/broadcast-variable/"
+            },
+            {
+              "label": "cache() и persist()",
+              "link": "/interview/questions/spark/cache-persist/"
+            },
+            {
+              "label": "Повторный Action и пересчёт",
+              "link": "/interview/questions/spark/repeated-actions/"
+            },
+            {
+              "label": "Когда нужен unpersist()",
+              "link": "/interview/questions/spark/cache-lifetime/"
+            },
+            {
+              "label": "collect() и toPandas()",
+              "link": "/interview/questions/spark/collect-to-pandas/"
+            },
+            {
+              "label": "Проблема маленьких файлов",
+              "link": "/interview/questions/spark/small-files/"
+            },
+            {
+              "label": "Что такое data skew",
+              "link": "/interview/questions/spark/data-skew/"
+            },
+            {
+              "label": "Диагностика skew в Stages",
+              "link": "/interview/questions/spark/skew-ui/"
+            },
+            {
+              "label": "Как устранять data skew",
+              "link": "/interview/questions/spark/skew-solutions/"
+            },
+            {
+              "label": "Настройка параллелизма",
+              "link": "/interview/questions/spark/parallelism/"
+            },
+            {
+              "label": "Размер партиций",
+              "link": "/interview/questions/spark/partition-size/"
+            },
+            {
+              "label": "Как подобрать размер кластера",
+              "link": "/interview/questions/spark/cluster-sizing/"
+            },
+            {
+              "label": "Память драйвера",
+              "link": "/interview/questions/spark/driver-memory/"
+            },
+            {
+              "label": "Память executor",
+              "link": "/interview/questions/spark/executor-memory/"
+            },
+            {
+              "label": "Диагностика Executor OOM",
+              "link": "/interview/questions/spark/executor-oom/"
+            },
+            {
+              "label": "Причины Driver OOM",
+              "link": "/interview/questions/spark/driver-oom/"
+            },
+            {
+              "label": "Dynamic Resource Allocation",
+              "link": "/interview/questions/spark/dynamic-allocation/"
+            },
+            {
+              "label": "Почему Executors могут падать при длительной загрузке?",
+              "link": "/interview/questions/spark/kubernetes-allocation/"
+            }
+          ]
+        },
+        {
+          "label": "ClickHouse",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/clickhouse/"
+            },
+            {
+              "label": "Семейство MergeTree",
+              "link": "/interview/questions/clickhouse/mergetree/"
+            },
+            {
+              "label": "Ключ сортировки",
+              "link": "/interview/questions/clickhouse/sorting/"
+            }
+          ]
+        },
+        {
+          "label": "Kafka",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все вопросы",
+              "link": "/interview/questions/kafka/"
+            },
+            {
+              "label": "Что такое Kafka",
+              "link": "/interview/questions/kafka/what-is-kafka/"
+            },
+            {
+              "label": "Компоненты Kafka",
+              "link": "/interview/questions/kafka/components/"
+            },
+            {
+              "label": "Топики и партиции",
+              "link": "/interview/questions/kafka/partitions/"
+            },
+            {
+              "label": "Ключ и порядок событий",
+              "link": "/interview/questions/kafka/partition-key/"
+            },
+            {
+              "label": "Группы потребителей",
+              "link": "/interview/questions/kafka/consumer-groups/"
+            },
+            {
+              "label": "Offset и его коммит",
+              "link": "/interview/questions/kafka/offsets/"
+            },
+            {
+              "label": "Ребалансировка группы",
+              "link": "/interview/questions/kafka/rebalance/"
+            },
+            {
+              "label": "Репликация, leader и ISR",
+              "link": "/interview/questions/kafka/replication/"
+            },
+            {
+              "label": "Гарантии доставки",
+              "link": "/interview/questions/kafka/delivery-semantics/"
+            },
+            {
+              "label": "Retention и compaction",
+              "link": "/interview/questions/kafka/retention/"
+            },
+            {
+              "label": "Как диагностировать consumer lag",
+              "link": "/interview/questions/kafka/consumer-lag/"
+            },
+            {
+              "label": "Ошибки обработки и DLQ",
+              "link": "/interview/questions/kafka/poison-record/"
+            }
+          ]
+        },
+        {
+          "label": "Data modeling",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/data-modeling/"
+            },
+            {
+              "label": "Факты и измерения",
+              "link": "/interview/questions/data-modeling/dimensional/"
+            },
+            {
+              "label": "История изменений",
+              "link": "/interview/questions/data-modeling/scd/"
+            }
+          ]
+        },
+        {
+          "label": "dbt",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/dbt/"
+            },
+            {
+              "label": "Модели",
+              "link": "/interview/questions/dbt/models/"
+            },
+            {
+              "label": "Тесты",
+              "link": "/interview/questions/dbt/tests/"
+            }
+          ]
+        },
+        {
+          "label": "Data Quality",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/data-quality/"
+            },
+            {
+              "label": "Проверки данных",
+              "link": "/interview/questions/data-quality/checks/"
+            },
+            {
+              "label": "Свежесть данных",
+              "link": "/interview/questions/data-quality/freshness/"
+            }
+          ]
+        },
+        {
+          "label": "Iceberg",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/iceberg/"
+            },
+            {
+              "label": "Снапшоты",
+              "link": "/interview/questions/iceberg/snapshots/"
+            },
+            {
+              "label": "Эволюция схемы",
+              "link": "/interview/questions/iceberg/schema/"
+            }
+          ]
+        },
+        {
+          "label": "Flink",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/flink/"
+            },
+            {
+              "label": "Время событий",
+              "link": "/interview/questions/flink/event-time/"
+            },
+            {
+              "label": "Состояние",
+              "link": "/interview/questions/flink/state/"
+            }
+          ]
+        },
+        {
+          "label": "Инфраструктура",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/infrastructure/"
+            },
+            {
+              "label": "Контейнеры",
+              "link": "/interview/questions/infrastructure/containers/"
+            },
+            {
+              "label": "Сети",
+              "link": "/interview/questions/infrastructure/network/"
+            }
+          ]
+        },
+        {
+          "label": "Soft skills",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/soft-skills/"
+            },
+            {
+              "label": "Коммуникация",
+              "link": "/interview/questions/soft-skills/communication/"
+            },
+            {
+              "label": "Разногласия в команде",
+              "link": "/interview/questions/soft-skills/conflicts/"
+            }
+          ]
+        },
+        {
+          "label": "Прочие",
+          "collapsed": true,
+          "items": [
+            {
+              "label": "Все подтемы",
+              "link": "/interview/questions/other/"
+            },
+            {
+              "label": "Проектирование систем",
+              "link": "/interview/questions/other/system-design/"
+            },
+            {
+              "label": "Оценка нагрузки",
+              "link": "/interview/questions/other/estimates/"
+            }
+          ]
+        },
+      ] },
+      { label: 'Карточки для повторения', collapsed: true, items: [
+        { label: 'Все темы', link: '/interview/cards/' },
+        { label: 'SQL', link: '/interview/cards/sql/' },
+        { label: 'Python', link: '/interview/cards/python/' },
+        { label: 'Теория БД', link: '/interview/cards/database-theory/' },
+        { label: 'Airflow', link: '/interview/cards/airflow/' },
+        { label: 'Spark', link: '/interview/cards/spark/' },
+        { label: 'ClickHouse', link: '/interview/cards/clickhouse/' },
+        { label: 'Kafka', link: '/interview/cards/kafka/' },
+        { label: 'Data modeling', link: '/interview/cards/data-modeling/' },
+        { label: 'dbt', link: '/interview/cards/dbt/' },
+        { label: 'Data Quality', link: '/interview/cards/data-quality/' },
+        { label: 'Iceberg', link: '/interview/cards/iceberg/' },
+        { label: 'Flink', link: '/interview/cards/flink/' },
+        { label: 'Инфраструктура', link: '/interview/cards/infrastructure/' },
+        { label: 'Soft skills', link: '/interview/cards/soft-skills/' },
+        { label: 'Прочие', link: '/interview/cards/other/' },
+      ] },
+    ],
+  },
+  {
     label: 'Библиотека',
     link: '/resources/books/',
     icon: 'document',

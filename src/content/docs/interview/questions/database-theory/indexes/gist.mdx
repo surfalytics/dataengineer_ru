@@ -1,0 +1,28 @@
+---
+title: "GiST"
+prev: {"label":"Как работает Hash?","link":"/interview/questions/database-theory/indexes/hash/"}
+next: {"label":"Как работает SP-GiST?","link":"/interview/questions/database-theory/indexes/spgist/"}
+tableOfContents: false
+editUrl: false
+---
+
+import IndexSearch from '../../../../../../components/interview/IndexSearch.astro';
+
+GiST — основа для нескольких видов поисковых деревьев. Правила сравнения и устройство записей задаёт класс операторов. В примере столбец `span` имеет тип `int4range`, а запрос ищет интервалы, содержащие число 42. Запись внутренней страницы хранит охватывающий диапазон для дочерней ветви.
+
+<IndexSearch method="gist" />
+
+Запись `[40, 55)` включает 40 и исключает 55. Оператор `@>` проверяет, содержит ли диапазон указанное число.
+
+```sql
+CREATE INDEX slots_span_idx ON slots USING gist (span);
+```
+
+<details>
+<summary>Почему поиск идёт по двум ветвям?</summary>
+
+Охватывающие диапазоны могут пересекаться и включать пустые промежутки. Граница помогает исключить целую ветвь. Окончательный ответ в этом примере дают исходные интервалы в листьях.
+
+</details>
+
+[GiST в документации PostgreSQL](https://www.postgresql.org/docs/19/gist.html)
