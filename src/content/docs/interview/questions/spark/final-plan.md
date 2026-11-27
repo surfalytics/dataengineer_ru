@@ -5,7 +5,7 @@ head:
     content: "Начальный и конечный планы Spark SQL | Инжиниринг Данных"
 description: "Как увидеть начальный и конечный физические планы одного запроса. Проверяем isFinalPlan до и после действия и находим изменения AQE в Spark UI."
 prev: {"label":"Как работает Adaptive Query Execution (AQE)?","link":"/interview/questions/spark/aqe/"}
-next: false
+next: {"label":"Как Spark выбирает стратегию JOIN?","link":"/interview/questions/spark/join-strategies/"}
 tableOfContents: false
 editUrl: false
 ---

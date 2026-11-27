@@ -849,6 +849,10 @@ export const topics = [
             {
               "label": "Является ли план запроса конечным?",
               "link": "/interview/questions/spark/final-plan/"
+            },
+            {
+              "label": "Стратегии JOIN в Spark",
+              "link": "/interview/questions/spark/join-strategies/"
             }
           ]
         },
