@@ -823,7 +823,7 @@ export const topics = [
               "link": "/interview/questions/spark/lazy-evaluation/"
             },
             {
-              "label": "Action, Job и Task",
+              "label": "Job -> Stages -> Task",
               "link": "/interview/questions/spark/execution/"
             }
           ]
