@@ -318,3 +318,6 @@ api-дизайн	дизайн API / проектирование API	warn	calque
 упад(ёт|ет|ут|ает|ают)\s+по\s+памяти	упадёт из-за нехватки памяти	warn	calque: fail on memory
 \bклауз\w*	ветка / условие / часть запроса (WHEN MATCHED)	warn	calque: clause
 неконсистентн\w*	несогласованный	warn	calque: inconsistent
+слаб\w*\s+игрок	слабые сотрудники	warn	calque: weak players. Fine for players on a market
+верн\w*\s+(\S+\s+){0,3}?на\s+путь\b	вернуть в зелёный статус / снова выполнять в срок	warn	calque: back on track
+дела\w*\s+(людей|сотрудников|команд\w*|инженеров)\s+лучше	помогать людям становиться лучше	warn	calque: make people better
