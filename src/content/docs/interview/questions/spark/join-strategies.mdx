@@ -28,7 +28,7 @@ import SparkJoinFlow from '../../../../../components/interview/SparkJoinFlow.ast
 
 <SparkJoinFlow strategy="broadcast" />
 
-**Когда выберет Spark.** При автоматическом выборе планировщик смотрит на оценку размера стороны после фильтров и отбора колонок. По умолчанию порог `spark.sql.autoBroadcastJoinThreshold` равен **10 МиБ**. Для `INNER JOIN` можно рассылать любую подходящую сторону, для `LEFT JOIN` — правую. Для `FULL OUTER JOIN` эта стратегия недоступна. Подсказка `BROADCAST` позволяет предложить рассылку даже выше порога, но хеш-таблица всё равно должна поместиться в память драйвера и каждого участвующего executor. [Настройки и подсказки Spark SQL](https://spark.apache.org/docs/4.1.1/sql-performance-tuning.html#optimizing-the-join-strategy)
+**Когда выберет Spark.** При автоматическом выборе планировщик смотрит на оценку размера стороны после фильтров и отбора колонок. По умолчанию порог `spark.sql.autoBroadcastJoinThreshold` равен **10 МиБ**. Для `INNER JOIN` можно рассылать любую подходящую сторону, для `LEFT JOIN` — только правую, для `RIGHT JOIN` — только левую. Для `FULL OUTER JOIN` эта стратегия недоступна. Подсказка `BROADCAST` позволяет предложить рассылку даже выше порога, но хеш-таблица всё равно должна поместиться в память драйвера и каждого участвующего executor. [Настройки и подсказки Spark SQL](https://spark.apache.org/docs/4.1.1/sql-performance-tuning.html#optimizing-the-join-strategy)
 
 ## SortMergeJoin
 

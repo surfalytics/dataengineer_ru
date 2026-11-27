@@ -979,7 +979,7 @@ export const topics = [
               "link": "/interview/questions/spark/dynamic-allocation/"
             },
             {
-              "label": "Аллокации в Spark на Kubernetes",
+              "label": "Арены malloc в Kubernetes",
               "link": "/interview/questions/spark/kubernetes-allocation/"
             }
           ]

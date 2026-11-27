@@ -15,6 +15,7 @@ import SparkQueryPlan from '../../../../../components/interview/SparkQueryPlan.a
 Проследим один запрос от SQL на драйвере до двух строк результата. В таблице `orders` четыре заказа. У магазина № 1 оплачены заказы на 100 и 20, ещё один на 40 ждёт оплаты. У магазина № 2 оплачен заказ на 50.
 
 ```python
+spark.conf.set("spark.sql.shuffle.partitions", 8)
 totals = spark.sql("""
     SELECT shop_id, SUM(amount) AS revenue
     FROM orders
