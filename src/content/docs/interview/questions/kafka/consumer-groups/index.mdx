@@ -26,8 +26,10 @@ Kafka распределяет partitions между участниками гр
 
 ## Как читает Spark Structured Streaming?
 
-Схема выше показывает обычную consumer group. Когда Spark читает Kafka микробатчами, работу распределяет **driver Spark**. Для каждого микробатча он узнаёт у Kafka, до каких offsets дошла запись в каждой партиции, и определяет, какие диапазоны нужно прочитать. Задача на executor получает свой диапазон и через `KafkaConsumer` запрашивает сами записи напрямую у брокера Kafka.
+**Важно не путать обычную consumer group с тем, как читает Kafka запрос Spark Structured Streaming.** В обычной группе клиенты подписываются на топик, а Kafka координирует распределение партиций между ними. Spark по умолчанию тоже создаёт для запроса свой `group.id`, но его клиенты на executors читают явно назначенные им партиции (`assign`). Поэтому добавление executor само по себе не вызывает ребалансировку группы в Kafka.
+
+Для каждого микробатча **driver Spark** узнаёт у Kafka доступные offsets и назначает задачам конкретные диапазоны. Например, задача получает партицию `orders-0` и диапазон `[100, 150)`. На executor её `KafkaConsumer` сам запрашивает у брокера записи начиная с offset 100 и читает до границы 150, не включая её. Через driver сами записи не проходят. [Как Spark назначает партицию клиенту Kafka](https://github.com/apache/spark/blob/v4.0.1/connector/kafka-0-10-sql/src/main/scala/org/apache/spark/sql/kafka010/consumer/KafkaDataConsumer.scala#L111-L125)
 
 Например, в топике `orders` четыре партиции с новыми данными. По умолчанию Spark запланирует четыре задачи чтения. Если у двух executors свободно по два слота, все четыре задачи могут читать одновременно. На одном executor в таком случае работают сразу два клиента `KafkaConsumer`. С помощью `minPartitions` Spark может даже разбить большой диапазон одной Kafka-партиции между несколькими задачами.
 
-По умолчанию Spark создаёт для каждого запроса свой `group.id`. Прогресс чтения он сохраняет в checkpoint без коммита offsets в Kafka. При перезапуске с тем же checkpoint Spark знает, какой микробатч завершился и откуда продолжить чтение. [Документация Spark по чтению из Kafka](https://spark.apache.org/docs/latest/streaming/structured-streaming-kafka-integration.html)
+Прогресс чтения Spark сохраняет в checkpoint без коммита offsets в Kafka. При перезапуске с тем же checkpoint Spark знает, какой микробатч завершился и откуда продолжить чтение. [Документация Spark по чтению из Kafka](https://spark.apache.org/docs/latest/streaming/structured-streaming-kafka-integration.html)
