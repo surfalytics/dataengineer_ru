@@ -5,7 +5,7 @@ head:
     content: "Компоненты Apache Spark: driver, executors и cluster manager | Инжиниринг Данных"
 description: "Кто в Spark выделяет ресурсы, планирует стадии и обрабатывает партиции. Роли driver, executors и cluster manager на примере агрегации заказов."
 prev: {"label":"Все вопросы по Spark","link":"/interview/questions/spark/"}
-next: {"label":"Какие вкладки есть в Spark UI и для чего они нужны?","link":"/interview/questions/spark/web-ui/"}
+next: {"label":"Как запускается Spark-приложение","link":"/interview/questions/spark/application-launch/"}
 tableOfContents: false
 editUrl: false
 ---

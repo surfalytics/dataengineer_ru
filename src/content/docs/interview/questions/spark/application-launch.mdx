@@ -1,0 +1,26 @@
+---
+title: "Как запускается Spark-приложение"
+head:
+  - tag: title
+    content: "Запуск Spark из Airflow на Kubernetes | Инжиниринг Данных"
+description: "Как задача Airflow запускает Spark в Kubernetes: кто создаёт driver и executor pods, как выделяются CPU и память и откуда executors получают задачи."
+prev: {"label":"Из каких компонентов состоит Spark-приложение?","link":"/interview/questions/spark/components/"}
+next: {"label":"Какие вкладки есть в Spark UI и для чего они нужны?","link":"/interview/questions/spark/web-ui/"}
+tableOfContents: false
+editUrl: false
+---
+
+import SparkLaunch from '../../../../../components/interview/SparkLaunch.astro';
+
+Допустим, ночной DAG в Airflow загрузил заказы. Следующей задачей нужно посчитать выручку по магазинам. Для этого `SparkSubmitOperator` запускает Spark-приложение в Kubernetes в режиме `cluster`. Для примера отключим динамическое выделение executors и укажем `spark.executor.instances=2`.
+
+**Kubernetes уже выполняет роль cluster manager.** Сначала в кластере стартует driver. Он запрашивает executor pods, а затем раздаёт задачи тем executors, которые запустились и зарегистрировались.
+
+<SparkLaunch />
+
+1. **Airflow отправляет приложение.** На воркере Airflow оператор вызывает `spark-submit` с адресом Kubernetes API, режимом `--deploy-mode cluster` и настройками приложения. Клиент отправляет в API запрос на создание driver pod. [SparkSubmitOperator](https://airflow.apache.org/docs/apache-airflow-providers-apache-spark/stable/_api/airflow/providers/apache/spark/operators/spark_submit/index.html)
+2. **Kubernetes запускает driver.** Планировщик выбирает узел для pod с учётом запрошенных CPU, памяти и ограничений размещения. На выбранном узле kubelet запускает контейнер через container runtime. Внутри стартует программа драйвера.
+3. **Driver запрашивает executors.** При инициализации `SparkContext` driver обращается к Kubernetes API от имени своего service account и запрашивает два executor pods. В спецификации каждого pod указано, сколько ресурсов ему требуется. [Запуск Spark на Kubernetes](https://spark.apache.org/docs/4.1.1/running-on-kubernetes.html#how-it-works)
+4. **Kubernetes размещает каждый pod отдельно.** Планировщик сверяет запрос pod с ресурсами, доступными для назначения на каждом подходящем узле. Если места хватает только первому executor, он может запуститься, пока второй остаётся в `Pending`. Причину ожидания можно увидеть в событиях pod через `kubectl describe pod`, например `Insufficient cpu`. [Как Kubernetes выбирает узел](https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/)
+5. **Executors регистрируются у driver и получают tasks.** Когда код доходит до действия, например записи выручки в Parquet, driver планирует вычисление и отправляет задачи на свободные слоты зарегистрированных executors. Один executor за время жизни своего pod может выполнить много Spark tasks.
+6. **Airflow получает результат запуска.** При обычном запуске с ожиданием завершения `spark-submit` следит за driver pod. Если приложение успешно записало результат и завершилось, задача Airflow завершается успешно. При ошибке драйвера оператор сообщает об ошибке, и дальше действуют настройки повторных попыток задачи. [Режим ожидания завершения](https://spark.apache.org/docs/4.1.1/running-on-kubernetes.html#spark-properties)

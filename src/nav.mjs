@@ -803,6 +803,10 @@ export const topics = [
               "link": "/interview/questions/spark/components/"
             },
             {
+              "label": "Как запускается Spark-приложение",
+              "link": "/interview/questions/spark/application-launch/"
+            },
+            {
               "label": "Вкладки Spark UI",
               "link": "/interview/questions/spark/web-ui/"
             },
