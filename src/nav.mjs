@@ -8,10 +8,9 @@ export const topics = [
     label: 'Старт',
     link: '/start/',
     icon: 'rocket',
-    match: ['/start/', '/about/'],
+    match: ['/start/'],
     items: [
       { label: 'С чего начать', items: [{ autogenerate: { directory: 'start' } }] },
-      { label: 'О проекте', items: [{ autogenerate: { directory: 'about' } }] },
     ],
   },
   {
@@ -1239,5 +1238,12 @@ export const topics = [
       { label: 'Книги и материалы', items: [{ autogenerate: { directory: 'resources' } }] },
       { label: 'Сообщество', items: [{ autogenerate: { directory: 'community' } }] },
     ],
+  },
+  {
+    label: 'О проекте',
+    link: '/about/',
+    icon: 'information',
+    match: ['/about/'],
+    items: [{ autogenerate: { directory: 'about' } }],
   },
 ];
